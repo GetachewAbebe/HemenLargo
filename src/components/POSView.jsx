@@ -1,42 +1,33 @@
 import React, { useState, useMemo } from "react";
 import {
   Plus,
-  Minus,
-  Trash2,
   CheckCircle,
   AlertCircle,
-  Droplets,
   CreditCard,
   Banknote,
   Smartphone,
   BookOpen,
-  User,
-  Phone,
   Tag,
   Zap,
-  RefreshCw,
   Percent,
-  X,
 } from "lucide-react";
 import { soundFX } from "../utils/audio";
+import { useApp } from "../context";
+import DispenserStation from "./pos/DispenserStation";
+import CartItemList from "./pos/CartItemList";
+import CustomerSection from "./pos/CustomerSection";
+import CashTenderCard from "./pos/CashTenderCard";
+import QuickRefillModal from "./pos/QuickRefillModal";
 
-const CONTAINER_PRESETS = [
-  { label: "0.5 L", liters: 0.5, name: "500ml Bottle", icon: "🧴" },
-  { label: "1.0 L", liters: 1.0, name: "1 Liter Bottle", icon: "🧴" },
-  { label: "2.0 L", liters: 2.0, name: "2 Liter Jug", icon: "🫙" },
-  { label: "5.0 L", liters: 5.0, name: "5L Gallon Can", icon: "🪣", popular: true },
-  { label: "10.0 L", liters: 10.0, name: "10L Can", icon: "🛢️" },
-  { label: "20.0 L", liters: 20.0, name: "20L Jerrycan", icon: "🛢️" },
-];
+export default function POSView(props) {
+  const context = useApp();
+  const products = props.products ?? context.products;
+  const sales = props.sales ?? context.sales;
+  const debts = props.debts ?? context.debts;
+  const currency = props.currency ?? context.currency;
+  const onCompleteSale = props.onCompleteSale ?? context.handleCompleteSale;
+  const onRestockLiters = props.onRestockLiters ?? context.handleRestockLiters;
 
-export default function POSView({
-  products,
-  sales = [],
-  debts = [],
-  currency = "ETB",
-  onCompleteSale,
-  onRestockLiters,
-}) {
   const [cart, setCart] = useState([]);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -53,6 +44,10 @@ export default function POSView({
   const [saleNotes, setSaleNotes] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Inline Quick Refill Modal
+  const [refillModalProduct, setRefillModalProduct] = useState(null);
+  const [refillAmount, setRefillAmount] = useState(100);
+
   // Quick repeat customer suggestions from past sales and debts
   const recentCustomers = useMemo(() => {
     const map = new Map();
@@ -63,10 +58,6 @@ export default function POSView({
     });
     return Array.from(map.entries()).slice(0, 5);
   }, [sales, debts]);
-
-  // Inline Quick Refill Modal
-  const [refillModalProduct, setRefillModalProduct] = useState(null);
-  const [refillAmount, setRefillAmount] = useState(100);
 
   // Add items to cart
   const addToCart = (product, litersToAdd) => {
@@ -145,13 +136,6 @@ export default function POSView({
       addToCart(largo, 5);
       addToCart(barikina, 2);
     }
-  };
-
-  // Quick Customer presets
-  const applyCustomerPreset = (name, phone) => {
-    soundFX.playPop();
-    setCustomerName(name);
-    setCustomerPhone(phone || "");
   };
 
   // Adjust liters in cart
@@ -280,7 +264,7 @@ export default function POSView({
               <strong>5L Largo + 2L Barikina</strong> = {(5 * 60 + 2 * 50).toLocaleString()} {currency}
             </span>
           </div>
-          <button className="btn-add-combo" onClick={handleAddCombo}>
+          <button type="button" className="btn-add-combo" onClick={handleAddCombo}>
             <Plus size={15} />
             <span>+ Add Combo to Bill</span>
           </button>
@@ -288,194 +272,44 @@ export default function POSView({
 
         {/* The Two Dedicated Product Dispenser Stations */}
         <div className="stations-grid">
-          {products.map((prod) => {
-            const isLargo = prod.id === "prod-1" || prod.name.includes("Largo");
-            const isLowStock = prod.stockLiters <= (prod.minStockAlert || 50);
-            const customVal = customLiters[prod.id] || "";
-            const tankCapacity = 600;
-            const tankPercent = Math.min(100, Math.round((prod.stockLiters / tankCapacity) * 100));
-
-            return (
-              <div
-                key={prod.id}
-                className={`dispenser-station-card ${isLargo ? "station-largo" : "station-barikina"}`}
-              >
-                {/* Station Header */}
-                <div className="station-header">
-                  <div className="station-title-wrap">
-                    <div className="station-icon-bubble">
-                      <span className="station-emoji">{prod.iconEmoji || (isLargo ? "🧴" : "✨")}</span>
-                    </div>
-                    <div>
-                      <div className="station-tag-row">
-                        <span className="station-badge">
-                          {isLargo ? "Station 1 • Multi-purpose" : "Station 2 • Disinfectant Bleach"}
-                        </span>
-                      </div>
-                      <h2 className="station-name">{prod.name}</h2>
-                      <span className="station-subname">{prod.localName}</span>
-                    </div>
-                  </div>
-
-                  <div className="station-rate-pill">
-                    <span className="rate-amount">{prod.pricePerLiter}</span>
-                    <span className="rate-unit">{currency} / L</span>
-                  </div>
-                </div>
-
-                {/* Tank Level Gauge */}
-                <div className="station-tank-box">
-                  <div className="tank-gauge-info">
-                    <div className="tank-status-left">
-                      <Droplets size={16} className={isLargo ? "text-teal" : "text-cyan"} />
-                      <span>Tank:</span>
-                      <strong className="tank-liters-bold">{prod.stockLiters.toFixed(1)} L</strong>
-                      <span className="capacity-sub">/ 600L</span>
-                    </div>
-                    <div className="tank-actions-right">
-                      <span className={`stock-status-pill ${isLowStock ? "pill-low" : "pill-ok"}`}>
-                        {isLowStock ? "Low Stock" : `${tankPercent}% Full`}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn-quick-refill-station"
-                        title="Add liters directly to barrel"
-                        onClick={() => {
-                          setRefillModalProduct(prod);
-                          setRefillAmount(100);
-                        }}
-                      >
-                        <RefreshCw size={12} />
-                        <span>Refill</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="tank-liquid-track">
-                    <div
-                      className={`tank-liquid-fill ${isLargo ? "liquid-teal" : "liquid-cyan"}`}
-                      style={{ width: `${tankPercent}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Container Options Grid */}
-                <div className="station-containers-section">
-                  <span className="section-micro-label">TAP TO ADD CONTAINER:</span>
-                  <div className="container-presets-grid">
-                    {CONTAINER_PRESETS.map((preset) => {
-                      const calculatedPrice = (preset.liters * prod.pricePerLiter).toFixed(0);
-                      return (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          className={`btn-container-card ${preset.popular ? "popular-card" : ""}`}
-                          onClick={() => addToCart(prod, preset.liters)}
-                          disabled={prod.stockLiters < preset.liters}
-                        >
-                          {preset.popular && <span className="popular-badge">★ Best Seller</span>}
-                          <div className="container-icon-row">
-                            <span className="container-icon">{preset.icon}</span>
-                            <span className="container-size-tag">{preset.label}</span>
-                          </div>
-                          <span className="container-title">{preset.name}</span>
-                          <span className="container-price-tag">
-                            {calculatedPrice} <span className="unit-small">{currency}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Custom Liter Input & Quick Stepper */}
-                <div className="station-custom-pump">
-                  <div className="custom-pump-header">
-                    <span className="section-micro-label">CUSTOM LITERS / REFILL:</span>
-                    <div className="quick-chip-buttons">
-                      {[0.5, 1, 2, 5].map((amt) => (
-                        <button
-                          key={amt}
-                          type="button"
-                          className="quick-chip-btn"
-                          onClick={() => addToCart(prod, amt)}
-                        >
-                          +{amt}L
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="custom-pump-row">
-                    <div className="pump-input-box">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0.1"
-                        placeholder="Liters (e.g. 2.5)"
-                        className="pump-input"
-                        value={customVal}
-                        onChange={(e) =>
-                          setCustomLiters({ ...customLiters, [prod.id]: e.target.value })
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && customVal) {
-                            addToCart(prod, customVal);
-                            setCustomLiters({ ...customLiters, [prod.id]: "" });
-                          }
-                        }}
-                      />
-                      <span className="pump-unit">L</span>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={!customVal || parseFloat(customVal) <= 0}
-                      className="btn-pump-add"
-                      onClick={() => {
-                        if (customVal) {
-                          addToCart(prod, customVal);
-                          setCustomLiters({ ...customLiters, [prod.id]: "" });
-                        }
-                      }}
-                    >
-                      <Plus size={15} />
-                      <span>
-                        {customVal && parseFloat(customVal) > 0
-                          ? `Add ${(parseFloat(customVal) * prod.pricePerLiter).toFixed(0)} ${currency}`
-                          : "Add"}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {products.map((prod) => (
+            <DispenserStation
+              key={prod.id}
+              product={prod}
+              currency={currency}
+              customLiterVal={customLiters[prod.id] || ""}
+              onCustomLiterChange={(val) => setCustomLiters({ ...customLiters, [prod.id]: val })}
+              onAddToCart={addToCart}
+              onOpenRefillModal={(p) => {
+                setRefillModalProduct(p);
+                setRefillAmount(100);
+              }}
+            />
+          ))}
         </div>
       </section>
 
-      {/* RIGHT COLUMN: The Interactive Cart & Cashier Checkout */}
+      {/* RIGHT COLUMN: The Sticky Counter Register Cart */}
       <section className="pos-cart-col">
         <div className="cart-card-v2">
           {/* Cart Header */}
           <div className="cart-header-v2">
             <div>
-              <h2 className="cart-title-v2">Active Order</h2>
+              <h3 className="cart-title-v2">Current Refill Bill</h3>
               <span className="cart-subtitle-v2">
-                {cart.length === 0
-                  ? "Ready to dispense"
-                  : `${cart.length} item${cart.length > 1 ? "s" : ""} • ${totalLiters.toFixed(1)}L total`}
+                {cart.length} {cart.length === 1 ? "Soap item" : "Soap items"} • {totalLiters.toFixed(1)} Liters
               </span>
             </div>
             {cart.length > 0 && (
-              <button className="btn-clear-cart-v2" onClick={clearCart} title="Clear cart">
-                Clear
+              <button type="button" className="btn-clear-cart" onClick={clearCart} title="Clear cart">
+                Reset
               </button>
             )}
           </div>
 
-          {/* Error Banner */}
+          {/* Validation Alert */}
           {errorMessage && (
-            <div className="cart-error-banner-v2 animate-fade">
+            <div className="pos-error-banner animate-pop">
               <AlertCircle size={16} />
               <span>{errorMessage}</span>
             </div>
@@ -483,157 +317,23 @@ export default function POSView({
 
           {/* Cart Items List */}
           <div className="cart-items-scroll">
-            {cart.length === 0 ? (
-              <div className="cart-empty-state-v2">
-                <div className="empty-soap-bubble">🫧</div>
-                <strong className="empty-title-v2">Cashier Ready</strong>
-                <p className="empty-desc-v2">
-                  Tap any container size (0.5L to 20L Jerrycan) from Largo or Barikina on the left.
-                </p>
-              </div>
-            ) : (
-              <div className="cart-items-list-v2">
-                {cart.map((item) => (
-                  <div key={item.productId} className="cart-item-card-v2 animate-fade">
-                    <div className="cart-item-top-row">
-                      <div className="item-badge-dot" style={{ backgroundColor: item.color }}></div>
-                      <div className="cart-item-title-col">
-                        <strong className="cart-item-title">{item.name}</strong>
-                        <span className="cart-item-rate">
-                          {item.pricePerLiter} {currency} / L
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn-trash-item"
-                        onClick={() => removeFromCart(item.productId)}
-                        title="Remove"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-
-                    <div className="cart-item-bottom-row">
-                      <div className="cart-qty-stepper">
-                        <button
-                          type="button"
-                          className="stepper-btn"
-                          onClick={() => updateCartLiters(item.productId, -0.5)}
-                          title="Minus 0.5L"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="stepper-val">{item.liters.toFixed(1)} L</span>
-                        <button
-                          type="button"
-                          className="stepper-btn"
-                          onClick={() => updateCartLiters(item.productId, 0.5)}
-                          title="Add 0.5L"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-
-                      <div className="cart-item-price-tag">
-                        <span className="item-price-number">
-                          {item.totalPrice.toFixed(2)}
-                        </span>
-                        <span className="item-price-cur">{currency}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <CartItemList
+              cart={cart}
+              currency={currency}
+              onUpdateLiters={updateCartLiters}
+              onRemoveItem={removeFromCart}
+            />
           </div>
 
           {/* Customer & Checkout Form */}
           <form className="cart-checkout-form" onSubmit={handleCheckout}>
-            {/* Quick Customer Chips */}
-            <div className="customer-preset-chips">
-              <span className="preset-label">Quick:</span>
-              <button
-                type="button"
-                className="chip-preset-btn"
-                onClick={() => applyCustomerPreset("Walk-in Customer", "")}
-              >
-                Walk-in
-              </button>
-              {recentCustomers.length > 0 ? (
-                recentCustomers.map(([name, phone]) => (
-                  <button
-                    key={name}
-                    type="button"
-                    className="chip-preset-btn"
-                    onClick={() => applyCustomerPreset(name, phone)}
-                    title={phone ? `Phone: ${phone}` : name}
-                  >
-                    {name.length > 14 ? `${name.slice(0, 12)}…` : name}
-                  </button>
-                ))
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="chip-preset-btn"
-                    onClick={() => applyCustomerPreset("Local Cafe & Restaurant", "0911223344")}
-                  >
-                    Cafe / Hotel
-                  </button>
-                  <button
-                    type="button"
-                    className="chip-preset-btn"
-                    onClick={() => applyCustomerPreset("Car Wash Station", "0912987654")}
-                  >
-                    Car Wash
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Customer Inputs */}
-            <div className="form-double-col">
-              <div className="field-group">
-                <label className="field-label">
-                  <User size={13} />
-                  <span>Customer Name</span>
-                </label>
-                <input
-                  type="text"
-                  list="pos-customer-datalist"
-                  className="field-input"
-                  placeholder="e.g. Almaz or Cafe X"
-                  value={customerName}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setCustomerName(val);
-                    const match = recentCustomers.find(([n]) => n.toLowerCase() === val.toLowerCase());
-                    if (match && match[1] && !customerPhone) {
-                      setCustomerPhone(match[1]);
-                    }
-                  }}
-                />
-                <datalist id="pos-customer-datalist">
-                  {recentCustomers.map(([name]) => (
-                    <option key={name} value={name} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div className="field-group">
-                <label className="field-label">
-                  <Phone size={13} />
-                  <span>Phone Number</span>
-                </label>
-                <input
-                  type="tel"
-                  className="field-input"
-                  placeholder="09..."
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                />
-              </div>
-            </div>
+            <CustomerSection
+              customerName={customerName}
+              setCustomerName={setCustomerName}
+              customerPhone={customerPhone}
+              setCustomerPhone={setCustomerPhone}
+              recentCustomers={recentCustomers}
+            />
 
             {/* Payment Method Selector */}
             <div className="field-group">
@@ -692,59 +392,15 @@ export default function POSView({
               </div>
             </div>
 
-            {/* Cash Tendered & Change Due Calculator (When Cash is selected) */}
+            {/* Cash Tendered & Change Due Calculator */}
             {paymentMethod === "Cash" && (
-              <div className="cash-tender-card animate-fade">
-                <div className="cash-tender-header">
-                  <Banknote size={14} className="text-emerald" />
-                  <strong>Cash Tender & Change Due (ጥሬ ገንዘብ & መልስ)</strong>
-                </div>
-                <div className="cash-quick-denominations">
-                  <button
-                    type="button"
-                    className="btn-quick-denom"
-                    onClick={() => {
-                      soundFX.playBeep();
-                      setCashTendered(finalTotal > 0 ? finalTotal.toFixed(0) : "0");
-                    }}
-                  >
-                    Exact ({finalTotal > 0 ? finalTotal.toFixed(0) : 0})
-                  </button>
-                  {[100, 200, 500, 1000].map((denom) => (
-                    <button
-                      key={denom}
-                      type="button"
-                      className="btn-quick-denom"
-                      onClick={() => {
-                        soundFX.playBeep();
-                        setCashTendered(denom.toString());
-                      }}
-                    >
-                      {denom} {currency}
-                    </button>
-                  ))}
-                </div>
-                <div className="cash-input-and-change-row">
-                  <div className="cash-tender-input-wrap">
-                    <label className="cash-sublabel">Amount Received ({currency})</label>
-                    <input
-                      type="number"
-                      step="1"
-                      min="0"
-                      placeholder={`e.g. ${finalTotal > 0 ? Math.ceil(finalTotal / 100) * 100 : 500}`}
-                      className="cash-received-input"
-                      value={cashTendered}
-                      onChange={(e) => setCashTendered(e.target.value)}
-                    />
-                  </div>
-                  <div className={`change-due-box ${changeDue > 0 ? "change-positive" : ""}`}>
-                    <span className="change-due-label">CHANGE TO RETURN</span>
-                    <strong className="change-due-amount">
-                      {changeDue.toFixed(2)} <span className="change-cur">{currency}</span>
-                    </strong>
-                  </div>
-                </div>
-              </div>
+              <CashTenderCard
+                finalTotal={finalTotal}
+                cashTendered={cashTendered}
+                setCashTendered={setCashTendered}
+                changeDue={changeDue}
+                currency={currency}
+              />
             )}
 
             {/* If Credit selected: Due Date */}
@@ -861,74 +517,13 @@ export default function POSView({
       </section>
 
       {/* Station Refill Quick Modal */}
-      {refillModalProduct && (
-        <div className="modal-backdrop animate-fade">
-          <div className="modal-box animate-pop">
-            <div className="modal-header">
-              <div className="modal-title-row">
-                <div className="stat-icon-wrapper stat-cyan">
-                  <RefreshCw size={20} />
-                </div>
-                <div>
-                  <h3 className="modal-title">Refill {refillModalProduct.name}</h3>
-                  <p className="modal-subtitle">Quick tank refill from newly brewed batch</p>
-                </div>
-              </div>
-              <button
-                className="modal-close-btn"
-                onClick={() => setRefillModalProduct(null)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleConfirmStationRefill} className="modal-form">
-              <div className="tank-read-only">
-                Current Tank: <strong>{refillModalProduct.stockLiters.toFixed(1)} Liters</strong>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Liters to Add to Tank</label>
-                <div className="quick-pay-buttons">
-                  {[50, 100, 200].map((liters) => (
-                    <button
-                      key={liters}
-                      type="button"
-                      className="btn-quick-amount"
-                      onClick={() => setRefillAmount(liters)}
-                    >
-                      +{liters}L Barrel
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number"
-                  step="5"
-                  min="1"
-                  required
-                  className="form-input"
-                  value={refillAmount}
-                  onChange={(e) => setRefillAmount(e.target.value)}
-                />
-              </div>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-modal-cancel"
-                  onClick={() => setRefillModalProduct(null)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-modal-submit">
-                  <CheckCircle size={18} />
-                  <span>Confirm Refill (+{refillAmount}L)</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <QuickRefillModal
+        product={refillModalProduct}
+        refillAmount={refillAmount}
+        setRefillAmount={setRefillAmount}
+        onConfirm={handleConfirmStationRefill}
+        onClose={() => setRefillModalProduct(null)}
+      />
     </div>
   );
 }

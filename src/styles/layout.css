@@ -1,0 +1,102 @@
+/* ===================================================
+   LAYOUT & CONTAINER ARCHITECTURE
+   =================================================== */
+
+.app-root-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app-body-layout {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: calc(100vh - 72px);
+  width: 100%;
+  background: #f8fafc;
+  position: relative;
+}
+
+.app-loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+  color: var(--primary);
+}
+
+.app-main-viewport {
+  flex: 1;
+  min-width: 0;
+  padding: 22px 28px;
+  overflow-y: auto;
+  max-width: 100%;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform var(--transition-fast);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.card-highlight-green {
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+  border-color: #bbf7d0;
+}
+
+.card-highlight-red {
+  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+  border-color: #fecdd3;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.metric-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.metric-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.view-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}

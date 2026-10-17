@@ -1,0 +1,210 @@
+/* ---------------------------------------------------
+   TOP HEADER (v2)
+   --------------------------------------------------- */
+.top-header-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+}
+
+.header-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-logo-container {
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.18);
+}
+
+.header-logo-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.header-title-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-store-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.live-status-pill {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.live-dot-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.header-store-tagline {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.header-stats-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-date-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.header-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.kpi-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-emerald { background: #ecfdf5; color: #059669; }
+.kpi-cyan { background: #ecfeff; color: #0891b2; }
+.kpi-rose { background: #fff1f2; color: #e11d48; }
+.kpi-amber { background: #fffbeb; color: #d97706; }
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.kpi-val {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.kpi-currency {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.btn-header-new-sale {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.btn-header-new-sale:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(13, 148, 136, 0.35);
+}
+
+/* Header Sound FX Toggle */
+.btn-sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.btn-sound-toggle.sound-on {
+  background: #f0fdfa;
+  color: #0d9488;
+  border-color: #99f6e4;
+}
+
+.btn-sound-toggle.sound-on:hover {
+  background: #ccfbf1;
+  border-color: #5eead4;
+}
+
+.btn-sound-toggle.sound-muted {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #cbd5e1;
+}
+
+.btn-sound-toggle.sound-muted:hover {
+  background: #e2e8f0;
+  color: #64748b;
+}
