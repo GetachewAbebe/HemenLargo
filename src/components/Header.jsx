@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, Wallet, ShoppingBag, Droplets, Plus, Clock, Volume2, VolumeX } from "lucide-react";
 import { soundFX } from "../utils/audio";
+import { useApp } from "../context";
 
 export default function Header({
   config,
@@ -10,6 +11,7 @@ export default function Header({
   onNewSaleClick,
   activeTab,
 }) {
+  const { cloudStatus } = useApp();
   const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
 
   useEffect(() => {
@@ -57,6 +59,31 @@ export default function Header({
             <h1 className="header-store-title">{config.shopName || "Sukie"}</h1>
             <span className="live-status-pill">
               <span className="live-dot-pulse"></span> Open Store
+            </span>
+            <span
+              className="live-status-pill"
+              style={
+                cloudStatus === "connected"
+                  ? { background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" }
+                  : { background: "#f8fafc", color: "#64748b", borderColor: "#e2e8f0" }
+              }
+              title={
+                cloudStatus === "connected"
+                  ? "Real-time sync active with Hemen-Soap-Shop on Supabase"
+                  : "Operating with local offline cache"
+              }
+            >
+              <span
+                className="live-dot-pulse"
+                style={{
+                  backgroundColor: cloudStatus === "connected" ? "#3b82f6" : "#94a3b8",
+                  boxShadow:
+                    cloudStatus === "connected"
+                      ? "0 0 8px #60a5fa"
+                      : "none",
+                }}
+              ></span>
+              {cloudStatus === "connected" ? "☁️ Supabase Cloud" : "Offline"}
             </span>
           </div>
           <p className="header-store-tagline">

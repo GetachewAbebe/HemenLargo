@@ -10,7 +10,11 @@ export default function DispenserStation({
   onAddToCart,
   onOpenRefillModal,
 }) {
-  const isLargo = product.id === "prod-1" || product.name.includes("Largo");
+  const isLargo =
+    product.id === "prod-1" ||
+    product.id === "prod-largo" ||
+    product.name.includes("Largo") ||
+    product.name.includes("ላርጎ");
   const isLowStock = product.stockLiters <= (product.minStockAlert || 50);
   const tankCapacity = 600;
   const tankPercent = Math.min(100, Math.round((product.stockLiters / tankCapacity) * 100));

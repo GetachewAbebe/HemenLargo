@@ -129,8 +129,21 @@ export default function POSView(props) {
   // 1-Click Combo: 5L Largo + 2L Barikina
   const handleAddCombo = () => {
     soundFX.playPop();
-    const largo = products.find((p) => p.name.includes("Largo") || p.id === "prod-1");
-    const barikina = products.find((p) => p.name.includes("Barikina") || p.id === "prod-2");
+    const largo = products.find(
+      (p) =>
+        p.id === "prod-largo" ||
+        p.id === "prod-1" ||
+        p.name.includes("Largo") ||
+        p.name.includes("ላርጎ")
+    );
+    const barikina = products.find(
+      (p) =>
+        p.id === "prod-berekina" ||
+        p.id === "prod-2" ||
+        p.name.includes("Barikina") ||
+        p.name.includes("Berekina") ||
+        p.name.includes("በረኪና")
+    );
 
     if (largo && barikina) {
       addToCart(largo, 5);
