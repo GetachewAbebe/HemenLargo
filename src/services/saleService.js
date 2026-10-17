@@ -32,23 +32,6 @@ export const restoreStockForVoidedSale = (products, saleItems) => {
   });
 };
 
-export const createCreditDebtFromSale = (newSale) => {
-  const defaultDueDate = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
-  return {
-    id: `debt-${Date.now().toString().slice(-6)}`,
-    customerName: newSale.customerName,
-    customerPhone: newSale.customerPhone,
-    saleId: newSale.id,
-    date: newSale.date,
-    totalAmount: newSale.total,
-    paidAmount: 0,
-    remainingBalance: newSale.total,
-    dueDate: newSale.creditDueDate || defaultDueDate,
-    status: "Unpaid",
-    notes: `Credit sale for ${newSale.totalLiters.toFixed(1)}L of soap.`,
-  };
-};
-
 export const calculateCartTotals = (cart, discountAmount = 0, byocDiscountActive = false, byocRate = 0.05) => {
   const totalLiters = cart.reduce((acc, item) => acc + item.liters, 0);
   const grossSubtotal = cart.reduce((acc, item) => acc + item.total, 0);

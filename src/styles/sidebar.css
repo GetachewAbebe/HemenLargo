@@ -100,34 +100,6 @@
   gap: 12px;
 }
 
-.sidebar-store-photo-card {
-  position: relative;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-}
-
-.sidebar-store-img {
-  width: 100%;
-  height: 95px;
-  object-fit: cover;
-  display: block;
-}
-
-.sidebar-store-caption {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.85) 100%);
-  color: #ffffff;
-  padding: 4px 8px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-align: center;
-}
-
 .sidebar-seller-tip {
   background: #f8fafc;
   border: 1px dashed #cbd5e1;

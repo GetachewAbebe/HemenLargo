@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, Wallet, ShoppingBag, Droplets, Plus, Clock, Volume2, VolumeX } from "lucide-react";
+import { AlertTriangle, ShoppingBag, Droplets, Plus, Clock, Volume2, VolumeX } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 
 export default function Header({
   config,
   sales = [],
-  debts = [],
   products = [],
   onNewSaleClick,
   activeTab,
@@ -33,10 +32,6 @@ export default function Header({
   const todayLiters = todaySales.reduce((acc, s) => {
     return acc + (s.items?.reduce((iAcc, item) => iAcc + (item.liters || 0), 0) || 0);
   }, 0);
-
-  const totalPendingDebt = debts
-    .filter((d) => d.status !== "Paid")
-    .reduce((acc, d) => acc + (d.remainingBalance || 0), 0);
 
   const lowStockCount = products.filter(
     (p) => p.stockLiters <= (p.minStockAlert || 40)
@@ -125,19 +120,6 @@ export default function Header({
           </div>
         </div>
 
-        {/* Customer Debts (ዕዳ) */}
-        <div className="header-kpi-card">
-          <div className="kpi-icon-box kpi-rose">
-            <Wallet size={17} />
-          </div>
-          <div className="kpi-content">
-            <span className="kpi-label">Customer Debts (ዕዳ)</span>
-            <span className="kpi-val text-rose">
-              {totalPendingDebt.toLocaleString()} <span className="kpi-currency">{config.currency}</span>
-            </span>
-          </div>
-        </div>
-
         {/* Low Stock Alert if any */}
         {lowStockCount > 0 && (
           <div className="header-kpi-card kpi-warning-card">
@@ -153,6 +135,7 @@ export default function Header({
 
         {/* Sound FX Toggle Button */}
         <button
+          type="button"
           className={`btn-sound-toggle ${isMuted ? "sound-muted" : "sound-on"}`}
           onClick={handleToggleSound}
           title={isMuted ? "Sound effects muted (Click to unmute)" : "Sound effects active (Click to mute)"}
@@ -163,7 +146,7 @@ export default function Header({
 
         {/* Quick New Sale Button */}
         {activeTab !== "pos" && (
-          <button className="btn-header-new-sale" onClick={onNewSaleClick}>
+          <button type="button" className="btn-header-new-sale" onClick={onNewSaleClick}>
             <Plus size={16} />
             <span>POS Register</span>
           </button>

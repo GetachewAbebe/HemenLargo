@@ -8,9 +8,7 @@ import {
 import {
   deductStockForSale,
   restoreStockForVoidedSale,
-  createCreditDebtFromSale,
 } from "../services/saleService";
-import { applyDebtPayment } from "../services/debtService";
 import { restockProductStock } from "../services/inventoryService";
 import {
   fetchSupabaseProducts,
@@ -28,7 +26,6 @@ export function AppProvider({ children }) {
   const [config, setConfig] = useState(initialData.config);
   const [products, setProducts] = useState(initialData.products);
   const [sales, setSales] = useState(initialData.sales);
-  const [debts, setDebts] = useState(initialData.debts);
   const [expenses, setExpenses] = useState(initialData.expenses);
   const [cloudStatus, setCloudStatus] = useState("connecting"); // 'connected' | 'connecting' | 'local'
 
@@ -106,14 +103,6 @@ export function AppProvider({ children }) {
     const updatedProducts = deductStockForSale(products, newSale.items);
     const updatedSales = [newSale, ...sales];
 
-    let updatedDebts = debts;
-    if (newSale.paymentMethod === "Credit") {
-      const debtRecord = createCreditDebtFromSale(newSale);
-      updatedDebts = [debtRecord, ...debts];
-      setDebts(updatedDebts);
-      saveToStorage("DEBTS", updatedDebts);
-    }
-
     setProducts(updatedProducts);
     setSales(updatedSales);
     saveToStorage("PRODUCTS", updatedProducts);
@@ -136,12 +125,6 @@ export function AppProvider({ children }) {
   const handleVoidSale = (saleToVoid) => {
     const updatedProducts = restoreStockForVoidedSale(products, saleToVoid.items);
     const updatedSales = sales.filter((s) => s.id !== saleToVoid.id);
-
-    if (saleToVoid.paymentMethod === "Credit") {
-      const updatedDebts = debts.filter((d) => d.saleId !== saleToVoid.id);
-      setDebts(updatedDebts);
-      saveToStorage("DEBTS", updatedDebts);
-    }
 
     setProducts(updatedProducts);
     setSales(updatedSales);
@@ -198,30 +181,7 @@ export function AppProvider({ children }) {
     showToast("Product deleted from catalog.");
   };
 
-  // 6. Record Debt Repayment
-  const handleRecordDebtPayment = ({ debtId, amount, method, note }) => {
-    const updatedDebts = applyDebtPayment(debts, { debtId, amount, method, note });
-    setDebts(updatedDebts);
-    saveToStorage("DEBTS", updatedDebts);
-    showToast(`Recorded repayment of ${Number(amount).toFixed(2)} ${config.currency}!`);
-  };
-
-  // 7. Manual Debt
-  const handleAddManualDebt = (debtRecord) => {
-    const updated = [debtRecord, ...debts];
-    setDebts(updated);
-    saveToStorage("DEBTS", updated);
-    showToast(`Credit record saved for ${debtRecord.customerName}`);
-  };
-
-  const handleDeleteDebt = (debtId) => {
-    const updated = debts.filter((d) => d.id !== debtId);
-    setDebts(updated);
-    saveToStorage("DEBTS", updated);
-    showToast("Debt record removed.");
-  };
-
-  // 8. Add Expense
+  // 6. Add Expense
   const handleAddExpense = (expenseRecord) => {
     const updated = [expenseRecord, ...expenses];
     setExpenses(updated);
@@ -236,34 +196,31 @@ export function AppProvider({ children }) {
     showToast("Expense record deleted.");
   };
 
-  // 9. Save Shop Config
+  // 7. Save Shop Config
   const handleSaveConfig = (newConfig) => {
     setConfig(newConfig);
     saveToStorage("SHOP_CONFIG", newConfig);
     showToast("Shop settings updated!");
   };
 
-  // 10. Reset to defaults
+  // 8. Reset to defaults
   const handleResetDefaults = () => {
     const fresh = resetToDefaults();
     setConfig(fresh.config);
     setProducts(fresh.products);
     setSales(fresh.sales);
-    setDebts(fresh.debts);
     setExpenses(fresh.expenses);
     showToast("Restored starter demo data.");
   };
 
-  // 11. Clear transactions only
+  // 9. Clear transactions only
   const handleClearTransactionsOnly = () => {
     setSales([]);
-    setDebts([]);
     saveToStorage("SALES", []);
-    saveToStorage("DEBTS", []);
-    showToast("Sales and debts cleared. Ready for fresh transactions!");
+    showToast("Sales transactions cleared. Ready for fresh transactions!");
   };
 
-  // 12. Import backup
+  // 10. Import backup
   const handleImportData = (importedData) => {
     if (importedData.config) {
       setConfig(importedData.config);
@@ -277,22 +234,12 @@ export function AppProvider({ children }) {
       setSales(importedData.sales);
       saveToStorage("SALES", importedData.sales);
     }
-    if (importedData.debts) {
-      setDebts(importedData.debts);
-      saveToStorage("DEBTS", importedData.debts);
-    }
     if (importedData.expenses) {
       setExpenses(importedData.expenses);
       saveToStorage("EXPENSES", importedData.expenses);
     }
     showToast("Backup data imported successfully!");
   };
-
-  // Derived counts
-  const activeDebtCount = useMemo(
-    () => debts.filter((d) => d.status !== "Paid").length,
-    [debts]
-  );
 
   const lowStockCount = useMemo(
     () => products.filter((p) => p.stockLiters <= (p.minStockAlert || 40)).length,
@@ -311,8 +258,6 @@ export function AppProvider({ children }) {
     setProducts,
     sales,
     setSales,
-    debts,
-    setDebts,
     expenses,
     setExpenses,
     activeReceipt,
@@ -320,7 +265,6 @@ export function AppProvider({ children }) {
     toast,
     showToast,
     currency,
-    activeDebtCount,
     lowStockCount,
     cloudStatus,
 
@@ -331,9 +275,6 @@ export function AppProvider({ children }) {
     handleAddProduct,
     handleUpdateProduct,
     handleDeleteProduct,
-    handleRecordDebtPayment,
-    handleAddManualDebt,
-    handleDeleteDebt,
     handleAddExpense,
     handleDeleteExpense,
     handleSaveConfig,

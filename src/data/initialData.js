@@ -122,8 +122,8 @@ export const INITIAL_SALES = [
     date: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
     customerName: "Dawit Kebede (Cafe & Restaurant)",
     customerPhone: "0933445566",
-    paymentMethod: "Credit",
-    status: "Credit / Unpaid",
+    paymentMethod: "Telebirr",
+    status: "Completed",
     items: [
       {
         productId: "prod-1",
@@ -152,7 +152,7 @@ export const INITIAL_SALES = [
     discount: 0,
     total: 1700,
     profit: 720,
-    note: "20L Largo Jerrycan + 10L Barikina for kitchen cleaning on credit",
+    note: "20L Largo Jerrycan + 10L Barikina for kitchen cleaning",
   },
   {
     id: "REC-1004",
@@ -179,35 +179,6 @@ export const INITIAL_SALES = [
     total: 250,
     profit: 110,
     note: "CBE mobile banking transfer",
-  },
-];
-
-export const INITIAL_DEBTS = [
-  {
-    id: "debt-1",
-    customerName: "Dawit Kebede (Cafe & Restaurant)",
-    customerPhone: "0933445566",
-    saleId: "REC-1003",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
-    totalAmount: 1700,
-    paidAmount: 500,
-    remainingBalance: 1200,
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString().split("T")[0],
-    status: "Partially Paid",
-    notes: "Took 20L Largo and 10L Barikina. Paid 500 ETB upfront, 1,200 ETB due Friday.",
-  },
-  {
-    id: "debt-2",
-    customerName: "Mamush Car Wash",
-    customerPhone: "0912987654",
-    saleId: "REC-0985",
-    date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
-    totalAmount: 1200,
-    paidAmount: 0,
-    remainingBalance: 1200,
-    dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString().split("T")[0],
-    status: "Unpaid",
-    notes: "Took 20L Largo liquid soap on credit. Regular car wash customer.",
   },
 ];
 

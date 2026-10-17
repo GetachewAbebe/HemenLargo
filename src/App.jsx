@@ -4,7 +4,6 @@ import Sidebar from "./components/Sidebar";
 import POSView from "./components/POSView";
 import InventoryView from "./components/InventoryView";
 import SalesView from "./components/SalesView";
-import DebtView from "./components/DebtView";
 import ExpensesView from "./components/ExpensesView";
 import AnalyticsView from "./components/AnalyticsView";
 import SettingsView from "./components/SettingsView";
@@ -19,10 +18,8 @@ function AppContent() {
     setActiveTab,
     config,
     sales,
-    debts,
     products,
     expenses,
-    activeDebtCount,
     lowStockCount,
     toast,
     activeReceipt,
@@ -56,7 +53,6 @@ function AppContent() {
       <Header
         config={config}
         sales={sales}
-        debts={debts}
         products={products}
         onNewSaleClick={() => setActiveTab("pos")}
         activeTab={activeTab}
@@ -67,7 +63,6 @@ function AppContent() {
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          debtCount={activeDebtCount}
           lowStockCount={lowStockCount}
         />
 
@@ -82,7 +77,6 @@ function AppContent() {
               onVoidSale={handleVoidSale}
             />
           )}
-          {activeTab === "debts" && <DebtView />}
           {activeTab === "expenses" && (
             <ExpensesView
               expenses={expenses}
@@ -96,7 +90,6 @@ function AppContent() {
               sales={sales}
               expenses={expenses}
               products={products}
-              debts={debts}
               currency={config.currency}
             />
           )}

@@ -153,7 +153,7 @@ class SoundFX {
     }
   }
 
-  // Crisp metallic coin chimes when cash is received or debt payment recorded
+  // Crisp metallic coin chimes when cash is received
   playCoin() {
     if (this.muted) return;
     try {

@@ -6,7 +6,6 @@ import {
   CreditCard,
   Banknote,
   Smartphone,
-  BookOpen,
   Tag,
   Zap,
   Percent,
@@ -23,7 +22,6 @@ export default function POSView(props) {
   const context = useApp();
   const products = props.products ?? context.products;
   const sales = props.sales ?? context.sales;
-  const debts = props.debts ?? context.debts;
   const currency = props.currency ?? context.currency;
   const onCompleteSale = props.onCompleteSale ?? context.handleCompleteSale;
   const onRestockLiters = props.onRestockLiters ?? context.handleRestockLiters;
@@ -33,11 +31,6 @@ export default function POSView(props) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [cashTendered, setCashTendered] = useState("");
-  const [creditDueDate, setCreditDueDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split("T")[0];
-  });
   const [discountAmount, setDiscountAmount] = useState(0);
   const [byocDiscountActive, setByocDiscountActive] = useState(false);
   const [customLiters, setCustomLiters] = useState({});
@@ -48,16 +41,16 @@ export default function POSView(props) {
   const [refillModalProduct, setRefillModalProduct] = useState(null);
   const [refillAmount, setRefillAmount] = useState(100);
 
-  // Quick repeat customer suggestions from past sales and debts
+  // Quick repeat customer suggestions from past sales
   const recentCustomers = useMemo(() => {
     const map = new Map();
-    [...debts, ...sales].forEach((item) => {
+    sales.forEach((item) => {
       if (item.customerName && item.customerName !== "Walk-in Customer" && !map.has(item.customerName)) {
         map.set(item.customerName, item.customerPhone && item.customerPhone !== "N/A" ? item.customerPhone : "");
       }
     });
     return Array.from(map.entries()).slice(0, 5);
-  }, [sales, debts]);
+  }, [sales]);
 
   // Add items to cart
   const addToCart = (product, litersToAdd) => {
@@ -231,12 +224,6 @@ export default function POSView(props) {
       return;
     }
 
-    if (paymentMethod === "Credit" && !customerName.trim()) {
-      soundFX.playWarning();
-      setErrorMessage("Customer Name is required when selling on Credit (ዕዳ).");
-      return;
-    }
-
     soundFX.playCheckoutChime();
 
     const saleRecord = {
@@ -253,9 +240,8 @@ export default function POSView(props) {
       totalLiters,
       cashTendered: paymentMethod === "Cash" && tenderedVal > 0 ? tenderedVal : null,
       changeDue: paymentMethod === "Cash" && tenderedVal > 0 ? changeDue : null,
-      note: saleNotes || (paymentMethod === "Credit" ? "Sold on store credit" : "Standard counter refill"),
-      creditDueDate: paymentMethod === "Credit" ? creditDueDate : null,
-      status: paymentMethod === "Credit" ? "Credit / Unpaid" : "Completed",
+      note: saleNotes || "Standard counter refill",
+      status: "Completed",
     };
 
     onCompleteSale(saleRecord);
@@ -274,7 +260,7 @@ export default function POSView(props) {
               <strong>Quick Combo Deal</strong>
             </span>
             <span className="combo-desc">
-              <strong>5L Largo + 2L Barikina</strong> = {(5 * 60 + 2 * 50).toLocaleString()} {currency}
+              <strong>5L Largo + 2L Barikina</strong> = {(5 * 110 + 2 * 75).toLocaleString()} {currency}
             </span>
           </div>
           <button type="button" className="btn-add-combo" onClick={handleAddCombo}>
@@ -390,18 +376,6 @@ export default function POSView(props) {
                   <CreditCard size={18} />
                   <span>CBE Birr</span>
                 </button>
-
-                <button
-                  type="button"
-                  className={`payment-tab ${paymentMethod === "Credit" ? "tab-active tab-credit" : ""}`}
-                  onClick={() => {
-                    soundFX.playPop();
-                    setPaymentMethod("Credit");
-                  }}
-                >
-                  <BookOpen size={18} />
-                  <span>Credit (ዕዳ)</span>
-                </button>
               </div>
             </div>
 
@@ -414,29 +388,6 @@ export default function POSView(props) {
                 changeDue={changeDue}
                 currency={currency}
               />
-            )}
-
-            {/* If Credit selected: Due Date */}
-            {paymentMethod === "Credit" && (
-              <div className="credit-schedule-banner animate-pop">
-                <div className="credit-banner-title">
-                  <AlertCircle size={15} />
-                  <strong>Customer Debt Entry (ዕዳ)</strong>
-                </div>
-                <p className="credit-banner-text">
-                  This transaction will be recorded under Customer Debts tab.
-                </p>
-                <div className="field-group" style={{ marginTop: "6px" }}>
-                  <label className="field-label">Repayment Due Date</label>
-                  <input
-                    type="date"
-                    required
-                    className="field-input"
-                    value={creditDueDate}
-                    onChange={(e) => setCreditDueDate(e.target.value)}
-                  />
-                </div>
-              </div>
             )}
 
             {/* Discount & BYOC Quick Toggle */}
@@ -514,16 +465,10 @@ export default function POSView(props) {
             <button
               type="submit"
               disabled={cart.length === 0}
-              className={`btn-checkout-v2 ${cart.length > 0 ? "btn-checkout-active" : ""} ${
-                paymentMethod === "Credit" ? "btn-credit-active" : ""
-              }`}
+              className={`btn-checkout-v2 ${cart.length > 0 ? "btn-checkout-active" : ""}`}
             >
               <CheckCircle size={20} />
-              <span>
-                {paymentMethod === "Credit"
-                  ? `Save Credit Sale • ${finalTotal.toFixed(2)} ${currency}`
-                  : `Complete Sale & Print Receipt • ${finalTotal.toFixed(2)} ${currency}`}
-              </span>
+              <span>Complete Sale & Print Receipt • {finalTotal.toFixed(2)} {currency}</span>
             </button>
           </form>
         </div>

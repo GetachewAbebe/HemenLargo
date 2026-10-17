@@ -180,7 +180,7 @@ export default function SettingsView({
           <div>
             <h3 className="section-title">Data Backup & Safety</h3>
             <p className="section-subtitle">
-              Export and download your complete sales, stock, and credit records anytime.
+              Export and download your complete sales, stock, and expense records anytime.
             </p>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function SettingsView({
               <strong>Download Backup (JSON)</strong>
             </div>
             <p className="backup-tile-desc">
-              Save a full copy of your soaps catalog, inventory liters, sales receipts, customer debts, and expenses to your device.
+              Save a full copy of your soaps catalog, inventory liters, sales receipts, and expenses to your device.
             </p>
             <button className="btn-secondary" onClick={exportAllDataAsJSON}>
               <Download size={16} />
@@ -310,7 +310,7 @@ export default function SettingsView({
             onClick={() => {
               if (
                 window.confirm(
-                  "Clear all sales transactions and customer debts to start with a clean slate? (Soap inventory catalog will be preserved)."
+                  "Clear all sales transactions to start with a clean slate? (Soap inventory catalog will be preserved)."
                 )
               ) {
                 onClearTransactionsOnly();
@@ -318,7 +318,7 @@ export default function SettingsView({
             }}
           >
             <Trash2 size={16} />
-            <span>Clear Sales & Debts (Keep Soaps)</span>
+            <span>Clear Sales Records (Keep Soaps)</span>
           </button>
 
           <button

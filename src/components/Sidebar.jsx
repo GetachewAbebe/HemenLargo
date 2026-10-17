@@ -3,13 +3,12 @@ import {
   ShoppingCart,
   Package,
   Receipt,
-  Users,
   TrendingDown,
   BarChart3,
   Settings,
 } from "lucide-react";
 
-export default function Sidebar({ activeTab, setActiveTab, debtCount = 0, lowStockCount = 0 }) {
+export default function Sidebar({ activeTab, setActiveTab, lowStockCount = 0 }) {
   const navItems = [
     {
       id: "pos",
@@ -30,14 +29,6 @@ export default function Sidebar({ activeTab, setActiveTab, debtCount = 0, lowSto
       label: "Sales Records",
       sublabel: "Receipts & History",
       icon: Receipt,
-    },
-    {
-      id: "debts",
-      label: "Customer Debts (ዕዳ)",
-      sublabel: "Debts & Repayments",
-      icon: Users,
-      badge: debtCount > 0 ? `${debtCount}` : null,
-      badgeColor: "rose",
     },
     {
       id: "expenses",
@@ -68,6 +59,7 @@ export default function Sidebar({ activeTab, setActiveTab, debtCount = 0, lowSto
           return (
             <button
               key={item.id}
+              type="button"
               className={`sidebar-nav-link ${isActive ? "nav-link-active" : ""}`}
               onClick={() => setActiveTab(item.id)}
             >
@@ -89,13 +81,6 @@ export default function Sidebar({ activeTab, setActiveTab, debtCount = 0, lowSto
       </nav>
 
       <div className="sidebar-bottom-block">
-        <div className="sidebar-store-photo-card">
-          <img src="./shop_hero.jpg" alt="Sukie Clean Store" className="sidebar-store-img" />
-          <div className="sidebar-store-caption">
-            <span>Sukie Refill Station</span>
-          </div>
-        </div>
-
         <div className="sidebar-seller-tip">
           <div className="seller-tip-header">
             <span className="tip-pulse-dot"></span>

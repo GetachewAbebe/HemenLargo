@@ -8,7 +8,8 @@ import {
   ArrowDownRight,
   CheckCircle,
   Package,
-  Users,
+  ShoppingBag,
+  Receipt,
   FileSpreadsheet,
 } from "lucide-react";
 
@@ -16,7 +17,6 @@ export default function AnalyticsView({
   sales = [],
   expenses = [],
   products = [],
-  debts = [],
   currency = "ETB",
 }) {
   // Financial Calculations
@@ -38,27 +38,20 @@ export default function AnalyticsView({
     return acc + (s.items?.reduce((iAcc, item) => iAcc + (item.liters || 0), 0) || 0);
   }, 0);
 
-  // Capital & Receivables
+  // Capital & Retail Metrics
   const totalStockAssetValue = products.reduce(
     (acc, p) => acc + (p.stockLiters * p.costPerLiter || 0),
     0
   );
-  const activeDebts = debts.filter((d) => d.status !== "Paid");
-  const totalDebtsOutstanding = activeDebts.reduce(
-    (acc, d) => acc + (d.remainingBalance || 0),
-    0
-  );
-  const totalDebtsCollected = debts.reduce(
-    (acc, d) => acc + (d.paidAmount || 0),
-    0
-  );
+  const totalTransactionsCount = sales.length;
+  const averageTicketSize =
+    totalTransactionsCount > 0 ? totalRevenue / totalTransactionsCount : 0;
 
   // Sales by Payment Method
   const paymentBreakdown = {
     Cash: 0,
     Telebirr: 0,
     "CBE Birr": 0,
-    Credit: 0,
   };
 
   sales.forEach((s) => {
@@ -153,7 +146,7 @@ export default function AnalyticsView({
         </div>
       </div>
 
-      {/* Balance Sheet Highlights: Inventory Capital & Debt Receivables */}
+      {/* Balance Sheet Highlights: Inventory Capital & Retail Performance */}
       <div className="analytics-extra-stats-grid">
         <div className="analytics-stat-pill-card">
           <div className="stat-pill-icon bg-cyan-subtle">
@@ -169,29 +162,29 @@ export default function AnalyticsView({
         </div>
 
         <div className="analytics-stat-pill-card">
-          <div className="stat-pill-icon bg-rose-subtle">
-            <Users size={18} className="text-rose" />
+          <div className="stat-pill-icon bg-emerald-subtle">
+            <ShoppingBag size={18} className="text-emerald" />
           </div>
           <div className="stat-pill-info">
-            <span className="stat-pill-title">Outstanding Credit (ዕዳ)</span>
-            <strong className="stat-pill-val text-rose">
-              {totalDebtsOutstanding.toLocaleString(undefined, { maximumFractionDigits: 0 })} {currency}
+            <span className="stat-pill-title">Completed Orders</span>
+            <strong className="stat-pill-val text-emerald">
+              {totalTransactionsCount} Orders
             </strong>
           </div>
-          <span className="stat-pill-sub">{activeDebts.length} active customer debts</span>
+          <span className="stat-pill-sub">All-time sales recorded</span>
         </div>
 
         <div className="analytics-stat-pill-card">
-          <div className="stat-pill-icon bg-emerald-subtle">
-            <CheckCircle size={18} className="text-emerald" />
+          <div className="stat-pill-icon bg-purple-subtle">
+            <Receipt size={18} className="text-purple" />
           </div>
           <div className="stat-pill-info">
-            <span className="stat-pill-title">Recovered Credit Capital</span>
-            <strong className="stat-pill-val text-emerald">
-              {totalDebtsCollected.toLocaleString(undefined, { maximumFractionDigits: 0 })} {currency}
+            <span className="stat-pill-title">Average Order Value (AOV)</span>
+            <strong className="stat-pill-val text-purple">
+              {averageTicketSize.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} {currency}
             </strong>
           </div>
-          <span className="stat-pill-sub">Customer repayments collected</span>
+          <span className="stat-pill-sub">Mean spending per customer</span>
         </div>
       </div>
 
@@ -292,7 +285,6 @@ export default function AnalyticsView({
               let dotClass = "dot-cash";
               if (method === "Telebirr") dotClass = "dot-telebirr";
               if (method === "CBE Birr") dotClass = "dot-cbe";
-              if (method === "Credit") dotClass = "dot-credit";
 
               return (
                 <div key={method} className="payment-channel-row">
