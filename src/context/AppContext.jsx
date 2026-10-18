@@ -19,7 +19,7 @@ import {
 } from "../services/supabaseService";
 
 export function AppProvider({ children }) {
-  const [activeTab, setActiveTab] = useState("pos");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   // Core Data States initialized synchronously on first render from local cache
   const [initialData] = useState(() => loadStoredData());

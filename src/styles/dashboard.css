@@ -1,0 +1,1026 @@
+/* ===================================================
+   STATE-OF-THE-ART EXECUTIVE STORE DASHBOARD STYLES
+   =================================================== */
+
+.dashboard-layout {
+  max-width: 1480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding-bottom: 30px;
+}
+
+/* 1. Executive Command Header Card */
+.dashboard-hero-banner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 250, 0.94) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-top: 3.5px solid #0d9488;
+  border-radius: var(--radius-xl);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 
+    0 10px 30px -5px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(226, 232, 240, 0.7),
+    inset 0 1px 1px #ffffff;
+  position: relative;
+  overflow: hidden;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dashboard-hero-banner::after {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hero-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1;
+}
+
+.hero-greeting-line {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-greeting-emoji {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.hero-titles-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-greeting-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.hero-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.hero-date-pill {
+  background: #ffffff;
+  border: 1px solid #ccfbf1;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0f766e;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.06);
+}
+
+.pill-dot-green {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.hero-status-pill {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #15803d;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.btn-hero-primary {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all var(--transition-normal);
+}
+
+.btn-hero-primary:hover {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.45);
+}
+
+.btn-hero-secondary {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  padding: 11px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-normal);
+}
+
+.btn-hero-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+/* Dashboard Unified Sub-View Switcher */
+.dashboard-subview-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 5px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+
+.subview-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.subview-nav-pill:hover {
+  color: #0f172a;
+  background: rgba(241, 245, 249, 0.8);
+}
+
+.subview-nav-pill.active {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.35);
+}
+
+.dashboard-analytics-embedded {
+  width: 100%;
+}
+
+/* ===================================================
+   2. FINTECH FINANCIAL KPI CARDS
+   =================================================== */
+
+.dashboard-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-kpi-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glass-hover);
+}
+
+.card-kpi-revenue {
+  border-top: 3px solid #10b981;
+}
+
+.card-kpi-liters {
+  border-top: 3px solid #0284c7;
+}
+
+.card-kpi-payments {
+  border-top: 3px solid #f59e0b;
+}
+
+.card-kpi-credits {
+  border-top: 3px solid #8b5cf6;
+}
+
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-title-text {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.stat-icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-emerald { background: #ecfdf5; color: #059669; }
+.stat-cyan { background: #ecfeff; color: #0284c7; }
+.stat-amber { background: #fffbeb; color: #d97706; }
+.stat-rose { background: #fff1f2; color: #e11d48; }
+.stat-purple { background: #f5f3ff; color: #7c3aed; }
+.stat-teal { background: #f0fdfa; color: #0d9488; }
+
+.kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.kpi-main-number {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.kpi-unit-label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* Micro Progress Bar in KPI */
+.kpi-progress-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.kpi-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.kpi-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease-in-out;
+}
+
+.fill-emerald { background: linear-gradient(90deg, #10b981 0%, #059669 100%); }
+.fill-cyan { background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%); }
+
+.kpi-progress-hint {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Dual Segment Payment Track */
+.payment-split-track {
+  display: flex;
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.payment-split-fill {
+  height: 100%;
+}
+
+.fill-cash { background: #0d9488; }
+.fill-digital { background: #f59e0b; }
+
+.payment-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot-cash { background: #0d9488; }
+.dot-digital { background: #f59e0b; }
+
+/* Credit Status Pill */
+.kpi-credit-status-box {
+  display: flex;
+  align-items: center;
+}
+
+.credit-ok-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+}
+
+.credit-warn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #e11d48;
+  background: #fff1f2;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+}
+
+.kpi-footer-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.kpi-profit-pill {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* ===================================================
+   3. REALISTIC CYLINDRICAL LIQUID TANKS RESERVOIR
+   =================================================== */
+
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  color: #0d9488;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-main-heading {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.section-sub-heading {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.section-link-btn {
+  background: transparent;
+  border: none;
+  color: #0d9488;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all var(--transition-fast);
+}
+
+.section-link-btn:hover {
+  color: #0f766e;
+  transform: translateX(2px);
+}
+
+.dashboard-tanks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-tank-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-glass);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.dashboard-tank-card:hover {
+  box-shadow: var(--shadow-glass-hover);
+  border-color: rgba(13, 148, 136, 0.35);
+  transform: translateY(-3px);
+}
+
+.tank-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tank-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tank-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.tank-title-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.tank-name-bold {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.tank-local-amharic {
+  font-size: 0.78rem;
+  color: #0d9488;
+  font-weight: 600;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-pulse-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.badge-success { background: #ecfdf5; color: #059669; }
+.badge-success .badge-pulse-dot { background: #10b981; }
+
+.badge-warning { background: #fffbeb; color: #b45309; }
+.badge-warning .badge-pulse-dot { background: #f59e0b; animation: pulseGlow 1.5s infinite; }
+
+.badge-danger { background: #fff1f2; color: #e11d48; }
+.badge-danger .badge-pulse-dot { background: #ef4444; animation: pulseGlow 1s infinite; }
+
+/* Realistic 3D-Look Cylindrical Tank Simulation Box */
+.realistic-tank-simulation-box {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 20px;
+  align-items: center;
+  background: rgba(248, 250, 252, 0.75);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+}
+
+.tank-cylinder-frame {
+  width: 80px;
+  height: 126px;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px 14px 22px 22px;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cylinder-top-rim {
+  position: absolute;
+  top: -4px;
+  left: 20%;
+  right: 20%;
+  height: 6px;
+  background: #94a3b8;
+  border-radius: 4px;
+  z-index: 5;
+}
+
+.cylinder-fluid-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  justify-content: center;
+}
+
+.cylinder-fluid-wave {
+  width: 100%;
+  height: 8px;
+  background: radial-gradient(circle at 50% 100%, transparent 6px, rgba(255, 255, 255, 0.45) 7px);
+  position: absolute;
+  top: -4px;
+  left: 0;
+}
+
+.fluid-bubble {
+  position: absolute;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.fluid-bubble.b1 {
+  bottom: 12px;
+  left: 18px;
+  animation: bubbleRise 3.5s infinite ease-in;
+}
+
+.fluid-bubble.b2 {
+  bottom: 24px;
+  right: 18px;
+  animation: bubbleRise 4.2s infinite ease-in 1s;
+}
+
+@keyframes bubbleRise {
+  0% { transform: translateY(0); opacity: 0.8; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+.cylinder-notches {
+  position: absolute;
+  right: 4px;
+  top: 8px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.56rem;
+  font-family: monospace;
+  font-weight: 700;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.notch-mark {
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.5);
+  padding-bottom: 1px;
+}
+
+/* Tank Metrics Right Column */
+.tank-metrics-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tank-volume-big-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.tank-liters-num {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.tank-liters-unit {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.tank-capacity-percent-pill {
+  width: fit-content;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.tank-financial-info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.76rem;
+}
+
+.fin-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.fin-val {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.tank-rate-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.tank-rate-badge strong {
+  color: #0d9488;
+}
+
+/* Tank Actions Footer */
+.tank-actions-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.btn-tank-refill {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-tank-refill:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-tank-dispense {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.btn-tank-dispense:hover {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+}
+
+/* ===================================================
+   4. OPERATIONS LAUNCHPAD & ACTIVITY FEED BENTO
+   =================================================== */
+
+.dashboard-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-card-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-normal);
+}
+
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.panel-title-text {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-hint-text {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Launchpad Grid */
+.launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.launchpad-tile {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: left;
+  position: relative;
+}
+
+.launchpad-tile:hover {
+  background: #ffffff;
+  border-color: rgba(13, 148, 136, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -4px rgba(13, 148, 136, 0.15);
+}
+
+.tile-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tile-text-col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.tile-main-label {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.tile-sub-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.tile-shortcut-key {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #0d9488;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* Recent Activity List */
+.recent-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-activity-box {
+  text-align: center;
+  padding: 30px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.activity-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.75);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.activity-item-row:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.activity-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.activity-type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-sale { background: #10b981; box-shadow: 0 0 6px #10b981; }
+.dot-expense { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+.activity-text-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-customer-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.activity-timestamp {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.activity-item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.activity-amount {
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.btn-receipt-peek {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-receipt-peek:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}

@@ -1,337 +1,195 @@
-/* ---------------------------------------------------
-   TOP HEADER (v2)
-   --------------------------------------------------- */
+/* ===================================================
+   STREAMLINED EXECUTIVE TOP HEADER (TEXT-ONLY)
+   =================================================== */
+
 .top-header-v2 {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 28px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-lg);
+  -webkit-backdrop-filter: var(--glass-blur-lg);
+  border-bottom: 1px solid var(--glass-border);
   position: sticky;
   top: 0;
-  z-index: 40;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+  z-index: 50;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03), inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  width: 100%;
+  padding: 10px 32px;
 }
 
-.header-brand-group {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.header-logo-container {
-  width: 46px;
-  height: 46px;
-  background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
-  border-radius: var(--radius-lg);
+.header-single-row-container {
+  max-width: 1480px;
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(13, 148, 136, 0.25);
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.18);
+  position: relative;
+  gap: 20px;
 }
 
-.header-logo-emoji {
-  font-size: 26px;
-  line-height: 1;
-}
-
-.header-title-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.header-store-title {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.live-status-pill {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-}
-
-.live-dot-pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #10b981;
-  box-shadow: 0 0 8px #10b981;
-}
-
-.header-tagline-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 2px;
-}
-
-.header-store-tagline {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-.header-cashier-greeting {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: rgba(241, 245, 249, 0.8);
-  border: 1px solid #e2e8f0;
-  padding: 1px 8px;
-  border-radius: var(--radius-full);
-  font-size: 0.72rem;
-  color: #334155;
-}
-
-.header-cashier-greeting strong {
-  color: #0f766e;
-}
-
-.header-stats-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Live Digital Clock Pill */
-.header-clock-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.clock-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #0d9488;
-  box-shadow: 0 0 6px rgba(13, 148, 136, 0.6);
-  animation: pulseGlow 2s infinite ease-in-out;
-}
-
-.clock-digits {
-  font-family: 'Outfit', monospace;
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.02em;
-  color: #0f172a;
-}
-
-.clock-colon-pulse {
-  animation: colonBlink 1s infinite step-start;
-  color: #0d9488;
-}
-
-@keyframes colonBlink {
-  50% { opacity: 0.3; }
-}
-
-.clock-ampm-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #64748b;
-  background: #f1f5f9;
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-/* Ethiopian Calendar Pill */
-.header-date-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f0fdfa;
-  border: 1px solid #ccfbf1;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #0f766e;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(13, 148, 136, 0.05);
-}
-
-.header-date-pill:hover {
-  background: #ccfbf1;
-  border-color: #99f6e4;
-  transform: translateY(-1px);
-}
-
-.ethiopian-flag-accent {
+/* 2. Text-Only Segmented Navigation Dock (Ultra-Premium Apple/Linear Style) */
+.header-segmented-nav {
   display: flex;
   align-items: center;
   gap: 2px;
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.88);
+  border-radius: var(--radius-full);
+  padding: 4px;
+  box-shadow: 
+    0 4px 20px -2px rgba(15, 23, 42, 0.05),
+    0 1px 3px rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
 }
 
-.flag-dot-green {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #10b981;
+.header-segmented-nav::-webkit-scrollbar {
+  display: none;
 }
 
-.flag-dot-yellow {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #f59e0b;
+.nav-segment-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  font-size: 0.84rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  position: relative;
+  text-decoration: none;
+  letter-spacing: -0.012em;
 }
 
-.flag-dot-red {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #ef4444;
+.nav-segment-btn:hover {
+  color: #0f172a;
+  background: rgba(241, 245, 249, 0.92);
+  transform: translateY(-1px);
 }
 
-.eth-date-main {
-  font-family: inherit;
-  letter-spacing: -0.01em;
+.nav-segment-btn:active {
+  transform: scale(0.97);
 }
 
-.greg-date-sub {
-  font-size: 0.72rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.eth-cal-badge {
-  background: #0d9488;
-  color: #ffffff;
-  font-size: 0.65rem;
+/* Active Segment Pill */
+.nav-segment-btn.segment-active {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff !important;
   font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 9999px;
-  letter-spacing: 0.02em;
+  border-color: rgba(13, 148, 136, 0.35);
+  box-shadow: 
+    0 3px 12px rgba(13, 148, 136, 0.35), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
 }
 
-.header-kpi-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.segment-label {
+  letter-spacing: -0.012em;
+}
+
+.segment-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.badge-amber {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.nav-segment-btn.segment-active .badge-amber {
   background: #ffffff;
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  color: #0f766e;
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-.kpi-icon-box {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-md);
+/* 3. Right Side: Cashier Pill */
+.header-nav-stats {
   display: flex;
   align-items: center;
-  justify-content: center;
+  position: absolute;
+  right: 0;
   flex-shrink: 0;
 }
 
-.kpi-emerald { background: #ecfdf5; color: #059669; }
-.kpi-cyan { background: #ecfeff; color: #0891b2; }
-.kpi-rose { background: #fff1f2; color: #e11d48; }
-.kpi-amber { background: #fffbeb; color: #d97706; }
-
-.kpi-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.kpi-label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #64748b;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.kpi-val {
-  font-size: 0.94rem;
-  font-weight: 800;
-  color: #0f172a;
-  white-space: nowrap;
-}
-
-.kpi-currency {
-  font-size: 0.72rem;
-  color: #64748b;
-  font-weight: 600;
-}
-
-.btn-header-new-sale {
+.header-cashier-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 8px 16px;
-  font-size: 0.84rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.25);
-  transition: all var(--transition-fast);
-}
-
-.btn-header-new-sale:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 14px rgba(13, 148, 136, 0.35);
-}
-
-/* Header Sound FX Toggle */
-.btn-sound-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #cbd5e1;
+  padding: 5px 12px 5px 6px;
   border-radius: var(--radius-full);
   font-size: 0.78rem;
-  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   cursor: pointer;
   transition: all var(--transition-fast);
-  border: 1px solid transparent;
 }
 
-.btn-sound-toggle.sound-on {
-  background: #f0fdfa;
-  color: #0d9488;
-  border-color: #99f6e4;
+.header-cashier-btn:hover {
+  background: #ffffff;
+  border-color: #0d9488;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(13, 148, 136, 0.18);
 }
 
-.btn-sound-toggle.sound-on:hover {
-  background: #ccfbf1;
-  border-color: #5eead4;
+.cashier-avatar-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  color: #ffffff;
+  font-size: 0.64rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-sound-toggle.sound-muted {
-  background: #f1f5f9;
-  color: #94a3b8;
-  border-color: #cbd5e1;
+.cashier-dot-online {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
 }
 
-.btn-sound-toggle.sound-muted:hover {
-  background: #e2e8f0;
-  color: #64748b;
+.cashier-name-text {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.cashier-settings-gear {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  transition: transform var(--transition-fast);
+}
+
+.header-cashier-btn:hover .cashier-settings-gear {
+  opacity: 1;
+  transform: rotate(45deg);
+}
+
+@media (max-width: 900px) {
+  .top-header-v2 {
+    padding: 8px 16px;
+  }
+  .header-single-row-container {
+    justify-content: space-between;
+  }
+  .header-nav-stats {
+    position: static;
+  }
 }

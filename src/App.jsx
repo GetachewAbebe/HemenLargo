@@ -1,19 +1,21 @@
-import React, { lazy, Suspense } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
 import POSView from "./components/POSView";
 import InventoryView from "./components/InventoryView";
+import DashboardView from "./components/DashboardView";
 import ReceiptModal from "./components/ReceiptModal";
+import Footer from "./components/Footer";
+import AuthScreen from "./components/auth/AuthScreen";
+import ProfileModal from "./components/profile/ProfileModal";
 import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AppProvider, useApp } from "./context";
+import { getActiveSession, logoutUser } from "./services/authService";
 import "./App.css";
 
 // Lazy-loaded secondary views for code-splitting and instant initial load
 const SalesView = lazy(() => import("./components/SalesView"));
 const ExpensesView = lazy(() => import("./components/ExpensesView"));
-const AnalyticsView = lazy(() => import("./components/AnalyticsView"));
-const SettingsView = lazy(() => import("./components/SettingsView"));
 
 function ViewLoader() {
   return (
@@ -32,7 +34,6 @@ function AppContent() {
     sales,
     products,
     expenses,
-    lowStockCount,
     toast,
     activeReceipt,
     setActiveReceipt,
@@ -45,6 +46,9 @@ function AppContent() {
     handleImportData,
   } = useApp();
 
+  const [currentUser, setCurrentUser] = useState(() => getActiveSession());
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
   if (!config) {
     return (
       <div className="app-loading-screen">
@@ -56,30 +60,48 @@ function AppContent() {
     );
   }
 
+  // 1. If not authenticated, require Login or Registration to access POS
+  if (!currentUser) {
+    return (
+      <AuthScreen
+        initialShopName={config.shopName}
+        onAuthSuccess={(user) => {
+          setCurrentUser(user);
+          if (user.shopName && user.shopName !== config.shopName) {
+            handleSaveConfig({
+              ...config,
+              shopName: user.shopName,
+              ownerName: user.fullName,
+            });
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app-root-container">
       {/* Toast Notification */}
       <Toast toast={toast} />
 
-      {/* Top Header */}
+      {/* Top Header with 5 Operational Tabs & Cashier Profile Trigger */}
       <Header
         config={config}
         sales={sales}
         products={products}
-        onNewSaleClick={() => setActiveTab("pos")}
+        currentUser={currentUser}
+        onOpenProfile={() => setShowProfileModal(true)}
         activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
 
-      {/* Main Content Layout with Sidebar */}
+      {/* Main Full-Width Content Viewport */}
       <div className="app-body-layout">
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          lowStockCount={lowStockCount}
-        />
-
         <main className="app-main-viewport">
           <Suspense fallback={<ViewLoader />}>
+            {(activeTab === "dashboard" || activeTab === "analytics" || activeTab === "settings") && (
+              <DashboardView />
+            )}
             {activeTab === "pos" && <POSView />}
             {activeTab === "inventory" && <InventoryView />}
             {activeTab === "sales" && (
@@ -100,26 +122,34 @@ function AppContent() {
                 onDeleteExpense={handleDeleteExpense}
               />
             )}
-            {activeTab === "analytics" && (
-              <AnalyticsView
-                sales={sales}
-                expenses={expenses}
-                products={products}
-                currency={config.currency}
-              />
-            )}
-            {activeTab === "settings" && (
-              <SettingsView
-                config={config}
-                onSaveConfig={handleSaveConfig}
-                onResetDefaults={handleResetDefaults}
-                onClearTransactionsOnly={handleClearTransactionsOnly}
-                onImportData={handleImportData}
-              />
-            )}
           </Suspense>
         </main>
       </div>
+
+      {/* State-of-the-Art Executive Footer */}
+      <Footer config={{ ...config, ownerName: currentUser?.fullName || config.ownerName }} />
+
+      {/* Cashier Profile & Store Settings Modal */}
+      {showProfileModal && (
+        <ProfileModal
+          currentUser={currentUser}
+          config={config}
+          onUpdateUser={(updated) => {
+            setCurrentUser(updated);
+            handleSaveConfig({ ...config, ownerName: updated.fullName });
+          }}
+          onLogout={() => {
+            logoutUser();
+            setCurrentUser(null);
+            setShowProfileModal(false);
+          }}
+          onClose={() => setShowProfileModal(false)}
+          onSaveConfig={handleSaveConfig}
+          onResetDefaults={handleResetDefaults}
+          onClearTransactionsOnly={handleClearTransactionsOnly}
+          onImportData={handleImportData}
+        />
+      )}
 
       {/* Printable Receipt Modal */}
       {activeReceipt && (

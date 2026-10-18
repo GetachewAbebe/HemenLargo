@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import {
+  LayoutDashboard,
   ShoppingCart,
   Package,
   Receipt,
@@ -10,26 +11,34 @@ import {
 import { soundFX } from "../utils/audio";
 
 const SHORTCUT_TAB_MAP = {
-  "1": "pos",
-  "2": "inventory",
-  "3": "sales",
-  "4": "expenses",
-  "5": "analytics",
-  "6": "settings",
+  "1": "dashboard",
+  "2": "pos",
+  "3": "inventory",
+  "4": "sales",
+  "5": "expenses",
+  "6": "analytics",
+  "7": "settings",
 };
 
 export default function Sidebar({ activeTab, setActiveTab, lowStockCount = 0 }) {
   const navItems = [
     {
-      id: "pos",
+      id: "dashboard",
       shortcut: "1",
+      label: "Store Dashboard",
+      sublabel: "Overview & Live Tanks",
+      icon: LayoutDashboard,
+    },
+    {
+      id: "pos",
+      shortcut: "2",
       label: "Point of Sale (POS)",
       sublabel: "Cashier & Refill Counter",
       icon: ShoppingCart,
     },
     {
       id: "inventory",
-      shortcut: "2",
+      shortcut: "3",
       label: "Largo & Barikina Tanks",
       sublabel: "Bulk Stock & Refills",
       icon: Package,
@@ -38,28 +47,28 @@ export default function Sidebar({ activeTab, setActiveTab, lowStockCount = 0 }) 
     },
     {
       id: "sales",
-      shortcut: "3",
+      shortcut: "4",
       label: "Sales Records",
       sublabel: "Receipts & History",
       icon: Receipt,
     },
     {
       id: "expenses",
-      shortcut: "4",
+      shortcut: "5",
       label: "Shop Expenses",
       sublabel: "Chemicals, Rent & Bills",
       icon: TrendingDown,
     },
     {
       id: "analytics",
-      shortcut: "5",
+      shortcut: "6",
       label: "Profits & Analytics",
       sublabel: "Net Income & Margins",
       icon: BarChart3,
     },
     {
       id: "settings",
-      shortcut: "6",
+      shortcut: "7",
       label: "Store Settings",
       sublabel: "Profile & Backups",
       icon: Settings,
@@ -126,18 +135,6 @@ export default function Sidebar({ activeTab, setActiveTab, lowStockCount = 0 }) 
           );
         })}
       </nav>
-
-      <div className="sidebar-bottom-block">
-        <div className="sidebar-seller-tip">
-          <div className="seller-tip-header">
-            <span className="tip-pulse-dot"></span>
-            <strong>Seller Tip</strong>
-          </div>
-          <p className="seller-tip-text">
-            Selling 20L jerrycans to cafes & car washes provides the fastest daily cash flow.
-          </p>
-        </div>
-      </div>
     </aside>
   );
 }

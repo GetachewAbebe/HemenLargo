@@ -1,10 +1,12 @@
-/* Tables */
 .table-card {
-  background: #ffffff;
-  border-radius: var(--radius-lg);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
   overflow: hidden;
+  transition: all var(--transition-normal);
 }
 
 .table-responsive {

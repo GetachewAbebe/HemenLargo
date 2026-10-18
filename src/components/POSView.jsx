@@ -21,6 +21,10 @@ import CashTenderCard from "./pos/CashTenderCard";
 import QuickRefillModal from "./pos/QuickRefillModal";
 import SaleDateSelector from "./pos/SaleDateSelector";
 
+function generateReceiptId() {
+  return `REC-${Date.now().toString().slice(-6)}`;
+}
+
 export default function POSView(props) {
   const context = useApp();
   const products = props.products ?? context.products;
@@ -226,13 +230,13 @@ export default function POSView(props) {
   const changeDue = tenderedVal > 0 ? Math.max(0, Number((tenderedVal - finalTotal).toFixed(2))) : 0;
 
   // Compute the chosen ISO date/time for the sale record
-  const getEffectiveSaleDate = () => {
+  const getEffectiveSaleDate = React.useCallback(() => {
     const now = new Date();
     if (saleDateMode === "today") {
       return now.toISOString();
     }
     if (saleDateMode === "yesterday") {
-      const y = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const y = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       return y.toISOString();
     }
     if (saleDateMode === "custom" && customDateStr) {
@@ -250,7 +254,7 @@ export default function POSView(props) {
       return chosen.toISOString();
     }
     return now.toISOString();
-  };
+  }, [saleDateMode, customDateStr, customTimeStr]);
 
   // Complete Checkout
   const handleCheckout = (e) => {
@@ -270,7 +274,7 @@ export default function POSView(props) {
       : null;
 
     const saleRecord = {
-      id: `REC-${Date.now().toString().slice(-6)}`,
+      id: generateReceiptId(),
       date: getEffectiveSaleDate(),
       customerName: customerName.trim() || "Walk-in Customer",
       customerPhone: customerPhone.trim() || "N/A",

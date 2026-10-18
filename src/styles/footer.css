@@ -1,0 +1,275 @@
+/* ===================================================
+   APPLE / STRIPE GLASSMORPHIC EXECUTIVE FOOTER
+   =================================================== */
+
+.app-footer-v2 {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-lg);
+  -webkit-backdrop-filter: var(--glass-blur-lg);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 20px -2px rgba(15, 23, 42, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  margin-top: auto;
+}
+
+/* Ambient Iridescent Top Line */
+.app-footer-v2::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(13, 148, 136, 0.5) 25%,
+    rgba(6, 182, 212, 0.6) 50%,
+    rgba(139, 92, 246, 0.4) 75%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.footer-inner-container {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 14px 32px 12px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===================================================
+   1. TOP OPERATIONAL STATUS BAR (MOVED FROM HEADER)
+   =================================================== */
+
+.footer-operations-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-ops-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-ops-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-op-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.pill-store-open {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.footer-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot-green {
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.dot-teal {
+  background-color: #0d9488;
+  box-shadow: 0 0 6px rgba(13, 148, 136, 0.6);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.footer-cashier-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(241, 245, 249, 0.9);
+  border: 1px solid #e2e8f0;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  color: #334155;
+}
+
+.footer-cashier-chip strong {
+  color: #0d9488;
+}
+
+/* Digital Clock in Footer */
+.footer-clock-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.clock-num-text {
+  font-family: 'Outfit', monospace;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+}
+
+.clock-ampm-text {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* Ethiopian Calendar in Footer */
+.footer-eth-date-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #0f766e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(13, 148, 136, 0.05);
+}
+
+.footer-eth-date-btn:hover {
+  background: #ccfbf1;
+  border-color: #99f6e4;
+  transform: translateY(-1px);
+}
+
+.eth-date-title {
+  letter-spacing: -0.01em;
+}
+
+.greg-date-hint {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.eth-badge-flag {
+  background: #0d9488;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 9999px;
+}
+
+/* Sound Toggle Button */
+.footer-sound-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.footer-sound-btn.active {
+  background: #f0fdfa;
+  color: #0d9488;
+  border-color: #99f6e4;
+}
+
+.footer-sound-btn.active:hover {
+  background: #ccfbf1;
+}
+
+.footer-sound-btn.muted {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #cbd5e1;
+}
+
+/* ===================================================
+   2. STREAMLINED MINIMALIST BOTTOM BAR
+   =================================================== */
+
+.footer-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  font-size: 0.74rem;
+  color: #64748b;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-copy-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-copy-text strong {
+  color: #0f172a;
+}
+
+.footer-tech-stack-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-back-to-top:hover {
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0d9488;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(13, 148, 136, 0.3);
+}

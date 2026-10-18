@@ -1,249 +1,121 @@
-import React, { useState, useEffect } from "react";
-import { AlertTriangle, ShoppingBag, Droplets, Plus, Volume2, VolumeX } from "lucide-react";
+import React, { useEffect, useMemo } from "react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
-import {
-  formatEthiopianDate,
-  isSameEthiopianDay,
-} from "../utils/ethiopianDate";
+
+const SHORTCUT_TAB_MAP = {
+  "1": "dashboard",
+  "2": "pos",
+  "3": "inventory",
+  "4": "sales",
+  "5": "expenses",
+};
 
 export default function Header({
-  config,
-  sales = [],
+  config = {},
   products = [],
-  onNewSaleClick,
-  activeTab,
+  currentUser = null,
+  onOpenProfile = null,
+  activeTab: propActiveTab,
+  setActiveTab: propSetActiveTab,
 }) {
-  const { cloudStatus } = useApp();
-  const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
-  const [showDualDate, setShowDualDate] = useState(false);
-  const [currentTime, setCurrentTime] = useState(() => new Date());
+  const context = useApp();
+  const activeTab = propActiveTab || context.activeTab;
+  const setActiveTab = propSetActiveTab || context.setActiveTab;
 
+  // Global hotkey tab switching (1-5)
   useEffect(() => {
-    return soundFX.subscribe((muted) => setIsMuted(muted));
-  }, []);
+    const handleKeyDown = (e) => {
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.tagName === "SELECT" ||
+        e.isContentEditable
+      ) {
+        return;
+      }
 
-  // Live ticking clock (updates every second)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+      const targetTab = SHORTCUT_TAB_MAP[e.key];
+      if (targetTab && targetTab !== activeTab) {
+        soundFX.playPop();
+        setActiveTab(targetTab);
+      }
+    };
 
-  const handleToggleSound = () => {
-    const next = soundFX.toggleMute();
-    setIsMuted(next);
-    if (!next) {
-      soundFX.playPop();
-    }
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeTab, setActiveTab]);
 
-  const isEthCal = config.calendarSystem !== "gregorian";
+  const lowStockCount = useMemo(() => {
+    return products.filter((p) => p.stockLiters <= (p.minStockAlert || 40)).length;
+  }, [products]);
 
-  // Filter today's sales based on calendar preference
-  const todaySales = sales.filter((s) => {
-    if (isEthCal) {
-      return isSameEthiopianDay(s.date, currentTime);
-    }
-    const todayStr = currentTime.toISOString().split("T")[0];
-    return s.date && s.date.startsWith(todayStr);
-  });
+  const displayName = currentUser?.fullName || config.ownerName || "Cashier";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
-  const todayRevenue = todaySales.reduce((acc, s) => acc + (s.total || 0), 0);
-  const todayLiters = todaySales.reduce((acc, s) => {
-    return acc + (s.items?.reduce((iAcc, item) => iAcc + (item.liters || 0), 0) || 0);
-  }, 0);
-
-  const lowStockCount = products.filter(
-    (p) => p.stockLiters <= (p.minStockAlert || 40)
-  ).length;
-
-  // Ethiopian formatted today
-  const ethDateFull = formatEthiopianDate(currentTime, "full");
-  const gregDateFormatted = currentTime.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  // Live time string (12h with seconds & Amharic period)
-  const hours = currentTime.getHours();
-  const minutes = String(currentTime.getMinutes()).padStart(2, "0");
-  const seconds = String(currentTime.getSeconds()).padStart(2, "0");
-  const h12 = hours % 12 || 12;
-  const ampm = hours >= 12 ? "PM" : "AM";
-  
-  let periodAm = "ጥዋት";
-  let greetingAm = "እንደምን አደሩ";
-  let greetingIcon = "☀️";
-  if (hours >= 12 && hours < 17) {
-    periodAm = "ከሰዓት";
-    greetingAm = "እንደምን ዋሉ";
-    greetingIcon = "🌤️";
-  } else if (hours >= 17 && hours < 23) {
-    periodAm = "ማታ";
-    greetingAm = "እንደምን አመሹ";
-    greetingIcon = "🌙";
-  } else if (hours >= 23 || hours < 6) {
-    periodAm = "ሌሊት";
-    greetingAm = "ሰላም ቆዩ";
-    greetingIcon = "✨";
-  }
-
-  const cashierName = config.ownerName || "Cashier";
+  const navItems = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "pos", label: "POS Register" },
+    {
+      id: "inventory",
+      label: "Tanks & Stock",
+      badge: lowStockCount > 0 ? `${lowStockCount} low` : null,
+      badgeColor: "amber",
+    },
+    { id: "sales", label: "Sales Records" },
+    { id: "expenses", label: "Expenses" },
+  ];
 
   return (
     <header className="no-print top-header-v2">
-      <div className="header-brand-group">
-        <div className="header-logo-container bubble-anim">
-          <span className="header-logo-emoji">🫧</span>
-        </div>
-        <div className="header-brand-text">
-          <div className="header-title-line">
-            <h1 className="header-store-title">{config.shopName || "Sukie"}</h1>
-            <span className="live-status-pill">
-              <span className="live-dot-pulse"></span> Open Store
-            </span>
-            <span
-              className="live-status-pill"
-              style={
-                cloudStatus === "connected"
-                  ? { background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" }
-                  : { background: "#f8fafc", color: "#64748b", borderColor: "#e2e8f0" }
-              }
-              title={
-                cloudStatus === "connected"
-                  ? "Real-time sync active with Hemen-Soap-Shop on Supabase"
-                  : "Operating with local offline cache"
-              }
-            >
-              <span
-                className="live-dot-pulse"
-                style={{
-                  backgroundColor: cloudStatus === "connected" ? "#3b82f6" : "#94a3b8",
-                  boxShadow:
-                    cloudStatus === "connected"
-                      ? "0 0 8px #60a5fa"
-                      : "none",
+      <div className="header-single-row-container">
+        {/* Center: Text-Only Segmented Navigation Menu (5 Core Operational Tabs) */}
+        <nav className="header-segmented-nav" aria-label="Main Navigation">
+          {navItems.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={`nav-segment-btn ${isActive ? "segment-active" : ""}`}
+                onClick={() => {
+                  soundFX.playPop();
+                  setActiveTab(item.id);
                 }}
-              ></span>
-              {cloudStatus === "connected" ? "☁️ Supabase Cloud" : "Offline"}
-            </span>
-          </div>
-          <div className="header-tagline-row">
-            <p className="header-store-tagline">
-              {config.tagline || "ፈሳሽ ሳሙና (ላርጎ) እና በረኪና • Quality Cleansers"}
-            </p>
-            <div className="header-cashier-greeting" title={`Logged in as ${cashierName}`}>
-              <span className="greeting-icon">{greetingIcon}</span>
-              <span className="greeting-text">
-                {greetingAm}, <strong>{cashierName}</strong>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+                title={`Switch to ${item.label}`}
+              >
+                <span className="segment-label">{item.label}</span>
+                {item.badge && (
+                  <span className={`segment-badge badge-${item.badgeColor || "amber"}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
 
-      <div className="header-stats-container">
-        {/* Live Digital Clock & Ethiopian Period */}
-        <div className="header-clock-pill" title="Live Local Ethiopian Time (Addis Ababa)">
-          <div className="clock-live-dot"></div>
-          <span className="clock-digits">
-            {String(h12).padStart(2, "0")}
-            <span className="clock-colon-pulse">:</span>
-            {minutes}
-            <span className="clock-colon-pulse">:</span>
-            {seconds}
-          </span>
-          <span className="clock-ampm-badge">{ampm} • {periodAm}</span>
-        </div>
-
-        {/* Ethiopian Calendar Pill */}
-        <button
-          type="button"
-          className="header-date-pill header-eth-date-pill"
-          onClick={() => setShowDualDate(!showDualDate)}
-          title={
-            showDualDate
-              ? `Gregorian: ${gregDateFormatted} (Click to collapse)`
-              : `Gregorian equivalent: ${gregDateFormatted} (Click to toggle)`
-          }
-        >
-          <div className="ethiopian-flag-accent">
-            <span className="flag-dot-green"></span>
-            <span className="flag-dot-yellow"></span>
-            <span className="flag-dot-red"></span>
-          </div>
-          <span className="eth-date-main">
-            {isEthCal ? ethDateFull : gregDateFormatted}
-          </span>
-          {showDualDate && isEthCal && (
-            <span className="greg-date-sub">[{gregDateFormatted}]</span>
-          )}
-          <span className="eth-cal-badge" title="የኢትዮጵያ ዘመን አቆጣጠር">
-            {isEthCal ? "ዓ.ም" : "G.C."}
-          </span>
-        </button>
-
-        {/* Today's Sales */}
-        <div className="header-kpi-card">
-          <div className="kpi-icon-box kpi-emerald">
-            <ShoppingBag size={17} />
-          </div>
-          <div className="kpi-content">
-            <span className="kpi-label">Today's Sales</span>
-            <span className="kpi-val">
-              {todayRevenue.toLocaleString()} <span className="kpi-currency">{config.currency}</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Liters Dispensed */}
-        <div className="header-kpi-card">
-          <div className="kpi-icon-box kpi-cyan">
-            <Droplets size={17} />
-          </div>
-          <div className="kpi-content">
-            <span className="kpi-label">Liters Dispensed</span>
-            <span className="kpi-val">
-              {todayLiters.toFixed(1)} <span className="kpi-currency">L</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Low Stock Alert if any */}
-        {lowStockCount > 0 && (
-          <div className="header-kpi-card kpi-warning-card">
-            <div className="kpi-icon-box kpi-amber">
-              <AlertTriangle size={17} />
-            </div>
-            <div className="kpi-content">
-              <span className="kpi-label">Tank Alert</span>
-              <span className="kpi-val text-amber">{lowStockCount} Low</span>
-            </div>
-          </div>
-        )}
-
-        {/* Sound FX Toggle Button */}
-        <button
-          type="button"
-          className={`btn-sound-toggle ${isMuted ? "sound-muted" : "sound-on"}`}
-          onClick={handleToggleSound}
-          title={isMuted ? "Sound effects muted (Click to unmute)" : "Sound effects active (Click to mute)"}
-        >
-          {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
-          <span className="sound-label">{isMuted ? "Muted" : "Sound"}</span>
-        </button>
-
-        {/* Quick New Sale Button */}
-        {activeTab !== "pos" && (
-          <button type="button" className="btn-header-new-sale" onClick={onNewSaleClick}>
-            <Plus size={16} />
-            <span>POS Register</span>
+        {/* Right: Cashier Identity & Profile Trigger */}
+        <div className="header-nav-stats">
+          <button
+            type="button"
+            className="header-cashier-pill header-cashier-btn"
+            onClick={() => {
+              soundFX.playPop();
+              if (onOpenProfile) onOpenProfile();
+            }}
+            title="Open Cashier Profile & Store Settings"
+          >
+            <span className="cashier-avatar-badge">{initials}</span>
+            <span className="cashier-dot-online"></span>
+            <span className="cashier-name-text">{displayName}</span>
+            <span className="cashier-settings-gear">⚙️</span>
           </button>
-        )}
+        </div>
       </div>
     </header>
   );
