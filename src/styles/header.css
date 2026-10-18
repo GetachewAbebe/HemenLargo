@@ -89,14 +89,43 @@
 .header-date-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  gap: 8px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
   padding: 6px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #475569;
+  color: #0f766e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-date-pill:hover {
+  background: #ccfbf1;
+  border-color: #99f6e4;
+  transform: translateY(-1px);
+}
+
+.eth-date-main {
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+.greg-date-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.eth-cal-badge {
+  background: #0d9488;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  letter-spacing: 0.02em;
 }
 
 .header-kpi-card {

@@ -72,6 +72,7 @@ function AppContent() {
           {activeTab === "sales" && (
             <SalesView
               sales={sales}
+              config={config}
               currency={config.currency}
               onSelectReceipt={(sale) => setActiveReceipt(sale)}
               onVoidSale={handleVoidSale}
@@ -80,6 +81,7 @@ function AppContent() {
           {activeTab === "expenses" && (
             <ExpensesView
               expenses={expenses}
+              config={config}
               currency={config.currency}
               onAddExpense={handleAddExpense}
               onDeleteExpense={handleDeleteExpense}

@@ -6,12 +6,14 @@ import {
   CreditCard,
   Banknote,
   Smartphone,
+  CalendarClock,
   Tag,
   Zap,
   Percent,
 } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
+import { getEthiopianDaysAhead } from "../utils/ethiopianDate";
 import DispenserStation from "./pos/DispenserStation";
 import CartItemList from "./pos/CartItemList";
 import CustomerSection from "./pos/CustomerSection";
@@ -30,6 +32,7 @@ export default function POSView(props) {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [creditDueDateDays, setCreditDueDateDays] = useState(7);
   const [cashTendered, setCashTendered] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [byocDiscountActive, setByocDiscountActive] = useState(false);
@@ -226,12 +229,17 @@ export default function POSView(props) {
 
     soundFX.playCheckoutChime();
 
+    const creditDueDateVal = paymentMethod === "Credit"
+      ? getEthiopianDaysAhead(creditDueDateDays).formatted
+      : null;
+
     const saleRecord = {
       id: `REC-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString(),
       customerName: customerName.trim() || "Walk-in Customer",
       customerPhone: customerPhone.trim() || "N/A",
       paymentMethod,
+      creditDueDate: creditDueDateVal,
       items: cart,
       subtotal,
       discount: Number(discountAmount) || 0,
@@ -241,7 +249,7 @@ export default function POSView(props) {
       cashTendered: paymentMethod === "Cash" && tenderedVal > 0 ? tenderedVal : null,
       changeDue: paymentMethod === "Cash" && tenderedVal > 0 ? changeDue : null,
       note: saleNotes || "Standard counter refill",
-      status: "Completed",
+      status: paymentMethod === "Credit" ? "Credit" : "Completed",
     };
 
     onCompleteSale(saleRecord);
@@ -376,8 +384,49 @@ export default function POSView(props) {
                   <CreditCard size={18} />
                   <span>CBE Birr</span>
                 </button>
+
+                <button
+                  type="button"
+                  className={`payment-tab ${paymentMethod === "Credit" ? "tab-active tab-credit" : ""}`}
+                  onClick={() => {
+                    soundFX.playPop();
+                    setPaymentMethod("Credit");
+                  }}
+                >
+                  <CalendarClock size={18} />
+                  <span>Credit (ዕዳ)</span>
+                </button>
               </div>
             </div>
+
+            {/* Credit Repayment Terms & Ethiopian Calendar Due Date */}
+            {paymentMethod === "Credit" && (
+              <div className="credit-terms-card animate-fade">
+                <div className="credit-terms-header">
+                  <CalendarClock size={16} />
+                  <span>የዕዳ መክፈያ ጊዜ (Store Credit Due Date)</span>
+                </div>
+                <div className="credit-presets-row">
+                  {[7, 15, 30].map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      className={`credit-preset-btn ${creditDueDateDays === days ? "selected" : ""}`}
+                      onClick={() => {
+                        soundFX.playPop();
+                        setCreditDueDateDays(days);
+                      }}
+                    >
+                      {days === 30 ? "1 ወር (30 ቀናት)" : `${days} ቀናት`}
+                    </button>
+                  ))}
+                </div>
+                <div className="credit-due-indicator">
+                  <span>የመክፈያ ቀን (ዓ.ም):</span>
+                  <strong>{getEthiopianDaysAhead(creditDueDateDays).formatted}</strong>
+                </div>
+              </div>
+            )}
 
             {/* Cash Tendered & Change Due Calculator */}
             {paymentMethod === "Cash" && (

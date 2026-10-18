@@ -7,6 +7,8 @@ export const INITIAL_SHOP_CONFIG = {
   phone: "+251 91 100 0000",
   address: "Addis Ababa, Ethiopia",
   currency: "ETB",
+  calendarSystem: "ethiopian", // "ethiopian" | "gregorian"
+  calendarStyle: "amharic", // "amharic" | "latin" | "dual" | "full"
   receiptFooter: "Thank you for shopping with us! አመሰግናለሁ!",
   taxRate: 0,
 };

@@ -9,9 +9,11 @@ import {
   ShieldAlert,
   Volume2,
   VolumeX,
+  Calendar,
 } from "lucide-react";
 import { exportAllDataAsJSON } from "../utils/storage";
 import { soundFX } from "../utils/audio";
+import { formatEthiopianDate } from "../utils/ethiopianDate";
 
 export default function SettingsView({
   config,
@@ -166,6 +168,81 @@ export default function SettingsView({
             <button type="submit" className="btn-primary">
               <Check size={18} />
               <span>Save Shop Profile</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Calendar System & Localization Preferences */}
+      <div className="settings-card">
+        <div className="settings-card-header">
+          <div className="stat-icon-wrapper stat-emerald">
+            <Calendar size={20} />
+          </div>
+          <div>
+            <h3 className="section-title">Calendar System & Date Preferences (የቀን መቁጠሪያ)</h3>
+            <p className="section-subtitle">
+              Configure whether receipts, headers, analytics, and sales logs use Ethiopian or Gregorian dates.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="settings-form">
+          <div className="form-group-row">
+            <div className="form-group">
+              <label className="form-label">Primary Calendar System (የቀን አቆጣጠር)</label>
+              <select
+                className="form-input"
+                value={formData.calendarSystem || "ethiopian"}
+                onChange={(e) => setFormData({ ...formData, calendarSystem: e.target.value })}
+              >
+                <option value="ethiopian">🇪🇹 Ethiopian Calendar (የኢትዮጵያ ዘመን አቆጣጠር) [Recommended]</option>
+                <option value="gregorian">🌐 Gregorian Calendar (የፈረንጆች አቆጣጠር)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Date Display Style (የአቀራረብ ዘይቤ)</label>
+              <select
+                className="form-input"
+                value={formData.calendarStyle || "amharic"}
+                disabled={formData.calendarSystem === "gregorian"}
+                onChange={(e) => setFormData({ ...formData, calendarStyle: e.target.value })}
+              >
+                <option value="amharic">አማርኛ (e.g. ጥቅምት 8, 2019 ዓ.ም)</option>
+                <option value="full">ሙሉ አማርኛ (e.g. እሑድ፣ ጥቅምት 8 ቀን 2019 ዓ.ም)</option>
+                <option value="latin">English / Latin (e.g. Sunday, 8 Tikimt 2019 E.C.)</option>
+                <option value="dual">Dual View (e.g. ጥቅምት 8, 2019 [Oct 18, 2026])</option>
+                <option value="geez">Ge'ez Numerals (e.g. ፰ ጥቅምት ፳፻፲፱ ዓ.ም)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Live Preview Card */}
+          <div className="calendar-preview-card">
+            <div className="calendar-preview-title">
+              <Calendar size={16} className="text-teal" />
+              <span>Live Date Preview (ቅድመ ዕይታ)</span>
+            </div>
+            <div className="calendar-preview-text">
+              {formData.calendarSystem === "gregorian"
+                ? new Date().toLocaleDateString(undefined, {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : formatEthiopianDate(new Date(), formData.calendarStyle || "amharic")}
+            </div>
+            <span className="calendar-preview-hint">
+              This formatted date will appear on your top header, thermal receipts, and transaction records.
+            </span>
+          </div>
+
+          <div className="form-actions-row">
+            <button type="submit" className="btn-primary">
+              <Check size={18} />
+              <span>Save Calendar Preferences</span>
             </button>
           </div>
         </form>

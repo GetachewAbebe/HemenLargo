@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { Printer, X, Check, Copy, MapPin, Phone } from "lucide-react";
+import {
+  formatEthiopianDate,
+  formatEthiopianTime,
+} from "../utils/ethiopianDate";
 
-export default function ReceiptModal({ receipt, config, onClose }) {
+export default function ReceiptModal({ receipt, config = {}, onClose }) {
   const [copied, setCopied] = useState(false);
   if (!receipt) return null;
 
@@ -12,16 +16,21 @@ export default function ReceiptModal({ receipt, config, onClose }) {
   const totalLiters =
     receipt.items?.reduce((acc, item) => acc + (item.liters || 0), 0) || receipt.totalLiters || 0;
 
+  const ethDateFormatted = `${formatEthiopianDate(receipt.date, "medium")} ${formatEthiopianTime(receipt.date, false)}`;
+  const creditDueFormatted = receipt.creditDueDate
+    ? formatEthiopianDate(receipt.creditDueDate, "medium") || receipt.creditDueDate
+    : "Within 7 Days (በ7 ቀናት ውስጥ)";
+
   const handleCopyText = () => {
     const lines = [
       `🧾 ${config.shopName || "Sukie"} Receipt #${receipt.id}`,
-      `Date: ${new Date(receipt.date).toLocaleString()}`,
+      `Date (ቀን): ${ethDateFormatted} (${new Date(receipt.date).toLocaleDateString()})`,
       `Customer: ${receipt.customerName || "Customer"}`,
       `Items:`,
       ...(receipt.items?.map((i) => ` - ${i.liters}L ${i.name}: ${i.totalPrice} ${config.currency}`) || []),
       `Total: ${receipt.total} ${config.currency} (${receipt.paymentMethod})`,
       receipt.cashTendered ? `Cash Received: ${receipt.cashTendered} ${config.currency} | Change: ${receipt.changeDue || 0} ${config.currency}` : null,
-      receipt.paymentMethod === "Credit" ? `⚠️ Store Credit Due: ${receipt.creditDueDate || "Within 7 Days"}` : null,
+      receipt.paymentMethod === "Credit" ? `⚠️ Store Credit Due: ${creditDueFormatted}` : null,
       config.receiptFooter || "Thank you!",
     ].filter(Boolean).join("\n");
 
@@ -79,8 +88,17 @@ export default function ReceiptModal({ receipt, config, onClose }) {
               <strong className="meta-val">{receipt.id}</strong>
             </div>
             <div className="meta-row">
-              <span className="meta-label">Date & Time:</span>
-              <span className="meta-val">{new Date(receipt.date).toLocaleString()}</span>
+              <span className="meta-label">Date (ቀን):</span>
+              <strong className="meta-val">{formatEthiopianDate(receipt.date, "medium")}</strong>
+            </div>
+            <div className="meta-row">
+              <span className="meta-label">Time (ሰዓት):</span>
+              <span className="meta-val">
+                {formatEthiopianTime(receipt.date, false)}
+                <span style={{ fontSize: "0.74rem", color: "#64748b", marginLeft: "6px" }}>
+                  ({new Date(receipt.date).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })})
+                </span>
+              </span>
             </div>
             <div className="meta-row">
               <span className="meta-label">Cashier:</span>
@@ -180,8 +198,7 @@ export default function ReceiptModal({ receipt, config, onClose }) {
               <div className="receipt-credit-alert">
                 <strong>*** SOLD ON STORE CREDIT (ዕዳ) ***</strong>
                 <p>
-                  Promised Repayment Due:{" "}
-                  {receipt.creditDueDate || "Within 7 Days"}
+                  Promised Repayment Due: <strong>{creditDueFormatted}</strong>
                 </p>
               </div>
             )}

@@ -211,4 +211,37 @@
   transform: translateY(-1px);
 }
 
+/* Calendar Preferences & Preview Card */
+.calendar-preview-card {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.calendar-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.calendar-preview-text {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #115e59;
+  letter-spacing: -0.01em;
+}
+
+.calendar-preview-hint {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
 

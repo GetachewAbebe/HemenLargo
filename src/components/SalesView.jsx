@@ -10,9 +10,17 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { soundFX } from "../utils/audio";
+import {
+  formatEthiopianDate,
+  formatEthiopianTime,
+  isSameEthiopianDay,
+  isSameEthiopianMonth,
+  getEthiopianToday,
+} from "../utils/ethiopianDate";
 
 export default function SalesView({
   sales,
+  config = {},
   currency = "ETB",
   onSelectReceipt,
   onVoidSale,
@@ -21,23 +29,35 @@ export default function SalesView({
   const [dateFilter, setDateFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
-  // Date filtering logic
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const currentEth = useMemo(() => getEthiopianToday(), []);
+  const isEthCal = config.calendarSystem !== "gregorian";
 
   const filteredSales = useMemo(() => {
-    const nowTime = Date.now();
+    const now = new Date();
+    const nowTime = now.getTime();
+
     return sales.filter((sale) => {
       const saleDate = new Date(sale.date);
 
       // Date filter
       if (dateFilter === "today") {
-        if (!sale.date.startsWith(todayStr)) return false;
+        if (isEthCal) {
+          if (!isSameEthiopianDay(sale.date, now)) return false;
+        } else {
+          const todayStr = now.toISOString().split("T")[0];
+          if (!sale.date.startsWith(todayStr)) return false;
+        }
       } else if (dateFilter === "week") {
         const oneWeekAgo = new Date(nowTime - 7 * 24 * 60 * 60 * 1000);
         if (saleDate < oneWeekAgo) return false;
       } else if (dateFilter === "month") {
-        const oneMonthAgo = new Date(nowTime - 30 * 24 * 60 * 60 * 1000);
-        if (saleDate < oneMonthAgo) return false;
+        if (isEthCal) {
+          // Current Ethiopian Month (e.g. Meskerem, Tikimt, etc.)
+          if (!isSameEthiopianMonth(sale.date, now)) return false;
+        } else {
+          const oneMonthAgo = new Date(nowTime - 30 * 24 * 60 * 60 * 1000);
+          if (saleDate < oneMonthAgo) return false;
+        }
       }
 
       // Payment method filter
@@ -60,7 +80,7 @@ export default function SalesView({
 
       return true;
     });
-  }, [sales, dateFilter, paymentFilter, searchQuery, todayStr]);
+  }, [sales, dateFilter, paymentFilter, searchQuery, isEthCal]);
 
   // Calculate summaries for filtered view
   const totalRevenue = filteredSales.reduce((acc, s) => acc + (s.total || 0), 0);
@@ -74,7 +94,8 @@ export default function SalesView({
     if (filteredSales.length === 0) return;
     const headers = [
       "Receipt ID",
-      "Date",
+      "Ethiopian Date (ዓ.ም)",
+      "Gregorian Date & Time",
       "Customer Name",
       "Phone",
       "Payment Method",
@@ -88,7 +109,8 @@ export default function SalesView({
 
     const rows = filteredSales.map((s) => [
       s.id,
-      new Date(s.date).toLocaleString(),
+      `"${formatEthiopianDate(s.date, "medium")} ${formatEthiopianTime(s.date, false)}"`,
+      `"${new Date(s.date).toLocaleString()}"`,
       `"${s.customerName || "Walk-in"}"`,
       s.customerPhone || "N/A",
       s.paymentMethod,
@@ -107,7 +129,10 @@ export default function SalesView({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `sukie_sales_${todayStr}.csv`);
+    const fileEthDate = currentEth
+      ? `${currentEth.year}_${currentEth.monthNameEn}_${currentEth.day}`
+      : "sales";
+    link.setAttribute("download", `sukie_sales_EC_${fileEthDate}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -198,25 +223,26 @@ export default function SalesView({
             className={`filter-btn-pill ${dateFilter === "all" ? "active" : ""}`}
             onClick={() => setDateFilter("all")}
           >
-            All Time
+            ሁሉንም (All)
           </button>
           <button
             className={`filter-btn-pill ${dateFilter === "today" ? "active" : ""}`}
             onClick={() => setDateFilter("today")}
           >
-            Today
+            ዛሬ (Today)
           </button>
           <button
             className={`filter-btn-pill ${dateFilter === "week" ? "active" : ""}`}
             onClick={() => setDateFilter("week")}
           >
-            Last 7 Days
+            7 ቀናት (Week)
           </button>
           <button
             className={`filter-btn-pill ${dateFilter === "month" ? "active" : ""}`}
             onClick={() => setDateFilter("month")}
+            title={`Sales during Ethiopian month of ${currentEth?.monthNameAm || "Month"}`}
           >
-            This Month
+            የዚህ ወር ({currentEth?.monthNameAm || "Month"})
           </button>
         </div>
 
@@ -276,12 +302,14 @@ export default function SalesView({
                       </td>
                       <td>
                         <div className="date-time-cell">
-                          <span>{new Date(sale.date).toLocaleDateString()}</span>
+                          <span className="font-semibold text-teal-800">
+                            {formatEthiopianDate(sale.date, "medium")}
+                          </span>
                           <span className="time-sub">
-                            {new Date(sale.date).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatEthiopianTime(sale.date, false)}
+                            <span className="greg-inline-hint">
+                              {" "}• {new Date(sale.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                            </span>
                           </span>
                         </div>
                       </td>

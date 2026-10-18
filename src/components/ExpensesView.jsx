@@ -13,6 +13,10 @@ import {
   X,
   Check,
 } from "lucide-react";
+import {
+  formatEthiopianDate,
+  formatEthiopianTime,
+} from "../utils/ethiopianDate";
 
 export default function ExpensesView({
   expenses,
@@ -221,9 +225,17 @@ export default function ExpensesView({
                       <span className="table-category-tag">{exp.category}</span>
                     </td>
                     <td>
-                      <span className="date-sub">
-                        {new Date(exp.date).toLocaleDateString()}
-                      </span>
+                      <div className="date-time-cell">
+                        <span className="font-semibold text-slate-800">
+                          {formatEthiopianDate(exp.date, "medium")}
+                        </span>
+                        <span className="time-sub">
+                          {formatEthiopianTime(exp.date, false)}
+                          <span className="greg-inline-hint">
+                            {" "}• {new Date(exp.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          </span>
+                        </span>
+                      </div>
                     </td>
                     <td>
                       <span className="badge-pill badge-neutral">{exp.paymentMethod}</span>
@@ -268,7 +280,9 @@ export default function ExpensesView({
                 </div>
                 <div>
                   <h3 className="modal-title">Record Shop Expense</h3>
-                  <p className="modal-subtitle">Track purchases, rent, utilities, and raw chemicals</p>
+                  <p className="modal-subtitle">
+                    ቀን: <strong>{formatEthiopianDate(new Date(), "full")}</strong>
+                  </p>
                 </div>
               </div>
               <button className="modal-close-btn" onClick={() => setIsAddModalOpen(false)}>

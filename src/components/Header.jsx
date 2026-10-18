@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, ShoppingBag, Droplets, Plus, Clock, Volume2, VolumeX } from "lucide-react";
+import { AlertTriangle, ShoppingBag, Droplets, Plus, Calendar, Volume2, VolumeX } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
+import {
+  formatEthiopianDate,
+  isSameEthiopianDay,
+} from "../utils/ethiopianDate";
 
 export default function Header({
   config,
@@ -12,6 +16,7 @@ export default function Header({
 }) {
   const { cloudStatus } = useApp();
   const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
+  const [showDualDate, setShowDualDate] = useState(false);
 
   useEffect(() => {
     return soundFX.subscribe((muted) => setIsMuted(muted));
@@ -25,9 +30,18 @@ export default function Header({
     }
   };
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  
-  const todaySales = sales.filter((s) => s.date.startsWith(todayStr));
+  const isEthCal = config.calendarSystem !== "gregorian";
+  const now = new Date();
+
+  // Filter today's sales based on calendar preference
+  const todaySales = sales.filter((s) => {
+    if (isEthCal) {
+      return isSameEthiopianDay(s.date, now);
+    }
+    const todayStr = now.toISOString().split("T")[0];
+    return s.date && s.date.startsWith(todayStr);
+  });
+
   const todayRevenue = todaySales.reduce((acc, s) => acc + (s.total || 0), 0);
   const todayLiters = todaySales.reduce((acc, s) => {
     return acc + (s.items?.reduce((iAcc, item) => iAcc + (item.liters || 0), 0) || 0);
@@ -37,10 +51,13 @@ export default function Header({
     (p) => p.stockLiters <= (p.minStockAlert || 40)
   ).length;
 
-  const todayDateFormatted = new Date().toLocaleDateString(undefined, {
+  // Ethiopian formatted today
+  const ethDateFull = formatEthiopianDate(now, "full");
+  const gregDateFormatted = now.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
+    year: "numeric",
   });
 
   return (
@@ -88,11 +105,28 @@ export default function Header({
       </div>
 
       <div className="header-stats-container">
-        {/* Date Tag */}
-        <div className="header-date-pill">
-          <Clock size={14} className="text-teal" />
-          <span>{todayDateFormatted}</span>
-        </div>
+        {/* Ethiopian Calendar Pill */}
+        <button
+          type="button"
+          className="header-date-pill header-eth-date-pill"
+          onClick={() => setShowDualDate(!showDualDate)}
+          title={
+            showDualDate
+              ? `Gregorian: ${gregDateFormatted} (Click to collapse)`
+              : `Gregorian equivalent: ${gregDateFormatted} (Click to toggle)`
+          }
+        >
+          <Calendar size={14} className="text-teal" />
+          <span className="eth-date-main">
+            {isEthCal ? ethDateFull : gregDateFormatted}
+          </span>
+          {showDualDate && isEthCal && (
+            <span className="greg-date-sub">[{gregDateFormatted}]</span>
+          )}
+          <span className="eth-cal-badge" title="የኢትዮጵያ ዘመን አቆጣጠር">
+            {isEthCal ? "🇪🇹 ዓ.ም" : "G.C."}
+          </span>
+        </button>
 
         {/* Today's Sales */}
         <div className="header-kpi-card">
