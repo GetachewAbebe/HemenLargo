@@ -19,6 +19,7 @@ import CartItemList from "./pos/CartItemList";
 import CustomerSection from "./pos/CustomerSection";
 import CashTenderCard from "./pos/CashTenderCard";
 import QuickRefillModal from "./pos/QuickRefillModal";
+import SaleDateSelector from "./pos/SaleDateSelector";
 
 export default function POSView(props) {
   const context = useApp();
@@ -39,6 +40,14 @@ export default function POSView(props) {
   const [customLiters, setCustomLiters] = useState({});
   const [saleNotes, setSaleNotes] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Sale Registration Date State
+  const [saleDateMode, setSaleDateMode] = useState("today"); // 'today' | 'yesterday' | 'custom'
+  const [customDateStr, setCustomDateStr] = useState(() => new Date().toISOString().split("T")[0]);
+  const [customTimeStr, setCustomTimeStr] = useState(() => {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  });
 
   // Inline Quick Refill Modal
   const [refillModalProduct, setRefillModalProduct] = useState(null);
@@ -216,6 +225,33 @@ export default function POSView(props) {
   const tenderedVal = parseFloat(cashTendered) || 0;
   const changeDue = tenderedVal > 0 ? Math.max(0, Number((tenderedVal - finalTotal).toFixed(2))) : 0;
 
+  // Compute the chosen ISO date/time for the sale record
+  const getEffectiveSaleDate = () => {
+    const now = new Date();
+    if (saleDateMode === "today") {
+      return now.toISOString();
+    }
+    if (saleDateMode === "yesterday") {
+      const y = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      return y.toISOString();
+    }
+    if (saleDateMode === "custom" && customDateStr) {
+      const [year, month, day] = customDateStr.split("-").map(Number);
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      if (customTimeStr) {
+        const [h, m] = customTimeStr.split(":").map(Number);
+        if (!isNaN(h) && !isNaN(m)) {
+          hours = h;
+          minutes = m;
+        }
+      }
+      const chosen = new Date(year, month - 1, day, hours, minutes);
+      return chosen.toISOString();
+    }
+    return now.toISOString();
+  };
+
   // Complete Checkout
   const handleCheckout = (e) => {
     e.preventDefault();
@@ -235,7 +271,7 @@ export default function POSView(props) {
 
     const saleRecord = {
       id: `REC-${Date.now().toString().slice(-6)}`,
-      date: new Date().toISOString(),
+      date: getEffectiveSaleDate(),
       customerName: customerName.trim() || "Walk-in Customer",
       customerPhone: customerPhone.trim() || "N/A",
       paymentMethod,
@@ -345,6 +381,20 @@ export default function POSView(props) {
               customerPhone={customerPhone}
               setCustomerPhone={setCustomerPhone}
               recentCustomers={recentCustomers}
+            />
+
+            {/* Sale Registration Date Selector */}
+            <SaleDateSelector
+              saleDateMode={saleDateMode}
+              onSelectMode={setSaleDateMode}
+              customDateStr={customDateStr}
+              onCustomDateChange={setCustomDateStr}
+              customTimeStr={customTimeStr}
+              onCustomTimeChange={setCustomTimeStr}
+              onResetToToday={() => {
+                setSaleDateMode("today");
+                setCustomDateStr(new Date().toISOString().split("T")[0]);
+              }}
             />
 
             {/* Payment Method Selector */}

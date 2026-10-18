@@ -882,6 +882,169 @@
   box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
 }
 
+/* Sale Registration Date Selector */
+.pos-date-selector-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pos-date-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-date-reset-link {
+  background: transparent;
+  border: none;
+  color: #0d9488;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-date-reset-link:hover {
+  background: #ccfbf1;
+  text-decoration: underline;
+}
+
+.pos-date-tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.pos-date-tab-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 6px 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.pos-date-tab-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.pos-date-tab-btn.tab-active {
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0f766e;
+  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.25);
+}
+
+.pos-custom-date-inputs {
+  margin-top: 2px;
+}
+
+.pos-date-inputs-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pos-date-input-wrap {
+  flex: 1;
+}
+
+.pos-time-input-wrap {
+  width: 110px;
+}
+
+.pos-sub-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.pos-date-field, .pos-time-field {
+  padding: 6px 8px;
+  font-size: 0.78rem;
+}
+
+.pos-date-preview-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 9px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.pos-date-preview-badge.badge-today {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+}
+
+.pos-date-preview-badge.badge-backdated {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+}
+
+.pos-date-badge-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-date-flag-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.pos-date-badge-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.eth-full-date {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #0f766e;
+}
+
+.badge-backdated .eth-full-date {
+  color: #a16207;
+}
+
+.greg-date-sub {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.backdated-warning-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fef08a;
+  color: #854d0e;
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
 /* Payment Grid v2 */
 .payment-grid-v2 {
   display: grid;
