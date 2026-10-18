@@ -26,6 +26,7 @@ export default function SettingsView({
   const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
   const [savedCalendarSuccess, setSavedCalendarSuccess] = useState(false);
   const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
+  const [previewNow] = useState(() => new Date());
 
   useEffect(() => {
     return soundFX.subscribe((muted) => setIsMuted(muted));
@@ -270,13 +271,13 @@ export default function SettingsView({
             </div>
             <div className="calendar-preview-text">
               {formData.calendarSystem === "gregorian"
-                ? new Date().toLocaleDateString(undefined, {
+                ? previewNow.toLocaleDateString(undefined, {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })
-                : formatEthiopianDate(new Date(), formData.calendarStyle || "amharic")}
+                : formatEthiopianDate(previewNow, formData.calendarStyle || "amharic")}
             </div>
             <span className="calendar-preview-hint">
               This formatted date will appear on your top header, thermal receipts, and transaction records.

@@ -9,6 +9,15 @@ import {
 } from "lucide-react";
 import { soundFX } from "../utils/audio";
 
+const SHORTCUT_TAB_MAP = {
+  "1": "pos",
+  "2": "inventory",
+  "3": "sales",
+  "4": "expenses",
+  "5": "analytics",
+  "6": "settings",
+};
+
 export default function Sidebar({ activeTab, setActiveTab, lowStockCount = 0 }) {
   const navItems = [
     {
@@ -56,15 +65,6 @@ export default function Sidebar({ activeTab, setActiveTab, lowStockCount = 0 }) 
       icon: Settings,
     },
   ];
-
-const SHORTCUT_TAB_MAP = {
-  "1": "pos",
-  "2": "inventory",
-  "3": "sales",
-  "4": "expenses",
-  "5": "analytics",
-  "6": "settings",
-};
 
   // Hotkey tab switching (1-6)
   useEffect(() => {

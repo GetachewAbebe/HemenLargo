@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
 import { Calendar, CalendarClock, RotateCcw, AlertTriangle } from "lucide-react";
-import { formatEthiopianDate, toEthiopianDate } from "../../utils/ethiopianDate";
+import { formatEthiopianDate } from "../../utils/ethiopianDate";
 import { soundFX } from "../../utils/audio";
+
+const TODAY_ISO = new Date().toISOString().split("T")[0];
 
 export default function SaleDateSelector({
   saleDateMode, // 'today' | 'yesterday' | 'custom'
@@ -12,19 +14,22 @@ export default function SaleDateSelector({
   onCustomTimeChange,
   onResetToToday,
 }) {
+  const [baseNow] = useState(() => new Date());
+
   // Calculate preview Date object based on current state
   const previewDate = useMemo(() => {
-    const now = new Date();
     if (saleDateMode === "today") {
-      return now;
+      return baseNow;
     }
     if (saleDateMode === "yesterday") {
-      return new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const y = new Date(baseNow);
+      y.setDate(y.getDate() - 1);
+      return y;
     }
     if (saleDateMode === "custom" && customDateStr) {
       const [year, month, day] = customDateStr.split("-").map(Number);
-      let hours = now.getHours();
-      let minutes = now.getMinutes();
+      let hours = baseNow.getHours();
+      let minutes = baseNow.getMinutes();
       if (customTimeStr) {
         const [h, m] = customTimeStr.split(":").map(Number);
         if (!isNaN(h) && !isNaN(m)) {
@@ -34,14 +39,10 @@ export default function SaleDateSelector({
       }
       return new Date(year, month - 1, day, hours, minutes);
     }
-    return now;
-  }, [saleDateMode, customDateStr, customTimeStr]);
+    return baseNow;
+  }, [saleDateMode, customDateStr, customTimeStr, baseNow]);
 
-  const ethDate = toEthiopianDate(previewDate);
   const isBackdated = saleDateMode !== "today";
-
-  // Max selectable date is today
-  const maxDateIso = new Date().toISOString().split("T")[0];
 
   return (
     <div className="pos-date-selector-card">
@@ -112,7 +113,7 @@ export default function SaleDateSelector({
               <input
                 type="date"
                 className="field-input pos-date-field"
-                max={maxDateIso}
+                max={TODAY_ISO}
                 value={customDateStr}
                 onChange={(e) => onCustomDateChange(e.target.value)}
               />

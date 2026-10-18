@@ -29,12 +29,12 @@ export default function SalesView({
   const [dateFilter, setDateFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
+  const [referenceNow] = useState(() => new Date());
   const currentEth = useMemo(() => getEthiopianToday(), []);
   const isEthCal = config.calendarSystem !== "gregorian";
 
   const filteredSales = useMemo(() => {
-    const now = new Date();
-    const nowTime = now.getTime();
+    const nowTime = referenceNow.getTime();
 
     return sales.filter((sale) => {
       const saleDate = new Date(sale.date);
@@ -42,9 +42,9 @@ export default function SalesView({
       // Date filter
       if (dateFilter === "today") {
         if (isEthCal) {
-          if (!isSameEthiopianDay(sale.date, now)) return false;
+          if (!isSameEthiopianDay(sale.date, referenceNow)) return false;
         } else {
-          const todayStr = now.toISOString().split("T")[0];
+          const todayStr = referenceNow.toISOString().split("T")[0];
           if (!sale.date.startsWith(todayStr)) return false;
         }
       } else if (dateFilter === "week") {
@@ -53,7 +53,7 @@ export default function SalesView({
       } else if (dateFilter === "month") {
         if (isEthCal) {
           // Current Ethiopian Month (e.g. Meskerem, Tikimt, etc.)
-          if (!isSameEthiopianMonth(sale.date, now)) return false;
+          if (!isSameEthiopianMonth(sale.date, referenceNow)) return false;
         } else {
           const oneMonthAgo = new Date(nowTime - 30 * 24 * 60 * 60 * 1000);
           if (saleDate < oneMonthAgo) return false;
@@ -80,7 +80,7 @@ export default function SalesView({
 
       return true;
     });
-  }, [sales, dateFilter, paymentFilter, searchQuery, isEthCal]);
+  }, [sales, dateFilter, paymentFilter, searchQuery, isEthCal, referenceNow]);
 
   // Calculate summaries for filtered view
   const totalRevenue = filteredSales.reduce((acc, s) => acc + (s.total || 0), 0);

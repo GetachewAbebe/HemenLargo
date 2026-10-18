@@ -27,6 +27,7 @@ export default function ExpensesView({
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [todayEthFormatted] = useState(() => formatEthiopianDate(new Date(), "full"));
 
   const [newExpense, setNewExpense] = useState({
     title: "",
@@ -281,7 +282,7 @@ export default function ExpensesView({
                 <div>
                   <h3 className="modal-title">Record Shop Expense</h3>
                   <p className="modal-subtitle">
-                    ቀን: <strong>{formatEthiopianDate(new Date(), "full")}</strong>
+                    ቀን: <strong>{todayEthFormatted}</strong>
                   </p>
                 </div>
               </div>

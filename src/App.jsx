@@ -1,16 +1,28 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import POSView from "./components/POSView";
 import InventoryView from "./components/InventoryView";
-import SalesView from "./components/SalesView";
-import ExpensesView from "./components/ExpensesView";
-import AnalyticsView from "./components/AnalyticsView";
-import SettingsView from "./components/SettingsView";
 import ReceiptModal from "./components/ReceiptModal";
 import Toast from "./components/common/Toast";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AppProvider, useApp } from "./context";
 import "./App.css";
+
+// Lazy-loaded secondary views for code-splitting and instant initial load
+const SalesView = lazy(() => import("./components/SalesView"));
+const ExpensesView = lazy(() => import("./components/ExpensesView"));
+const AnalyticsView = lazy(() => import("./components/AnalyticsView"));
+const SettingsView = lazy(() => import("./components/SettingsView"));
+
+function ViewLoader() {
+  return (
+    <div className="view-content-wrapper animate-fade" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "350px", color: "var(--primary)" }}>
+      <div className="bubble-anim" style={{ fontSize: "36px", marginBottom: "8px" }}>🫧</div>
+      <span style={{ fontSize: "0.86rem", fontWeight: 700, color: "#64748b" }}>Loading View...</span>
+    </div>
+  );
+}
 
 function AppContent() {
   const {
@@ -67,43 +79,45 @@ function AppContent() {
         />
 
         <main className="app-main-viewport">
-          {activeTab === "pos" && <POSView />}
-          {activeTab === "inventory" && <InventoryView />}
-          {activeTab === "sales" && (
-            <SalesView
-              sales={sales}
-              config={config}
-              currency={config.currency}
-              onSelectReceipt={(sale) => setActiveReceipt(sale)}
-              onVoidSale={handleVoidSale}
-            />
-          )}
-          {activeTab === "expenses" && (
-            <ExpensesView
-              expenses={expenses}
-              config={config}
-              currency={config.currency}
-              onAddExpense={handleAddExpense}
-              onDeleteExpense={handleDeleteExpense}
-            />
-          )}
-          {activeTab === "analytics" && (
-            <AnalyticsView
-              sales={sales}
-              expenses={expenses}
-              products={products}
-              currency={config.currency}
-            />
-          )}
-          {activeTab === "settings" && (
-            <SettingsView
-              config={config}
-              onSaveConfig={handleSaveConfig}
-              onResetDefaults={handleResetDefaults}
-              onClearTransactionsOnly={handleClearTransactionsOnly}
-              onImportData={handleImportData}
-            />
-          )}
+          <Suspense fallback={<ViewLoader />}>
+            {activeTab === "pos" && <POSView />}
+            {activeTab === "inventory" && <InventoryView />}
+            {activeTab === "sales" && (
+              <SalesView
+                sales={sales}
+                config={config}
+                currency={config.currency}
+                onSelectReceipt={(sale) => setActiveReceipt(sale)}
+                onVoidSale={handleVoidSale}
+              />
+            )}
+            {activeTab === "expenses" && (
+              <ExpensesView
+                expenses={expenses}
+                config={config}
+                currency={config.currency}
+                onAddExpense={handleAddExpense}
+                onDeleteExpense={handleDeleteExpense}
+              />
+            )}
+            {activeTab === "analytics" && (
+              <AnalyticsView
+                sales={sales}
+                expenses={expenses}
+                products={products}
+                currency={config.currency}
+              />
+            )}
+            {activeTab === "settings" && (
+              <SettingsView
+                config={config}
+                onSaveConfig={handleSaveConfig}
+                onResetDefaults={handleResetDefaults}
+                onClearTransactionsOnly={handleClearTransactionsOnly}
+                onImportData={handleImportData}
+              />
+            )}
+          </Suspense>
         </main>
       </div>
 
@@ -121,8 +135,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
