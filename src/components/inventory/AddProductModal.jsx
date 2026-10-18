@@ -137,6 +137,7 @@ export default function AddProductModal({
                 <input
                   type="number"
                   step="0.5"
+                  min="0"
                   required
                   placeholder="e.g. 70"
                   className="form-input"
@@ -151,6 +152,7 @@ export default function AddProductModal({
                 <input
                   type="number"
                   step="0.5"
+                  min="0"
                   required
                   placeholder="e.g. 38"
                   className="form-input"
@@ -209,6 +211,7 @@ export default function AddProductModal({
                 <input
                   type="number"
                   step="0.5"
+                  min="0"
                   required
                   placeholder="e.g. 150"
                   className="form-input"
@@ -223,6 +226,7 @@ export default function AddProductModal({
                 <input
                   type="number"
                   step="5"
+                  min="0"
                   placeholder="e.g. 40"
                   className="form-input"
                   value={newProduct.minStockAlert}

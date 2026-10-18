@@ -1380,23 +1380,47 @@
   background: #ecfdf5;
 }
 
+.change-due-box.change-positive .change-due-label {
+  color: #047857;
+}
+
+.change-due-box.change-positive .change-due-amount,
+.change-due-box.change-positive .change-cur {
+  color: #059669;
+}
+
+.change-due-box.change-shortage {
+  border-color: #f43f5e;
+  background: #fff1f2;
+}
+
+.change-due-box.change-shortage .change-due-label {
+  color: #be123c;
+}
+
+.change-due-box.change-shortage .change-due-amount,
+.change-due-box.change-shortage .change-cur {
+  color: #e11d48;
+}
+
 .change-due-label {
   font-size: 0.62rem;
   font-weight: 800;
-  color: #047857;
+  color: #64748b;
   letter-spacing: 0.04em;
 }
 
 .change-due-amount {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #059669;
+  color: #1e293b;
   line-height: 1.2;
 }
 
 .change-cur {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #047857;
+  color: #64748b;
 }
+
 

@@ -51,10 +51,23 @@ const FORMULA_PRESETS = [
   },
 ];
 
+function createProductionExpenseRecord(batchSizeLiters, formulaName, totalCost, costPerLiter, currency) {
+  return {
+    id: `exp-prod-${Date.now().toString().slice(-6)}`,
+    date: new Date().toISOString(),
+    title: `Raw Chemicals: ${batchSizeLiters}L ${formulaName} Batch`,
+    category: "Raw Materials & Chemicals",
+    amount: totalCost,
+    paymentMethod: "Cash",
+    notes: `Brewed batch: ${batchSizeLiters}L @ ${costPerLiter} ${currency}/L`,
+  };
+}
+
 export default function BatchProductionWidget({
   products = [],
   currency = "ETB",
   onRestockLiters,
+  onAddExpense,
 }) {
   const [selectedFormulaId, setSelectedFormulaId] = useState("largo");
   const [batchSizeLiters, setBatchSizeLiters] = useState(200); // 100, 200, 400
@@ -84,6 +97,19 @@ export default function BatchProductionWidget({
 
     soundFX.playCheckoutChime();
     onRestockLiters(matchedProduct.id, batchSizeLiters, activeFormula.costPerLiter);
+
+    if (onAddExpense) {
+      onAddExpense(
+        createProductionExpenseRecord(
+          batchSizeLiters,
+          activeFormula.name.split(" ")[0],
+          totalCost,
+          activeFormula.costPerLiter,
+          currency
+        )
+      );
+    }
+
     setProductionSuccess(true);
     setTimeout(() => setProductionSuccess(false), 3500);
   };

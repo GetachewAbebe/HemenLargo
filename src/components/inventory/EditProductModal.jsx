@@ -85,11 +85,12 @@ export default function EditProductModal({
             <input
               type="number"
               step="0.5"
+              min="0"
               required
               className="form-input"
               value={editForm.pricePerLiter}
               onChange={(e) =>
-                setEditForm({ ...editForm, pricePerLiter: parseFloat(e.target.value) || 0 })
+                setEditForm({ ...editForm, pricePerLiter: Math.max(0, parseFloat(e.target.value) || 0) })
               }
             />
           </div>
@@ -98,11 +99,12 @@ export default function EditProductModal({
             <input
               type="number"
               step="0.5"
+              min="0"
               required
               className="form-input"
               value={editForm.costPerLiter}
               onChange={(e) =>
-                setEditForm({ ...editForm, costPerLiter: parseFloat(e.target.value) || 0 })
+                setEditForm({ ...editForm, costPerLiter: Math.max(0, parseFloat(e.target.value) || 0) })
               }
             />
           </div>
@@ -154,10 +156,11 @@ export default function EditProductModal({
             <input
               type="number"
               step="5"
+              min="0"
               className="form-input"
               value={editForm.minStockAlert || 40}
               onChange={(e) =>
-                setEditForm({ ...editForm, minStockAlert: parseFloat(e.target.value) || 0 })
+                setEditForm({ ...editForm, minStockAlert: Math.max(0, parseFloat(e.target.value) || 0) })
               }
             />
           </div>

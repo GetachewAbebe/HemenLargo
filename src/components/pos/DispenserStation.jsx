@@ -131,8 +131,13 @@ export default function DispenserStation({
                 key={amt}
                 type="button"
                 className="quick-chip-btn"
+                disabled={product.stockLiters < amt}
                 onClick={() => handleDispense(amt)}
-                title={`Dispense +${amt} Liters`}
+                title={
+                  product.stockLiters < amt
+                    ? `Not enough stock (${product.stockLiters.toFixed(1)}L left)`
+                    : `Dispense +${amt} Liters`
+                }
               >
                 +{amt}L
               </button>
@@ -152,6 +157,7 @@ export default function DispenserStation({
               onChange={(e) => onCustomLiterChange(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && customLiterVal) {
+                  e.preventDefault();
                   onAddToCart(product, customLiterVal);
                   onCustomLiterChange("");
                 }
@@ -159,6 +165,7 @@ export default function DispenserStation({
             />
             <span className="pump-unit">L</span>
           </div>
+
 
           <button
             type="button"

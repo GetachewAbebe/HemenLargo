@@ -9,6 +9,11 @@ export default function CashTenderCard({
   changeDue,
   currency = "ETB",
 }) {
+  const tenderedNum = parseFloat(cashTendered) || 0;
+  const hasTendered = tenderedNum > 0;
+  const isShort = hasTendered && tenderedNum < finalTotal;
+  const shortage = isShort ? Number((finalTotal - tenderedNum).toFixed(2)) : 0;
+
   return (
     <div className="cash-tender-card animate-fade">
       <div className="cash-tender-header">
@@ -21,11 +26,11 @@ export default function CashTenderCard({
           className="btn-quick-denom btn-exact-denom"
           onClick={() => {
             soundFX.playCoin();
-            setCashTendered(finalTotal > 0 ? finalTotal.toFixed(0) : "0");
+            setCashTendered(finalTotal > 0 ? (Number.isInteger(finalTotal) ? finalTotal.toString() : finalTotal.toFixed(2)) : "0");
           }}
           title="Exact change (ትክክለኛ ሂሳብ)"
         >
-          Exact ({finalTotal > 0 ? finalTotal.toFixed(0) : 0})
+          Exact ({finalTotal > 0 ? (Number.isInteger(finalTotal) ? finalTotal : finalTotal.toFixed(2)) : 0})
         </button>
         {[50, 100, 200, 500, 1000].map((denom) => (
           <button
@@ -46,18 +51,25 @@ export default function CashTenderCard({
           <label className="cash-sublabel">Amount Received ({currency})</label>
           <input
             type="number"
-            step="1"
+            step="0.5"
             min="0"
-            placeholder={`e.g. ${finalTotal > 0 ? Math.ceil(finalTotal / 100) * 100 : 500}`}
+            placeholder={`e.g. ${finalTotal > 0 ? Math.ceil(finalTotal / 50) * 50 : 500}`}
             className="cash-received-input"
             value={cashTendered}
             onChange={(e) => setCashTendered(e.target.value)}
           />
         </div>
-        <div className={`change-due-box ${changeDue > 0 ? "change-positive" : ""}`}>
-          <span className="change-due-label">CHANGE TO RETURN</span>
+        <div
+          className={`change-due-box ${
+            isShort ? "change-shortage" : changeDue > 0 ? "change-positive" : ""
+          }`}
+        >
+          <span className="change-due-label">
+            {isShort ? "SHORTAGE (ቀሪ ያልተከፈለ)" : "CHANGE TO RETURN (መልስ)"}
+          </span>
           <strong className="change-due-amount">
-            {changeDue.toFixed(2)} <span className="change-cur">{currency}</span>
+            {isShort ? `-${shortage.toFixed(2)}` : changeDue.toFixed(2)}{" "}
+            <span className="change-cur">{currency}</span>
           </strong>
         </div>
       </div>

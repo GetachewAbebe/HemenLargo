@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Printer, X, Check, Copy, MapPin, Phone } from "lucide-react";
 import {
   formatEthiopianDate,
@@ -7,6 +7,21 @@ import {
 
 export default function ReceiptModal({ receipt, config = {}, onClose }) {
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!receipt) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [receipt, onClose]);
+
   if (!receipt) return null;
 
   const handlePrint = () => {
@@ -41,8 +56,11 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
   };
 
   return (
-    <div className="receipt-modal-backdrop animate-fade">
-      <div className="receipt-modal-dialog animate-pop">
+    <div className="receipt-modal-backdrop animate-fade" onClick={onClose}>
+      <div
+        className="receipt-modal-dialog animate-pop"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Controls (Hidden in print) */}
         <div className="no-print receipt-modal-actions-bar">
           <button className="btn-print-receipt" onClick={handlePrint}>
@@ -57,6 +75,7 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
             <X size={20} />
           </button>
         </div>
+
 
         {/* Realistic POS Thermal Receipt Paper */}
         <div className="receipt-paper receipt-container">

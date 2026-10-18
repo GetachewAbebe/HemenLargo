@@ -36,7 +36,7 @@ export default function ProfileModal({
   const [showPin, setShowPin] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  // Close on Escape key
+  // Close on Escape key and prevent background scroll
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -44,7 +44,12 @@ export default function ProfileModal({
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
   const handleSaveProfile = (e) => {

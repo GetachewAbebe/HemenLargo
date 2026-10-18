@@ -4,6 +4,7 @@ import {
   loadStoredData,
   saveToStorage,
   resetToDefaults,
+  sanitizeImportPayload,
 } from "../utils/storage";
 import {
   deductStockForSale,
@@ -38,6 +39,23 @@ export function AppProvider({ children }) {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
+
+  // Listen to browser storage quota warnings
+  useEffect(() => {
+    const handleStorageWarning = (e) => {
+      const isQuota = e.detail?.isQuotaExceeded;
+      showToast(
+        isQuota
+          ? "Warning: Browser local storage is full. Please export an emergency backup JSON!"
+          : "Notice: Unable to write to local storage cache.",
+        "warning"
+      );
+    };
+
+    window.addEventListener("sukie_storage_quota_warning", handleStorageWarning);
+    return () => window.removeEventListener("sukie_storage_quota_warning", handleStorageWarning);
+  }, []);
+
 
   // Sync with Supabase on mount & listen to real-time changes
   useEffect(() => {
@@ -220,25 +238,34 @@ export function AppProvider({ children }) {
     showToast("Sales transactions cleared. Ready for fresh transactions!");
   };
 
-  // 10. Import backup
-  const handleImportData = (importedData) => {
-    if (importedData.config) {
-      setConfig(importedData.config);
-      saveToStorage("SHOP_CONFIG", importedData.config);
+  // 10. Import backup safely with schema validation
+  const handleImportData = (rawImportedData) => {
+    const sanitized = sanitizeImportPayload(rawImportedData);
+    if (!sanitized) {
+      showToast("Invalid backup file format.", "warning");
+      return;
     }
-    if (importedData.products) {
-      setProducts(importedData.products);
-      saveToStorage("PRODUCTS", importedData.products);
+
+    if (sanitized.config) {
+      setConfig(sanitized.config);
+      saveToStorage("SHOP_CONFIG", sanitized.config);
     }
-    if (importedData.sales) {
-      setSales(importedData.sales);
-      saveToStorage("SALES", importedData.sales);
+    if (sanitized.products && sanitized.products.length > 0) {
+      setProducts(sanitized.products);
+      saveToStorage("PRODUCTS", sanitized.products);
     }
-    if (importedData.expenses) {
-      setExpenses(importedData.expenses);
-      saveToStorage("EXPENSES", importedData.expenses);
+    if (sanitized.sales) {
+      setSales(sanitized.sales);
+      saveToStorage("SALES", sanitized.sales);
     }
-    showToast("Backup data imported successfully!");
+    if (sanitized.expenses) {
+      setExpenses(sanitized.expenses);
+      saveToStorage("EXPENSES", sanitized.expenses);
+    }
+    if (sanitized.users && sanitized.users.length > 0) {
+      saveToStorage("USERS", sanitized.users);
+    }
+    showToast("Backup data validated and imported successfully!");
   };
 
   const lowStockCount = useMemo(

@@ -37,6 +37,7 @@ export default function DashboardView(props) {
   const setActiveTab = props.setActiveTab ?? context.setActiveTab;
   const onSelectReceipt = props.onSelectReceipt ?? context.setActiveReceipt;
   const onRestockLiters = props.onRestockLiters ?? context.handleRestockLiters;
+  const onAddExpense = props.onAddExpense ?? context.handleAddExpense;
   const currency = config?.currency || "ETB";
 
   const [todayDate] = React.useState(() => new Date());
@@ -535,6 +536,7 @@ export default function DashboardView(props) {
           products={products}
           currency={currency}
           onRestockLiters={onRestockLiters}
+          onAddExpense={onAddExpense}
         />
       </div>
 
@@ -563,7 +565,7 @@ export default function DashboardView(props) {
                 <strong className="tile-main-label">Counter POS</strong>
                 <span className="tile-sub-label">Dispense soap & print receipt</span>
               </div>
-              <span className="tile-shortcut-key">[2]</span>
+              <span className="tile-shortcut-key">Open →</span>
             </button>
 
             <button
@@ -578,7 +580,7 @@ export default function DashboardView(props) {
                 <strong className="tile-main-label">Soap Formulas</strong>
                 <span className="tile-sub-label">Manage tanks & scents</span>
               </div>
-              <span className="tile-shortcut-key">[3]</span>
+              <span className="tile-shortcut-key">Tanks →</span>
             </button>
 
             <button
@@ -593,7 +595,7 @@ export default function DashboardView(props) {
                 <strong className="tile-main-label">Sales Ledger</strong>
                 <span className="tile-sub-label">Inspect past customer bills</span>
               </div>
-              <span className="tile-shortcut-key">[4]</span>
+              <span className="tile-shortcut-key">Bills →</span>
             </button>
 
             <button
@@ -608,7 +610,7 @@ export default function DashboardView(props) {
                 <strong className="tile-main-label">Record Expense</strong>
                 <span className="tile-sub-label">Chemicals, rent & supplies</span>
               </div>
-              <span className="tile-shortcut-key">[5]</span>
+              <span className="tile-shortcut-key">Cost →</span>
             </button>
           </div>
         </div>

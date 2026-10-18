@@ -150,24 +150,48 @@ button, input, select, textarea {
   animation: bubbleFloat 4s ease-in-out infinite;
 }
 
-/* Printable Styles */
+/* Printable Styles - Optimized for 80mm/58mm Thermal Paper & Office Printers */
 @media print {
   body {
     background: #ffffff !important;
     color: #000000 !important;
   }
-  .no-print {
+  .no-print,
+  .top-header-v2,
+  .app-footer-v2,
+  .app-body-layout,
+  .receipt-modal-actions-bar {
     display: none !important;
   }
-  .print-only {
+  .receipt-modal-backdrop {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    inset: auto !important;
     display: block !important;
+    width: 100% !important;
   }
+  .receipt-modal-dialog {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    transform: none !important;
+  }
+  .receipt-paper,
   .receipt-container {
     width: 100% !important;
     max-width: 80mm !important;
     margin: 0 auto !important;
-    padding: 0 !important;
+    padding: 8px 0 !important;
     box-shadow: none !important;
     border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .print-only {
+    display: block !important;
   }
 }
+

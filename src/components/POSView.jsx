@@ -518,11 +518,23 @@ export default function POSView(props) {
                 <input
                   type="number"
                   min="0"
+                  max={subtotal > 0 ? subtotal : undefined}
                   step="5"
                   className="field-input"
                   placeholder="0"
                   value={discountAmount || ""}
-                  onChange={(e) => setDiscountAmount(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setDiscountAmount(0);
+                    } else {
+                      const num = Math.max(0, parseFloat(val) || 0);
+                      setDiscountAmount(subtotal > 0 ? Math.min(num, subtotal) : num);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
                 />
               </div>
 
@@ -537,6 +549,9 @@ export default function POSView(props) {
                   placeholder="Optional memo..."
                   value={saleNotes}
                   onChange={(e) => setSaleNotes(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.preventDefault();
+                  }}
                 />
               </div>
             </div>

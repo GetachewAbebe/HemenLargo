@@ -219,7 +219,55 @@ class SoundFX {
       // Silently ignored if policy blocked
     }
   }
+
+  // Harmonic uplifting chime for successful auth, profile updates, and saves
+  playSuccess() {
+    if (this.muted) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+
+      [
+        { freq: 587.33, time: now, duration: 0.14 },       // D5
+        { freq: 739.99, time: now + 0.07, duration: 0.16 }, // F#5
+        { freq: 880.0, time: now + 0.14, duration: 0.22 },  // A5
+        { freq: 1174.66, time: now + 0.21, duration: 0.35 },// D6
+      ].forEach((note) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(note.freq, note.time);
+
+        gain.gain.setValueAtTime(0.13, note.time);
+        gain.gain.exponentialRampToValueAtTime(0.001, note.time + note.duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(note.time);
+        osc.stop(note.time + note.duration);
+      });
+    } catch {
+      // Silently ignored
+    }
+  }
 }
 
-export const soundFX = new SoundFX();
+const rawSoundFX = new SoundFX();
+
+// Defensive proxy ensuring unknown or misspelled sound calls never crash the app
+export const soundFX = new Proxy(rawSoundFX, {
+  get(target, prop, receiver) {
+    if (prop in target) {
+      const val = Reflect.get(target, prop, receiver);
+      return typeof val === "function" ? val.bind(target) : val;
+    }
+    // Safe fallback for any undefined sound function
+    return () => {};
+  },
+});
+
 
