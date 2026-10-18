@@ -83,6 +83,34 @@
   text-overflow: ellipsis;
 }
 
+.nav-actions-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.nav-shortcut-key {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 1px 5px;
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  font-family: monospace;
+}
+
+.sidebar-nav-link:hover .nav-shortcut-key,
+.sidebar-nav-link.nav-link-active .nav-shortcut-key {
+  opacity: 1;
+  color: #0f766e;
+  background: #ffffff;
+  border-color: #ccfbf1;
+}
+
 .nav-pill-badge {
   font-size: 0.68rem;
   font-weight: 700;

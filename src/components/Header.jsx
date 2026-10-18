@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, ShoppingBag, Droplets, Plus, Calendar, Volume2, VolumeX } from "lucide-react";
+import { AlertTriangle, ShoppingBag, Droplets, Plus, Volume2, VolumeX } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 import {
@@ -17,9 +17,18 @@ export default function Header({
   const { cloudStatus } = useApp();
   const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
   const [showDualDate, setShowDualDate] = useState(false);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   useEffect(() => {
     return soundFX.subscribe((muted) => setIsMuted(muted));
+  }, []);
+
+  // Live ticking clock (updates every second)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleToggleSound = () => {
@@ -31,14 +40,13 @@ export default function Header({
   };
 
   const isEthCal = config.calendarSystem !== "gregorian";
-  const now = new Date();
 
   // Filter today's sales based on calendar preference
   const todaySales = sales.filter((s) => {
     if (isEthCal) {
-      return isSameEthiopianDay(s.date, now);
+      return isSameEthiopianDay(s.date, currentTime);
     }
-    const todayStr = now.toISOString().split("T")[0];
+    const todayStr = currentTime.toISOString().split("T")[0];
     return s.date && s.date.startsWith(todayStr);
   });
 
@@ -52,13 +60,39 @@ export default function Header({
   ).length;
 
   // Ethiopian formatted today
-  const ethDateFull = formatEthiopianDate(now, "full");
-  const gregDateFormatted = now.toLocaleDateString(undefined, {
+  const ethDateFull = formatEthiopianDate(currentTime, "full");
+  const gregDateFormatted = currentTime.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+
+  // Live time string (12h with seconds & Amharic period)
+  const hours = currentTime.getHours();
+  const minutes = String(currentTime.getMinutes()).padStart(2, "0");
+  const seconds = String(currentTime.getSeconds()).padStart(2, "0");
+  const h12 = hours % 12 || 12;
+  const ampm = hours >= 12 ? "PM" : "AM";
+  
+  let periodAm = "ጥዋት";
+  let greetingAm = "እንደምን አደሩ";
+  let greetingIcon = "☀️";
+  if (hours >= 12 && hours < 17) {
+    periodAm = "ከሰዓት";
+    greetingAm = "እንደምን ዋሉ";
+    greetingIcon = "🌤️";
+  } else if (hours >= 17 && hours < 23) {
+    periodAm = "ማታ";
+    greetingAm = "እንደምን አመሹ";
+    greetingIcon = "🌙";
+  } else if (hours >= 23 || hours < 6) {
+    periodAm = "ሌሊት";
+    greetingAm = "ሰላም ቆዩ";
+    greetingIcon = "✨";
+  }
+
+  const cashierName = config.ownerName || "Cashier";
 
   return (
     <header className="no-print top-header-v2">
@@ -98,13 +132,34 @@ export default function Header({
               {cloudStatus === "connected" ? "☁️ Supabase Cloud" : "Offline"}
             </span>
           </div>
-          <p className="header-store-tagline">
-            {config.tagline || "ፈሳሽ ሳሙና (ላርጎ) እና በረኪና • Quality Cleansers"}
-          </p>
+          <div className="header-tagline-row">
+            <p className="header-store-tagline">
+              {config.tagline || "ፈሳሽ ሳሙና (ላርጎ) እና በረኪና • Quality Cleansers"}
+            </p>
+            <div className="header-cashier-greeting" title={`Logged in as ${cashierName}`}>
+              <span className="greeting-icon">{greetingIcon}</span>
+              <span className="greeting-text">
+                {greetingAm}, <strong>{cashierName}</strong>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="header-stats-container">
+        {/* Live Digital Clock & Ethiopian Period */}
+        <div className="header-clock-pill" title="Live Local Ethiopian Time (Addis Ababa)">
+          <div className="clock-live-dot"></div>
+          <span className="clock-digits">
+            {String(h12).padStart(2, "0")}
+            <span className="clock-colon-pulse">:</span>
+            {minutes}
+            <span className="clock-colon-pulse">:</span>
+            {seconds}
+          </span>
+          <span className="clock-ampm-badge">{ampm} • {periodAm}</span>
+        </div>
+
         {/* Ethiopian Calendar Pill */}
         <button
           type="button"
@@ -116,7 +171,11 @@ export default function Header({
               : `Gregorian equivalent: ${gregDateFormatted} (Click to toggle)`
           }
         >
-          <Calendar size={14} className="text-teal" />
+          <div className="ethiopian-flag-accent">
+            <span className="flag-dot-green"></span>
+            <span className="flag-dot-yellow"></span>
+            <span className="flag-dot-red"></span>
+          </div>
           <span className="eth-date-main">
             {isEthCal ? ethDateFull : gregDateFormatted}
           </span>
@@ -124,7 +183,7 @@ export default function Header({
             <span className="greg-date-sub">[{gregDateFormatted}]</span>
           )}
           <span className="eth-cal-badge" title="የኢትዮጵያ ዘመን አቆጣጠር">
-            {isEthCal ? "🇪🇹 ዓ.ም" : "G.C."}
+            {isEthCal ? "ዓ.ም" : "G.C."}
           </span>
         </button>
 

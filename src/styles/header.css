@@ -74,10 +74,32 @@
   box-shadow: 0 0 8px #10b981;
 }
 
+.header-tagline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
 .header-store-tagline {
   font-size: 0.8rem;
   color: #64748b;
-  margin-top: 1px;
+}
+
+.header-cashier-greeting {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(241, 245, 249, 0.8);
+  border: 1px solid #e2e8f0;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  color: #334155;
+}
+
+.header-cashier-greeting strong {
+  color: #0f766e;
 }
 
 .header-stats-container {
@@ -86,6 +108,54 @@
   gap: 12px;
 }
 
+/* Live Digital Clock Pill */
+.header-clock-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.clock-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #0d9488;
+  box-shadow: 0 0 6px rgba(13, 148, 136, 0.6);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.clock-digits {
+  font-family: 'Outfit', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+}
+
+.clock-colon-pulse {
+  animation: colonBlink 1s infinite step-start;
+  color: #0d9488;
+}
+
+@keyframes colonBlink {
+  50% { opacity: 0.3; }
+}
+
+.clock-ampm-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* Ethiopian Calendar Pill */
 .header-date-pill {
   display: flex;
   align-items: center;
@@ -99,12 +169,40 @@
   color: #0f766e;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(13, 148, 136, 0.05);
 }
 
 .header-date-pill:hover {
   background: #ccfbf1;
   border-color: #99f6e4;
   transform: translateY(-1px);
+}
+
+.ethiopian-flag-accent {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.flag-dot-green {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.flag-dot-yellow {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.flag-dot-red {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ef4444;
 }
 
 .eth-date-main {

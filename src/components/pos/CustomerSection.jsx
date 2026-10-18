@@ -22,38 +22,42 @@ export default function CustomerSection({
         <span className="chips-label">Quick Client:</span>
         <button
           type="button"
-          className="chip-preset-btn"
+          className={`chip-preset-btn ${customerName === "Walk-in Customer" || !customerName ? "chip-preset-active" : ""}`}
           onClick={() => applyPreset("Walk-in Customer", "")}
         >
-          Walk-in
+          <span>🚶 Walk-in</span>
         </button>
         {recentCustomers.length > 0 ? (
-          recentCustomers.map(([name, phone]) => (
-            <button
-              key={name}
-              type="button"
-              className="chip-preset-btn"
-              onClick={() => applyPreset(name, phone)}
-              title={phone ? `Phone: ${phone}` : name}
-            >
-              {name.length > 14 ? `${name.slice(0, 12)}…` : name}
-            </button>
-          ))
+          recentCustomers.map(([name, phone]) => {
+            const initial = name.trim().charAt(0).toUpperCase();
+            return (
+              <button
+                key={name}
+                type="button"
+                className={`chip-preset-btn ${customerName === name ? "chip-preset-active" : ""}`}
+                onClick={() => applyPreset(name, phone)}
+                title={phone ? `Phone: ${phone}` : name}
+              >
+                <span className="chip-initial">{initial}</span>
+                <span>{name.length > 14 ? `${name.slice(0, 12)}…` : name}</span>
+              </button>
+            );
+          })
         ) : (
           <>
             <button
               type="button"
-              className="chip-preset-btn"
+              className={`chip-preset-btn ${customerName === "Local Cafe & Restaurant" ? "chip-preset-active" : ""}`}
               onClick={() => applyPreset("Local Cafe & Restaurant", "0911223344")}
             >
-              Cafe / Hotel
+              <span>☕ Cafe / Hotel</span>
             </button>
             <button
               type="button"
-              className="chip-preset-btn"
+              className={`chip-preset-btn ${customerName === "Car Wash Station" ? "chip-preset-active" : ""}`}
               onClick={() => applyPreset("Car Wash Station", "0912987654")}
             >
-              Car Wash
+              <span>🚗 Car Wash</span>
             </button>
           </>
         )}

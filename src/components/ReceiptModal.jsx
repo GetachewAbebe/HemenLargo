@@ -168,6 +168,20 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
                 </span>
               </div>
             )}
+
+            {/* Authentic Rubber Stamp Watermark */}
+            <div className="receipt-stamp-container">
+              {receipt.paymentMethod === "Credit" ? (
+                <div className="receipt-stamp-watermark stamp-credit">
+                  <span>STORE CREDIT • ዕዳ</span>
+                </div>
+              ) : (
+                <div className="receipt-stamp-watermark stamp-paid">
+                  <span>✓ PAID • ተከፍሏል</span>
+                </div>
+              )}
+            </div>
+
             <div className="receipt-total-line grand-total">
               <span>TOTAL PAID / DUE:</span>
               <span>

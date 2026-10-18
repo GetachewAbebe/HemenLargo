@@ -18,25 +18,26 @@ export default function CashTenderCard({
       <div className="cash-quick-denominations">
         <button
           type="button"
-          className="btn-quick-denom"
+          className="btn-quick-denom btn-exact-denom"
           onClick={() => {
-            soundFX.playBeep();
+            soundFX.playCoin();
             setCashTendered(finalTotal > 0 ? finalTotal.toFixed(0) : "0");
           }}
+          title="Exact change (ትክክለኛ ሂሳብ)"
         >
           Exact ({finalTotal > 0 ? finalTotal.toFixed(0) : 0})
         </button>
-        {[100, 200, 500, 1000].map((denom) => (
+        {[50, 100, 200, 500, 1000].map((denom) => (
           <button
             key={denom}
             type="button"
             className="btn-quick-denom"
             onClick={() => {
-              soundFX.playBeep();
+              soundFX.playCoin();
               setCashTendered(denom.toString());
             }}
           >
-            {denom} {currency}
+            {denom} ብር
           </button>
         ))}
       </div>

@@ -253,11 +253,11 @@ export default function SalesView({
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
           >
-            <option value="all">All Payment Methods</option>
-            <option value="Cash">Cash Only</option>
-            <option value="Telebirr">Telebirr Only</option>
-            <option value="CBE Birr">CBE Birr Only</option>
-            <option value="Credit">Credit (ዕዳ) Only</option>
+            <option value="all">All Payment Methods (ሁሉንም)</option>
+            <option value="Cash">💵 Cash Only (ጥሬ ገንዘብ)</option>
+            <option value="Telebirr">📱 Telebirr Only (ቴሌብር)</option>
+            <option value="CBE Birr">💳 CBE Birr Only (ሲቢኢ ብር)</option>
+            <option value="Credit">⚠️ Credit Only (ያልተከፈለ ዕዳ)</option>
           </select>
         </div>
 
@@ -287,7 +287,24 @@ export default function SalesView({
               {filteredSales.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="table-empty-cell">
-                    No sales records found matching your filter criteria.
+                    <div className="empty-state-container">
+                      <div className="empty-state-icon">🫧</div>
+                      <strong>No sales records found matching your filters</strong>
+                      <p>Try adjusting your search keyword or switching between time ranges.</p>
+                      {(dateFilter !== "all" || paymentFilter !== "all" || searchQuery) && (
+                        <button
+                          type="button"
+                          className="btn-secondary btn-sm"
+                          onClick={() => {
+                            setDateFilter("all");
+                            setPaymentFilter("all");
+                            setSearchQuery("");
+                          }}
+                        >
+                          Clear Active Filters
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (

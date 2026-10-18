@@ -268,7 +268,12 @@ export default function POSView(props) {
               <strong>Quick Combo Deal</strong>
             </span>
             <span className="combo-desc">
-              <strong>5L Largo + 2L Barikina</strong> = {(5 * 110 + 2 * 75).toLocaleString()} {currency}
+              <strong>5L Largo + 2L Barikina</strong> ={" "}
+              {(
+                5 * (products.find((p) => p.name.includes("Largo") || p.id === "prod-1")?.pricePerLiter || 60) +
+                2 * (products.find((p) => p.name.includes("Barikina") || p.id === "prod-2")?.pricePerLiter || 50)
+              ).toLocaleString()}{" "}
+              {currency}
             </span>
           </div>
           <button type="button" className="btn-add-combo" onClick={handleAddCombo}>
@@ -514,10 +519,19 @@ export default function POSView(props) {
             <button
               type="submit"
               disabled={cart.length === 0}
-              className={`btn-checkout-v2 ${cart.length > 0 ? "btn-checkout-active" : ""}`}
+              className={`btn-checkout-v2 ${
+                cart.length > 0
+                  ? paymentMethod === "Credit"
+                    ? "btn-credit-active"
+                    : "btn-checkout-active"
+                  : ""
+              }`}
             >
               <CheckCircle size={20} />
-              <span>Complete Sale & Print Receipt • {finalTotal.toFixed(2)} {currency}</span>
+              <span>
+                {paymentMethod === "Credit" ? "Record Credit Sale (በዕዳ) • " : "Complete Sale & Print Receipt • "}
+                {finalTotal.toFixed(2)} {currency}
+              </span>
             </button>
           </form>
         </div>

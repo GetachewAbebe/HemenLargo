@@ -1,5 +1,6 @@
 import React from "react";
 import { Droplets, RefreshCw, Plus } from "lucide-react";
+import { soundFX } from "../../utils/audio";
 import { CONTAINER_PRESETS } from "../../constants/containers";
 
 export default function DispenserStation({
@@ -18,6 +19,11 @@ export default function DispenserStation({
   const isLowStock = product.stockLiters <= (product.minStockAlert || 50);
   const tankCapacity = 600;
   const tankPercent = Math.min(100, Math.round((product.stockLiters / tankCapacity) * 100));
+
+  const handleDispense = (liters) => {
+    soundFX.playPop();
+    onAddToCart(product, liters);
+  };
 
   return (
     <div className={`dispenser-station-card ${isLargo ? "station-largo" : "station-barikina"}`}>
@@ -49,13 +55,13 @@ export default function DispenserStation({
         <div className="tank-gauge-info">
           <div className="tank-status-left">
             <Droplets size={16} className={isLargo ? "text-teal" : "text-cyan"} />
-            <span>Tank:</span>
+            <span>Tank Level:</span>
             <strong className="tank-liters-bold">{product.stockLiters.toFixed(1)} L</strong>
             <span className="capacity-sub">/ 600L</span>
           </div>
           <div className="tank-actions-right">
             <span className={`stock-status-pill ${isLowStock ? "pill-low" : "pill-ok"}`}>
-              {isLowStock ? "Low Stock" : `${tankPercent}% Full`}
+              {isLowStock ? "⚠️ Low Stock" : `${tankPercent}% Full`}
             </span>
             <button
               type="button"
@@ -72,7 +78,16 @@ export default function DispenserStation({
           <div
             className={`tank-liquid-fill ${isLargo ? "liquid-teal" : "liquid-cyan"}`}
             style={{ width: `${tankPercent}%` }}
-          ></div>
+          >
+            <div className="tank-liquid-wave"></div>
+          </div>
+        </div>
+        <div className="tank-notches-row">
+          <span>0L</span>
+          <span>150L</span>
+          <span>300L (50%)</span>
+          <span>450L</span>
+          <span>600L</span>
         </div>
       </div>
 
@@ -87,8 +102,9 @@ export default function DispenserStation({
                 key={preset.label}
                 type="button"
                 className={`btn-container-card ${preset.popular ? "popular-card" : ""}`}
-                onClick={() => onAddToCart(product, preset.liters)}
+                onClick={() => handleDispense(preset.liters)}
                 disabled={product.stockLiters < preset.liters}
+                title={`Dispense ${preset.liters}L of ${product.name}`}
               >
                 {preset.popular && <span className="popular-badge">★ Best Seller</span>}
                 <div className="container-icon-row">
@@ -110,12 +126,13 @@ export default function DispenserStation({
         <div className="custom-pump-header">
           <span className="section-micro-label">CUSTOM LITERS / REFILL:</span>
           <div className="quick-chip-buttons">
-            {[0.5, 1, 2, 5].map((amt) => (
+            {[0.5, 1, 2, 5, 10].map((amt) => (
               <button
                 key={amt}
                 type="button"
                 className="quick-chip-btn"
-                onClick={() => onAddToCart(product, amt)}
+                onClick={() => handleDispense(amt)}
+                title={`Dispense +${amt} Liters`}
               >
                 +{amt}L
               </button>
