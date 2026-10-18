@@ -23,7 +23,8 @@ export default function SettingsView({
   onClearTransactionsOnly,
 }) {
   const [formData, setFormData] = useState({ ...config });
-  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
+  const [savedCalendarSuccess, setSavedCalendarSuccess] = useState(false);
   const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
 
   useEffect(() => {
@@ -38,11 +39,20 @@ export default function SettingsView({
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSaveProfile = (e) => {
     e.preventDefault();
     onSaveConfig(formData);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    soundFX.playPop();
+    setSavedProfileSuccess(true);
+    setTimeout(() => setSavedProfileSuccess(false), 3000);
+  };
+
+  const handleSaveCalendar = (e) => {
+    e.preventDefault();
+    onSaveConfig(formData);
+    soundFX.playPop();
+    setSavedCalendarSuccess(true);
+    setTimeout(() => setSavedCalendarSuccess(false), 3000);
   };
 
   const handleFileImport = (e) => {
@@ -72,7 +82,7 @@ export default function SettingsView({
       <div className="settings-card">
         <div className="settings-card-header">
           <div className="stat-icon-wrapper stat-cyan">
-            <Store size={20} />
+            <Store size={22} />
           </div>
           <div>
             <h3 className="section-title">Shop Profile & Receipt Header</h3>
@@ -82,17 +92,20 @@ export default function SettingsView({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="settings-form">
-          {savedSuccess && (
+        <form onSubmit={handleSaveProfile} className="settings-form">
+          {savedProfileSuccess && (
             <div className="alert-success animate-fade">
               <Check size={18} />
-              <span>Shop settings saved successfully!</span>
+              <span>Shop profile details updated successfully!</span>
             </div>
           )}
 
           <div className="form-group-row">
             <div className="form-group">
-              <label className="form-label">Shop Name *</label>
+              <label className="form-label">
+                <span>Shop Name *</span>
+                <span className="form-label-hint">Required</span>
+              </label>
               <input
                 type="text"
                 required
@@ -102,7 +115,10 @@ export default function SettingsView({
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Tagline / Motto</label>
+              <label className="form-label">
+                <span>Tagline / Motto</span>
+                <span className="form-label-hint">Shown under logo</span>
+              </label>
               <input
                 type="text"
                 className="form-input"
@@ -114,7 +130,10 @@ export default function SettingsView({
 
           <div className="form-group-row">
             <div className="form-group">
-              <label className="form-label">Shop Owner / Cashier</label>
+              <label className="form-label">
+                <span>Shop Owner / Cashier</span>
+                <span className="form-label-hint">Greeting & sign-off</span>
+              </label>
               <input
                 type="text"
                 className="form-input"
@@ -123,7 +142,10 @@ export default function SettingsView({
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Phone Number</label>
+              <label className="form-label">
+                <span>Phone Number</span>
+                <span className="form-label-hint">For receipts</span>
+              </label>
               <input
                 type="tel"
                 className="form-input"
@@ -135,7 +157,10 @@ export default function SettingsView({
 
           <div className="form-group-row">
             <div className="form-group">
-              <label className="form-label">Shop Location / Address</label>
+              <label className="form-label">
+                <span>Shop Location / Address</span>
+                <span className="form-label-hint">Addis Ababa, etc.</span>
+              </label>
               <input
                 type="text"
                 className="form-input"
@@ -144,7 +169,10 @@ export default function SettingsView({
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Currency Symbol</label>
+              <label className="form-label">
+                <span>Currency Symbol</span>
+                <span className="form-label-hint">e.g. ETB</span>
+              </label>
               <input
                 type="text"
                 className="form-input"
@@ -155,7 +183,10 @@ export default function SettingsView({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Receipt Footer Message</label>
+            <label className="form-label">
+              <span>Receipt Footer Message</span>
+              <span className="form-label-hint">Appears at bottom of slip</span>
+            </label>
             <input
               type="text"
               className="form-input"
@@ -177,7 +208,7 @@ export default function SettingsView({
       <div className="settings-card">
         <div className="settings-card-header">
           <div className="stat-icon-wrapper stat-emerald">
-            <Calendar size={20} />
+            <Calendar size={22} />
           </div>
           <div>
             <h3 className="section-title">Calendar System & Date Preferences (የቀን መቁጠሪያ)</h3>
@@ -187,10 +218,20 @@ export default function SettingsView({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="settings-form">
+        <form onSubmit={handleSaveCalendar} className="settings-form">
+          {savedCalendarSuccess && (
+            <div className="alert-success animate-fade">
+              <Check size={18} />
+              <span>Calendar preferences saved and applied across the app!</span>
+            </div>
+          )}
+
           <div className="form-group-row">
             <div className="form-group">
-              <label className="form-label">Primary Calendar System (የቀን አቆጣጠር)</label>
+              <label className="form-label">
+                <span>Primary Calendar System (የቀን አቆጣጠር)</span>
+                <span className="form-label-hint">System-wide</span>
+              </label>
               <select
                 className="form-input"
                 value={formData.calendarSystem || "ethiopian"}
@@ -202,7 +243,10 @@ export default function SettingsView({
             </div>
 
             <div className="form-group">
-              <label className="form-label">Date Display Style (የአቀራረብ ዘይቤ)</label>
+              <label className="form-label">
+                <span>Date Display Style (የአቀራረብ ዘይቤ)</span>
+                <span className="form-label-hint">Formatting format</span>
+              </label>
               <select
                 className="form-input"
                 value={formData.calendarStyle || "amharic"}
@@ -221,7 +265,7 @@ export default function SettingsView({
           {/* Live Preview Card */}
           <div className="calendar-preview-card">
             <div className="calendar-preview-title">
-              <Calendar size={16} className="text-teal" />
+              <Calendar size={16} />
               <span>Live Date Preview (ቅድመ ዕይታ)</span>
             </div>
             <div className="calendar-preview-text">
