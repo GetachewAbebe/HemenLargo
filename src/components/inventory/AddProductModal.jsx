@@ -106,9 +106,8 @@ export default function AddProductModal({
                   <button
                     key={cat.id}
                     type="button"
-                    className={`btn-category-chip ${
-                      newProduct.category === cat.id ? "chip-active" : ""
-                    }`}
+                    className={`btn-category-chip ${newProduct.category === cat.id ? "chip-active" : ""
+                      }`}
                     onClick={() => handleCategorySelect(cat)}
                   >
                     <span className="chip-emoji">{cat.emoji}</span>
@@ -177,13 +176,12 @@ export default function AddProductModal({
                 <strong className="calc-metric-val">{marginPct}%</strong>
               </div>
               <div
-                className={`margin-health-badge ${
-                  !isProfitable
+                className={`margin-health-badge ${!isProfitable
                     ? "margin-negative"
                     : isThin
-                    ? "margin-thin"
-                    : "margin-positive"
-                }`}
+                      ? "margin-thin"
+                      : "margin-positive"
+                  }`}
               >
                 {!isProfitable ? (
                   <>
@@ -247,9 +245,8 @@ export default function AddProductModal({
                       key={swatch.hex}
                       type="button"
                       title={swatch.name}
-                      className={`swatch-btn ${
-                        newProduct.color === swatch.hex ? "swatch-selected" : ""
-                      }`}
+                      className={`swatch-btn ${newProduct.color === swatch.hex ? "swatch-selected" : ""
+                        }`}
                       style={{ backgroundColor: swatch.hex }}
                       onClick={() => setNewProduct({ ...newProduct, color: swatch.hex })}
                     />
@@ -271,9 +268,8 @@ export default function AddProductModal({
                     <button
                       key={emoji}
                       type="button"
-                      className={`btn-emoji-quick ${
-                        newProduct.iconEmoji === emoji ? "emoji-selected" : ""
-                      }`}
+                      className={`btn-emoji-quick ${newProduct.iconEmoji === emoji ? "emoji-selected" : ""
+                        }`}
                       onClick={() => setNewProduct({ ...newProduct, iconEmoji: emoji })}
                     >
                       {emoji}
@@ -346,13 +342,12 @@ export default function AddProductModal({
 
               {/* Financial Return Pill */}
               <div
-                className={`preview-margin-indicator ${
-                  !isProfitable
+                className={`preview-margin-indicator ${!isProfitable
                     ? "margin-negative"
                     : isThin
-                    ? "margin-thin"
-                    : "margin-positive"
-                }`}
+                      ? "margin-thin"
+                      : "margin-positive"
+                  }`}
               >
                 <span>Unit Margin</span>
                 <span>
