@@ -14,8 +14,11 @@ import { restockProductStock } from "../services/inventoryService";
 import {
   fetchSupabaseProducts,
   fetchSupabaseSales,
+  fetchSupabaseExpenses,
   recordSaleInSupabase,
   updateProductStockInSupabase,
+  recordExpenseInSupabase,
+  deleteExpenseFromSupabase,
   subscribeToRealtimeChanges,
 } from "../services/supabaseService";
 
@@ -63,9 +66,10 @@ export function AppProvider({ children }) {
 
     async function loadCloudData() {
       try {
-        const [cloudProds, cloudSales] = await Promise.all([
+        const [cloudProds, cloudSales, cloudExpenses] = await Promise.all([
           fetchSupabaseProducts(),
           fetchSupabaseSales(),
+          fetchSupabaseExpenses(),
         ]);
 
         if (!isMounted) return;
@@ -78,8 +82,12 @@ export function AppProvider({ children }) {
           setSales(cloudSales);
           saveToStorage("SALES", cloudSales);
         }
+        if (cloudExpenses && cloudExpenses.length > 0) {
+          setExpenses(cloudExpenses);
+          saveToStorage("EXPENSES", cloudExpenses);
+        }
 
-        if (cloudProds || cloudSales) {
+        if (cloudProds || cloudSales || cloudExpenses) {
           setCloudStatus("connected");
         } else {
           setCloudStatus("local");
@@ -106,6 +114,13 @@ export function AppProvider({ children }) {
         if (sls && isMounted) {
           setSales(sls);
           saveToStorage("SALES", sls);
+        }
+      },
+      async () => {
+        const exps = await fetchSupabaseExpenses();
+        if (exps && isMounted) {
+          setExpenses(exps);
+          saveToStorage("EXPENSES", exps);
         }
       }
     );
@@ -204,6 +219,10 @@ export function AppProvider({ children }) {
     const updated = [expenseRecord, ...expenses];
     setExpenses(updated);
     saveToStorage("EXPENSES", updated);
+
+    // Sync to Supabase cloud
+    recordExpenseInSupabase(expenseRecord);
+
     showToast(`Expense of ${expenseRecord.amount.toFixed(2)} ${config.currency} recorded!`);
   };
 
@@ -211,6 +230,10 @@ export function AppProvider({ children }) {
     const updated = expenses.filter((e) => e.id !== expenseId);
     setExpenses(updated);
     saveToStorage("EXPENSES", updated);
+
+    // Delete in Supabase cloud
+    deleteExpenseFromSupabase(expenseId);
+
     showToast("Expense record deleted.");
   };
 

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS products (
 -- 2. Sales Table (Transactions & Counter Receipts)
 CREATE TABLE IF NOT EXISTS sales (
   id TEXT PRIMARY KEY,
+  invoice_number TEXT,
   date TIMESTAMPTZ DEFAULT NOW(),
   customer_name TEXT DEFAULT 'Walk-in Customer',
   customer_phone TEXT DEFAULT 'N/A',
@@ -32,12 +33,17 @@ CREATE TABLE IF NOT EXISTS sales (
   subtotal NUMERIC NOT NULL DEFAULT 0,
   discount NUMERIC DEFAULT 0,
   total NUMERIC NOT NULL DEFAULT 0,
+  total_amount NUMERIC NOT NULL DEFAULT 0,
+  total_cost NUMERIC DEFAULT 0,
   profit NUMERIC DEFAULT 0,
   total_liters NUMERIC NOT NULL DEFAULT 0,
   cash_tendered NUMERIC,
   change_due NUMERIC,
   note TEXT,
+  notes TEXT,
   credit_due_date TEXT,
+  payment_status TEXT DEFAULT 'paid',
+  pricing_tier TEXT DEFAULT 'retail',
   status TEXT DEFAULT 'Completed',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -64,38 +70,48 @@ CREATE TABLE IF NOT EXISTS expenses (
   title TEXT NOT NULL,
   category TEXT DEFAULT 'Supplies',
   amount NUMERIC NOT NULL DEFAULT 0,
+  payment_method TEXT DEFAULT 'Cash',
   date TEXT,
   note TEXT,
+  notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 5. Shop Config Table (Store Profile, Currency, VAT)
 CREATE TABLE IF NOT EXISTS shop_config (
   id TEXT PRIMARY KEY DEFAULT 'default_config',
+  shop_name TEXT DEFAULT 'Sukie Liquid Soap',
   store_name TEXT DEFAULT 'Sukie Liquid Soap',
   tagline TEXT DEFAULT 'Bulk Refill & Quality Cleansers',
-  phone TEXT DEFAULT '+251 91 123 4567',
+  owner_name TEXT DEFAULT 'Getachew',
+  phone TEXT DEFAULT '+251 91 100 0000',
+  address TEXT DEFAULT 'Addis Ababa, Ethiopia',
   location TEXT DEFAULT 'Addis Ababa, Ethiopia',
   currency TEXT DEFAULT 'ETB',
+  calendar_system TEXT DEFAULT 'ethiopian',
+  calendar_style TEXT DEFAULT 'amharic',
+  receipt_footer TEXT DEFAULT 'Thank you for shopping with us! አመሰግናለሁ!',
+  tax_rate NUMERIC DEFAULT 0,
   vat_percent NUMERIC DEFAULT 0,
-  receipt_footer TEXT DEFAULT 'Thank you for keeping clean with Sukie!',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security (RLS) & Allow Anonymous Public Access for Shop POS
+-- 6. Enable Row Level Security (RLS)
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE debts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shop_config ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read-write for products" ON products FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read-write for sales" ON sales FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read-write for debts" ON debts FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read-write for expenses" ON expenses FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public read-write for shop_config" ON shop_config FOR ALL USING (true) WITH CHECK (true);
+-- Development policies (allow authenticated or anonymous access with anon key):
+CREATE POLICY "Allow read-write for products" ON products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow read-write for sales" ON sales FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow read-write for debts" ON debts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow read-write for expenses" ON expenses FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow read-write for shop_config" ON shop_config FOR ALL USING (true) WITH CHECK (true);
 
--- Enable Realtime for live updates across devices
+-- 7. Enable Realtime publication for multi-device sync
 ALTER PUBLICATION supabase_realtime ADD TABLE products;
 ALTER PUBLICATION supabase_realtime ADD TABLE sales;
 ALTER PUBLICATION supabase_realtime ADD TABLE debts;

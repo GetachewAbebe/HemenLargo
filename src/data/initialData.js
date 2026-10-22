@@ -13,14 +13,9 @@ export const INITIAL_SHOP_CONFIG = {
   taxRate: 0,
 };
 
-export const COMMON_CONTAINERS = [
-  { label: "0.5 L", liters: 0.5, name: "500ml Bottle" },
-  { label: "1.0 L", liters: 1.0, name: "1 Liter Bottle" },
-  { label: "2.0 L", liters: 2.0, name: "2 Liter Jug" },
-  { label: "5.0 L", liters: 5.0, name: "5L Gallon" },
-  { label: "10.0 L", liters: 10.0, name: "10L Can" },
-  { label: "20.0 L", liters: 20.0, name: "20L Jerrycan" },
-];
+import { CONTAINER_PRESETS } from "../constants/containers";
+
+export const COMMON_CONTAINERS = CONTAINER_PRESETS;
 
 export const INITIAL_PRODUCTS = [
   {

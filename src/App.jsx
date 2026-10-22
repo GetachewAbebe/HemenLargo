@@ -99,9 +99,7 @@ function AppContent() {
       <div className="app-body-layout">
         <main className="app-main-viewport">
           <Suspense fallback={<ViewLoader />}>
-            {(activeTab === "dashboard" || activeTab === "analytics" || activeTab === "settings") && (
-              <DashboardView />
-            )}
+            {activeTab === "dashboard" && <DashboardView />}
             {activeTab === "pos" && <POSView />}
             {activeTab === "inventory" && <InventoryView />}
             {activeTab === "sales" && (

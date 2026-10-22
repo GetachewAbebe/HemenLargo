@@ -22,7 +22,10 @@ import QuickRefillModal from "./pos/QuickRefillModal";
 import SaleDateSelector from "./pos/SaleDateSelector";
 
 function generateReceiptId() {
-  return `REC-${Date.now().toString().slice(-6)}`;
+  const d = new Date();
+  const datePart = `${d.getFullYear().toString().slice(-2)}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  const randomPart = Math.floor(1000 + Math.random() * 9000);
+  return `REC-${datePart}-${randomPart}`;
 }
 
 export default function POSView(props) {
