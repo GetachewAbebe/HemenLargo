@@ -45,6 +45,75 @@
   margin-top: 2px;
 }
 
+/* Category Pill Selector (1. Chemical, 2. Salary, 3. Rent) */
+.category-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.category-pill:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.category-pill.selected.chemical {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  border-color: #0d9488;
+  color: #0f766e;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.18);
+}
+
+.category-pill.selected.salary {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #8b5cf6;
+  color: #6d28d9;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.18);
+}
+
+.category-pill.selected.rent {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #f59e0b;
+  color: #b45309;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18);
+}
+
+/* Table Category Tag Colors */
+.table-category-tag.cat-chemical {
+  background: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+
+.table-category-tag.cat-salary {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.table-category-tag.cat-rent {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
 /* ---------------------------------------------------
    Chemical Registration & Unit Pricing Calculator Panel
    --------------------------------------------------- */

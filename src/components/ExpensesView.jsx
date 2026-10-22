@@ -3,8 +3,6 @@ import {
   TrendingDown,
   Plus,
   Search,
-  DollarSign,
-  Calendar,
   Trash2,
   CreditCard,
   Banknote,
@@ -14,6 +12,8 @@ import {
   Beaker,
   Calculator,
   Sparkles,
+  Users,
+  Building2,
 } from "lucide-react";
 import {
   formatEthiopianDate,
@@ -44,9 +44,16 @@ export default function ExpensesView({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [todayEthFormatted] = useState(() => formatEthiopianDate(new Date(), "full"));
 
+  // 3 Primary Expense Categories requested
+  const categories = [
+    "Chemical",
+    "Salary",
+    "Rent",
+  ];
+
   const initialExpenseState = {
     title: "",
-    category: "Raw Materials & Chemicals",
+    category: "Chemical",
     litersBought: "",
     pricePerLiter: "",
     unit: "L",
@@ -58,38 +65,37 @@ export default function ExpensesView({
 
   const [newExpense, setNewExpense] = useState(initialExpenseState);
 
-  const categories = [
-    "Raw Materials & Chemicals",
-    "Packaging & Containers",
-    "Shop Rent",
-    "Water & Utilities",
-    "Transport & Logistics",
-    "Labor & Wages",
-    "Equipment & Maintenance",
-    "Other Overhead",
-  ];
-
   // Calculations
   const totalExpenses = expenses.reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
   
-  const rawMaterialTotal = expenses
-    .filter((e) => e.category === "Raw Materials & Chemicals")
+  const chemicalTotal = expenses
+    .filter((e) => e.category === "Chemical" || e.category === "Raw Materials & Chemicals")
     .reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
 
   const totalChemicalLiters = expenses
-    .filter((e) => e.category === "Raw Materials & Chemicals" && e.litersBought)
+    .filter((e) => (e.category === "Chemical" || e.category === "Raw Materials & Chemicals") && e.litersBought)
     .reduce((acc, e) => acc + (parseFloat(e.litersBought) || 0), 0);
 
-  const packagingTotal = expenses
-    .filter((e) => e.category === "Packaging & Containers")
+  const salaryTotal = expenses
+    .filter((e) => e.category === "Salary" || e.category === "Labor & Wages")
     .reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
 
-  const rentAndUtilitiesTotal = expenses
-    .filter((e) => e.category === "Shop Rent" || e.category === "Water & Utilities")
+  const rentTotal = expenses
+    .filter((e) => e.category === "Rent" || e.category === "Shop Rent")
     .reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
 
   const filteredExpenses = expenses.filter((e) => {
-    if (categoryFilter !== "all" && e.category !== categoryFilter) return false;
+    if (categoryFilter !== "all") {
+      if (categoryFilter === "Chemical") {
+        if (e.category !== "Chemical" && e.category !== "Raw Materials & Chemicals") return false;
+      } else if (categoryFilter === "Salary") {
+        if (e.category !== "Salary" && e.category !== "Labor & Wages") return false;
+      } else if (categoryFilter === "Rent") {
+        if (e.category !== "Rent" && e.category !== "Shop Rent") return false;
+      } else if (e.category !== categoryFilter) {
+        return false;
+      }
+    }
     const q = searchQuery.toLowerCase().trim();
     if (q) {
       const matchTitle = e.title && e.title.toLowerCase().includes(q);
@@ -100,11 +106,11 @@ export default function ExpensesView({
   });
 
   const handleCategoryChange = (cat) => {
-    const isChemical = cat === "Raw Materials & Chemicals";
+    const isChemical = cat === "Chemical" || cat === "Raw Materials & Chemicals";
     setNewExpense((prev) => ({
       ...prev,
       category: cat,
-      isUnitPricing: isChemical ? true : prev.isUnitPricing,
+      isUnitPricing: isChemical,
     }));
   };
 
@@ -153,7 +159,7 @@ export default function ExpensesView({
     const liters = parseFloat(newExpense.litersBought);
     let updatedRate = newExpense.pricePerLiter;
 
-    // If volume is present, sync unit rate to whole price / volume
+    // If chemical volume is present, sync unit rate to whole price / volume
     if (newExpense.isUnitPricing && !isNaN(liters) && liters > 0 && amt !== "") {
       const aNum = parseFloat(amt);
       if (!isNaN(aNum) && aNum >= 0) {
@@ -235,7 +241,7 @@ export default function ExpensesView({
 
   return (
     <div className="expenses-layout animate-fade">
-      {/* Metrics Row */}
+      {/* Metrics Row - 1-to-1 matching Total, Chemical, Salary, and Rent */}
       <div className="metrics-grid">
         <div className="metric-card">
           <div className="metric-header">
@@ -253,52 +259,52 @@ export default function ExpensesView({
 
         <div className="metric-card">
           <div className="metric-header">
-            <span className="metric-title">Chemicals & Raw Materials</span>
+            <span className="metric-title">1. Chemical Expenses</span>
             <div className="metric-icon-wrap stat-cyan">
               <FlaskConical size={20} />
             </div>
           </div>
           <div className="metric-value">
-            {rawMaterialTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
+            {chemicalTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
             <span className="metric-unit">{currency}</span>
           </div>
           <span className="metric-sub">
             {totalChemicalLiters > 0 ? (
               <>
-                <strong className="text-teal-700">{totalChemicalLiters.toLocaleString()} {currency === "ETB" ? "ሊትር" : "L"}</strong> registered • Surfactants & chemicals
+                <strong className="text-teal-700">{totalChemicalLiters.toLocaleString()} {currency === "ETB" ? "ሊትር" : "L"}</strong> registered • Concentrates & surfactants
               </>
             ) : (
-              "Surfactants, scents, dye, soda ash"
+              "SLS, Sulfonic, Caustic, Chlorine & Perfume"
             )}
           </span>
         </div>
 
         <div className="metric-card">
           <div className="metric-header">
-            <span className="metric-title">Packaging & Bottles</span>
-            <div className="metric-icon-wrap stat-amber">
-              <DollarSign size={20} />
+            <span className="metric-title">2. Salary Expenses</span>
+            <div className="metric-icon-wrap stat-purple">
+              <Users size={20} />
             </div>
           </div>
           <div className="metric-value">
-            {packagingTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
+            {salaryTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
             <span className="metric-unit">{currency}</span>
           </div>
-          <span className="metric-sub">Cans, jerrycans, caps, and labels</span>
+          <span className="metric-sub">Staff wages, technician labor & salaries</span>
         </div>
 
         <div className="metric-card">
           <div className="metric-header">
-            <span className="metric-title">Rent & Utilities</span>
-            <div className="metric-icon-wrap stat-purple">
-              <Calendar size={20} />
+            <span className="metric-title">3. Shop Rent</span>
+            <div className="metric-icon-wrap stat-amber">
+              <Building2 size={20} />
             </div>
           </div>
           <div className="metric-value">
-            {rentAndUtilitiesTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
+            {rentTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
             <span className="metric-unit">{currency}</span>
           </div>
-          <span className="metric-sub">Shop lease, water for dilution & power</span>
+          <span className="metric-sub">Monthly kiosk lease & shop stall rent</span>
         </div>
       </div>
 
@@ -322,11 +328,9 @@ export default function ExpensesView({
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="all">All Expense Categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+            <option value="Chemical">1. Chemical</option>
+            <option value="Salary">2. Salary</option>
+            <option value="Rent">3. Rent</option>
           </select>
         </div>
 
@@ -359,77 +363,88 @@ export default function ExpensesView({
                   </td>
                 </tr>
               ) : (
-                filteredExpenses.map((exp) => (
-                  <tr key={exp.id}>
-                    <td>
-                      <div className="expense-item-info">
-                        <strong className="expense-title">{exp.title}</strong>
-                        {exp.litersBought && exp.pricePerLiter ? (
-                          <span className="expense-rate-badge" title="Registered volume and price per unit">
-                            <Beaker size={12} />
-                            <span>
-                              {exp.litersBought} {exp.unit || "L"} @ {Number(exp.pricePerLiter).toFixed(2)} {currency}/{exp.unit || "L"}
+                filteredExpenses.map((exp) => {
+                  const isChem = exp.category === "Chemical" || exp.category === "Raw Materials & Chemicals";
+                  const isSal = exp.category === "Salary" || exp.category === "Labor & Wages";
+                  const isRnt = exp.category === "Rent" || exp.category === "Shop Rent";
+
+                  const tagClass = isChem ? "cat-chemical" : isSal ? "cat-salary" : "cat-rent";
+                  const displayCat = isChem ? "Chemical" : isSal ? "Salary" : isRnt ? "Rent" : exp.category;
+
+                  return (
+                    <tr key={exp.id}>
+                      <td>
+                        <div className="expense-item-info">
+                          <strong className="expense-title">{exp.title}</strong>
+                          {exp.litersBought && exp.pricePerLiter ? (
+                            <span className="expense-rate-badge" title="Registered volume and price per unit">
+                              <Beaker size={12} />
+                              <span>
+                                {exp.litersBought} {exp.unit || "L"} @ {Number(exp.pricePerLiter).toFixed(2)} {currency}/{exp.unit || "L"}
+                              </span>
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`table-category-tag ${tagClass}`}>
+                          {displayCat}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="date-time-cell">
+                          <span className="font-semibold text-slate-800">
+                            {formatEthiopianDate(exp.date, "medium")}
+                          </span>
+                          <span className="time-sub">
+                            {formatEthiopianTime(exp.date, false)}
+                            <span className="greg-inline-hint">
+                              {" "}• {new Date(exp.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                             </span>
                           </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="table-category-tag">{exp.category}</span>
-                    </td>
-                    <td>
-                      <div className="date-time-cell">
-                        <span className="font-semibold text-slate-800">
-                          {formatEthiopianDate(exp.date, "medium")}
-                        </span>
-                        <span className="time-sub">
-                          {formatEthiopianTime(exp.date, false)}
-                          <span className="greg-inline-hint">
-                            {" "}• {new Date(exp.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                          </span>
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="badge-pill badge-neutral">{exp.paymentMethod}</span>
-                    </td>
-                    <td>
-                      <div>
-                        <strong className="price-tag-danger">
-                          -{parseFloat(exp.amount).toFixed(2)} {currency}
-                        </strong>
-                        {exp.litersBought && exp.pricePerLiter ? (
-                          <span className="price-sub-calc">
-                            {exp.litersBought} {exp.unit || "L"} × {Number(exp.pricePerLiter).toFixed(2)} {currency}
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="expense-note-cell">{exp.notes || "—"}</span>
-                    </td>
-                    <td>
-                      <button
-                        className="btn-action-icon delete-btn"
-                        title="Delete expense"
-                        onClick={() => {
-                          if (window.confirm(`Delete expense "${exp.title}"?`)) {
-                            onDeleteExpense(exp.id);
-                          }
-                        }}
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                        </div>
+                      </td>
+                      <td>
+                        <span className="badge-pill badge-neutral">{exp.paymentMethod}</span>
+                      </td>
+                      <td>
+                        <div>
+                          <strong className="price-tag-danger">
+                            -{parseFloat(exp.amount).toFixed(2)} {currency}
+                          </strong>
+                          {exp.litersBought && exp.pricePerLiter ? (
+                            <span className="price-sub-calc">
+                              {exp.litersBought} {exp.unit || "L"} × {Number(exp.pricePerLiter).toFixed(2)} {currency}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="expense-note-cell">{exp.notes || "—"}</span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-action-icon delete-btn"
+                          title="Delete expense"
+                          onClick={() => {
+                            if (window.confirm(`Delete expense "${exp.title}"?`)) {
+                              onDeleteExpense(exp.id);
+                            }
+                          }}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Add Expense Modal with Chemical Volume & Unit Price Registration */}
+      {/* Add Expense Modal with 3 Clear Options: 1. Chemical, 2. Salary, 3. Rent */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -439,12 +454,55 @@ export default function ExpensesView({
         maxWidth="560px"
       >
         <form onSubmit={handleCreateExpense} className="modal-form">
+          {/* 3 Prominent Options: 1. Chemical, 2. Salary, 3. Rent */}
           <div className="form-group">
-            <label className="form-label">Expense Title / Description *</label>
+            <label className="form-label">Expense Category *</label>
+            <div className="category-options-grid">
+              <button
+                type="button"
+                className={`category-pill ${newExpense.category === "Chemical" ? "selected chemical" : ""}`}
+                onClick={() => handleCategoryChange("Chemical")}
+              >
+                <FlaskConical size={16} />
+                <span>1. Chemical</span>
+              </button>
+              <button
+                type="button"
+                className={`category-pill ${newExpense.category === "Salary" ? "selected salary" : ""}`}
+                onClick={() => handleCategoryChange("Salary")}
+              >
+                <Users size={16} />
+                <span>2. Salary</span>
+              </button>
+              <button
+                type="button"
+                className={`category-pill ${newExpense.category === "Rent" ? "selected rent" : ""}`}
+                onClick={() => handleCategoryChange("Rent")}
+              >
+                <Building2 size={16} />
+                <span>3. Rent</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              {newExpense.category === "Chemical"
+                ? "Chemical Name / Description *"
+                : newExpense.category === "Salary"
+                ? "Employee / Labor Description *"
+                : "Shop / Lease Description *"}
+            </label>
             <input
               type="text"
               required
-              placeholder="e.g. SLES Concentrated Surfactant (50kg Drum)"
+              placeholder={
+                newExpense.category === "Chemical"
+                  ? "e.g. SLES Concentrated Surfactant (50kg Drum)"
+                  : newExpense.category === "Salary"
+                  ? "e.g. Mixing Technician & Dispenser Monthly Salary"
+                  : "e.g. Monthly Kiosk / Shop Stall Lease"
+              }
               className="form-input"
               value={newExpense.title}
               onChange={(e) => setNewExpense({ ...newExpense, title: e.target.value })}
@@ -459,9 +517,9 @@ export default function ExpensesView({
                 value={newExpense.category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
-                {categories.map((c) => (
+                {categories.map((c, idx) => (
                   <option key={c} value={c}>
-                    {c}
+                    {idx + 1}. {c}
                   </option>
                 ))}
               </select>
@@ -487,30 +545,7 @@ export default function ExpensesView({
             </div>
           </div>
 
-          {/* Toggle for unit calculation if not chemical category */}
-          {newExpense.category !== "Raw Materials & Chemicals" && (
-            <div style={{ marginTop: "-6px", marginBottom: "8px" }}>
-              <button
-                type="button"
-                className="btn-toggle-unit-calc"
-                onClick={() =>
-                  setNewExpense((prev) => ({
-                    ...prev,
-                    isUnitPricing: !prev.isUnitPricing,
-                  }))
-                }
-              >
-                <Calculator size={14} />
-                <span>
-                  {newExpense.isUnitPricing
-                    ? "Switch to simple amount mode"
-                    : "+ Calculate whole price by litres / units bought"}
-                </span>
-              </button>
-            </div>
-          )}
-
-          {/* Chemical Volume & Price Per Litre Calculator Panel */}
+          {/* 1. Chemical: Volume & Price Per Litre Calculator Panel */}
           {newExpense.isUnitPricing && (
             <div className="chemical-calc-panel animate-fade">
               <div className="calc-panel-header">
@@ -520,9 +555,7 @@ export default function ExpensesView({
                   </div>
                   <div>
                     <div className="calc-panel-title">
-                      {newExpense.category === "Raw Materials & Chemicals"
-                        ? "Chemical Volume & Unit Price Registration"
-                        : "Volume & Unit Pricing Calculator"}
+                      Chemical Volume & Unit Price Registration
                     </div>
                     <div className="calc-panel-sub">
                       Whole price automatically calculated from volume bought × price per litre
@@ -689,14 +722,18 @@ export default function ExpensesView({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Notes / Supplier Details</label>
+            <label className="form-label">Notes / Details</label>
             <textarea
               rows="2"
               className="form-input"
               placeholder={
-                newExpense.litersBought && newExpense.pricePerLiter
-                  ? `e.g. Supplier contact, batch receipt for ${newExpense.litersBought}${newExpense.unit || "L"} @ ${newExpense.pricePerLiter} ${currency}...`
-                  : "Optional supplier contact, batch receipt number..."
+                newExpense.category === "Chemical"
+                  ? (newExpense.litersBought && newExpense.pricePerLiter
+                      ? `e.g. Supplier contact, batch receipt for ${newExpense.litersBought}${newExpense.unit || "L"} @ ${newExpense.pricePerLiter} ${currency}...`
+                      : "Optional supplier contact, batch receipt number...")
+                  : newExpense.category === "Salary"
+                  ? "Optional staff contact, monthly period, wage payment reference..."
+                  : "Optional landlord contact, shop lease number, period covered..."
               }
               value={newExpense.notes}
               onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}

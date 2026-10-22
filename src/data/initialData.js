@@ -183,7 +183,7 @@ export const INITIAL_EXPENSES = [
   {
     id: "exp-1",
     date: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
-    category: "Raw Materials & Chemicals",
+    category: "Chemical",
     title: "SLES & Sulfonic acid concentrate for Largo soap batch",
     amount: 5500,
     litersBought: 75,
@@ -195,7 +195,7 @@ export const INITIAL_EXPENSES = [
   {
     id: "exp-2",
     date: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    category: "Raw Materials & Chemicals",
+    category: "Chemical",
     title: "Chlorine concentrate & soda for Barikina batch",
     amount: 2800,
     litersBought: 60,
@@ -207,16 +207,16 @@ export const INITIAL_EXPENSES = [
   {
     id: "exp-3",
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    category: "Packaging & Containers",
-    title: "Empty 5L Gallons & 1L Bottles bundle",
-    amount: 1800,
+    category: "Salary",
+    title: "Soap Production Assistant & Dispenser Salary",
+    amount: 2500,
     paymentMethod: "Cash",
-    notes: "Plastic cans purchased from Merkato",
+    notes: "Production & mixing technician wage",
   },
   {
     id: "exp-4",
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    category: "Shop Rent",
+    category: "Rent",
     title: "Monthly Shop Rent (Kiosk)",
     amount: 5000,
     paymentMethod: "Telebirr",
@@ -225,11 +225,14 @@ export const INITIAL_EXPENSES = [
   {
     id: "exp-5",
     date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    category: "Water & Utilities",
-    title: "Water refill & utility for mixing tanks",
+    category: "Chemical",
+    title: "Purified water & chemical dilution mineral base",
     amount: 450,
+    litersBought: 500,
+    pricePerLiter: 0.9,
+    unit: "L",
     paymentMethod: "Telebirr",
-    notes: "Clean water for soap and bleach dilution",
+    notes: "Clean water dilution base for mixing tanks (500 L @ 0.90 ETB/L)",
   },
 ];
 
