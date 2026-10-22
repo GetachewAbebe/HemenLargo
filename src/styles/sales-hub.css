@@ -1,0 +1,91 @@
+/* ===================================================
+   UNIFIED SALES & POS HUB NAVIGATION
+   =================================================== */
+
+.sales-hub-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.sales-hub-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.sales-hub-switcher-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 4px;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 18px -4px rgba(15, 23, 42, 0.06);
+}
+
+.sales-hub-tabs {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: var(--radius-lg);
+  gap: 4px;
+}
+
+.sales-hub-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sales-hub-tab-btn:hover {
+  color: #0f172a;
+}
+
+.sales-hub-tab-btn.active {
+  background: #ffffff;
+  color: #0d9488;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.sales-hub-pill-badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.btn-pos-records-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0d9488;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-pos-records-link:hover {
+  background: #f0fdfa;
+  border-color: #0d9488;
+}

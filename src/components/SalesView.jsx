@@ -8,6 +8,7 @@ import {
   Droplets,
   DollarSign,
   TrendingUp,
+  Plus,
 } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import {
@@ -24,6 +25,7 @@ export default function SalesView({
   currency = "ETB",
   onSelectReceipt,
   onVoidSale,
+  onNavigateToRegister,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
@@ -257,7 +259,6 @@ export default function SalesView({
             <option value="Cash">💵 Cash Only (ጥሬ ገንዘብ)</option>
             <option value="Telebirr">📱 Telebirr Only (ቴሌብር)</option>
             <option value="CBE Birr">💳 CBE Birr Only (ሲቢኢ ብር)</option>
-            <option value="Credit">⚠️ Credit Only (ያልተከፈለ ዕዳ)</option>
           </select>
         </div>
 
@@ -265,6 +266,18 @@ export default function SalesView({
           <Download size={16} />
           <span>Export CSV</span>
         </button>
+
+        {onNavigateToRegister && (
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={onNavigateToRegister}
+            title="Open POS Register to record new sale"
+          >
+            <Plus size={16} />
+            <span>+ New Sale (አዲስ ሽያጭ)</span>
+          </button>
+        )}
       </div>
 
       {/* Transactions Table */}

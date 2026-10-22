@@ -13,7 +13,6 @@ import {
   Eye,
   Sparkles,
   CheckCircle2,
-  AlertTriangle,
   BarChart3,
   Layers,
 } from "lucide-react";
@@ -94,14 +93,12 @@ export default function DashboardView(props) {
     .filter((s) => s.paymentMethod === "Telebirr" || s.paymentMethod === "CBE Birr")
     .reduce((acc, s) => acc + (s.total || 0), 0);
 
-  // Active Store Credits across all sales
-  const creditSales = useMemo(() => {
-    return sales.filter((s) => s.paymentMethod === "Credit" || s.status === "Credit");
-  }, [sales]);
+  // Today's Expense Metrics
+  const todayExpenseTotal = useMemo(() => {
+    return todayExpenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
+  }, [todayExpenses]);
 
-  const totalCreditOwed = useMemo(() => {
-    return creditSales.reduce((acc, s) => acc + (s.total || 0), 0);
-  }, [creditSales]);
+  const todayNetIncome = todayRevenue - todayExpenseTotal;
 
   // Combined Recent Activity Stream (last 6 transactions)
   const recentActivities = useMemo(() => {
@@ -340,38 +337,33 @@ export default function DashboardView(props) {
           </div>
         </div>
 
-        {/* Active Store Credits */}
-        <div className="dashboard-kpi-card card-kpi-credits">
+        {/* Today's Expenses & Net Earnings */}
+        <div className="dashboard-kpi-card card-kpi-revenue">
           <div className="kpi-card-header">
-            <span className="kpi-title-text">Store Credits (ያልተሰበሰበ ዕዳ)</span>
-            <div className={`stat-icon-wrapper ${totalCreditOwed > 0 ? "stat-rose" : "stat-teal"}`}>
-              <CalendarClock size={18} />
+            <span className="kpi-title-text">Today's Expenses (የዛሬ ወጪ)</span>
+            <div className="stat-icon-wrapper stat-rose">
+              <TrendingDown size={18} />
             </div>
           </div>
 
           <div className="kpi-value-row">
-            <span className={`kpi-main-number ${totalCreditOwed > 0 ? "text-rose" : "text-emerald"}`}>
-              {totalCreditOwed.toLocaleString()}
+            <span className="kpi-main-number text-rose">
+              {todayExpenseTotal.toLocaleString()}
             </span>
             <span className="kpi-unit-label">{currency}</span>
           </div>
 
           <div className="kpi-credit-status-box">
-            {totalCreditOwed === 0 ? (
-              <span className="credit-ok-pill">
-                <CheckCircle2 size={13} />
-                <span>All Customer Accounts Settled</span>
+            <span className="credit-ok-pill">
+              <CheckCircle2 size={13} />
+              <span>
+                Net Profit: {todayNetIncome >= 0 ? `+${todayNetIncome.toLocaleString()}` : todayNetIncome.toLocaleString()} {currency}
               </span>
-            ) : (
-              <span className="credit-warn-pill">
-                <AlertTriangle size={13} />
-                <span>{creditSales.length} Customers with pending dues</span>
-              </span>
-            )}
+            </span>
           </div>
 
           <div className="kpi-footer-sub">
-            <span>Tracked in Sales Records ledger</span>
+            <span>{todayExpenses.length} {todayExpenses.length === 1 ? "expense record" : "expense records"} today</span>
           </div>
         </div>
       </div>

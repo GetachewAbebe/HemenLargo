@@ -1,6 +1,5 @@
 import React, { useState, lazy, Suspense } from "react";
 import Header from "./components/Header";
-import POSView from "./components/POSView";
 import InventoryView from "./components/InventoryView";
 import DashboardView from "./components/DashboardView";
 import ReceiptModal from "./components/ReceiptModal";
@@ -11,12 +10,11 @@ import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AppProvider, useApp } from "./context";
 import { getActiveSession, logoutUser } from "./services/authService";
+import SalesHubView from "./components/SalesHubView";
 import "./App.css";
 
 // Lazy-loaded secondary views for code-splitting and instant initial load
-const SalesView = lazy(() => import("./components/SalesView"));
 const ExpensesView = lazy(() => import("./components/ExpensesView"));
-const DebtsView = lazy(() => import("./components/DebtsView"));
 
 function ViewLoader() {
   return (
@@ -101,10 +99,8 @@ function AppContent() {
         <main className="app-main-viewport">
           <Suspense fallback={<ViewLoader />}>
             {activeTab === "dashboard" && <DashboardView />}
-            {activeTab === "pos" && <POSView />}
-            {activeTab === "inventory" && <InventoryView />}
-            {activeTab === "sales" && (
-              <SalesView
+            {(activeTab === "sales" || activeTab === "pos") && (
+              <SalesHubView
                 sales={sales}
                 config={config}
                 currency={config.currency}
@@ -112,6 +108,7 @@ function AppContent() {
                 onVoidSale={handleVoidSale}
               />
             )}
+            {activeTab === "inventory" && <InventoryView />}
             {activeTab === "expenses" && (
               <ExpensesView
                 expenses={expenses}
@@ -121,7 +118,6 @@ function AppContent() {
                 onDeleteExpense={handleDeleteExpense}
               />
             )}
-            {activeTab === "debts" && <DebtsView />}
           </Suspense>
         </main>
       </div>
