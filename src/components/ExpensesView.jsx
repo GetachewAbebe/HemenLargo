@@ -11,7 +11,6 @@ import {
   FlaskConical,
   Beaker,
   Calculator,
-  Sparkles,
   Users,
   Building2,
 } from "lucide-react";
@@ -20,18 +19,6 @@ import {
   formatEthiopianTime,
 } from "../utils/ethiopianDate";
 import Modal from "./common/Modal";
-
-const COMMON_CHEMICALS = [
-  { name: "SLS / SLES (Sodium Lauryl Ether Sulfate)", label: "SLS / SLES (ፎም)", unit: "L", defaultRate: 70 },
-  { name: "LABSA / Sulfonic Acid (ማጽጃ አሲድ)", label: "Sulfonic Acid (LABSA)", unit: "L", defaultRate: 95 },
-  { name: "Caustic Soda (ሶዲየም ሃይድሮክሳይድ)", label: "Caustic Soda", unit: "kg", defaultRate: 110 },
-  { name: "Sodium Hypochlorite (ክሎሪን ኮንሰንትሬት)", label: "Chlorine Bleach", unit: "L", defaultRate: 45 },
-  { name: "CDEA Foam Booster (አረፋ ማቆያ)", label: "CDEA Booster", unit: "L", defaultRate: 120 },
-  { name: "Industrial Salt / NaCl (ውፍረት ሰጪ)", label: "Salt (NaCl)", unit: "kg", defaultRate: 15 },
-  { name: "Soda Ash (ማረጋጊያ ሶዳ)", label: "Soda Ash", unit: "kg", defaultRate: 65 },
-  { name: "Fragrance & Perfume Oil (ሽቶ)", label: "Fragrance / Perfume", unit: "L", defaultRate: 380 },
-  { name: "Liquid Soap Dye (ቀለም)", label: "Colorant / Dye", unit: "L", defaultRate: 150 },
-];
 
 export default function ExpensesView({
   expenses = [],
@@ -171,35 +158,6 @@ export default function ExpensesView({
       ...prev,
       amount: val,
       pricePerLiter: updatedRate,
-    }));
-  };
-
-  const handleSelectChemicalPreset = (chem) => {
-    const selectedUnit = chem.unit || "L";
-    const selectedRate = chem.defaultRate ? String(chem.defaultRate) : newExpense.pricePerLiter;
-    let computedAmount = newExpense.amount;
-
-    if (newExpense.litersBought && selectedRate) {
-      const lNum = parseFloat(newExpense.litersBought);
-      const rNum = parseFloat(selectedRate);
-      if (!isNaN(lNum) && !isNaN(rNum)) {
-        computedAmount = (lNum * rNum).toFixed(2);
-      }
-    }
-
-    setNewExpense((prev) => ({
-      ...prev,
-      title: chem.name,
-      unit: selectedUnit,
-      pricePerLiter: selectedRate,
-      amount: computedAmount,
-    }));
-  };
-
-  const handleUnitChange = (u) => {
-    setNewExpense((prev) => ({
-      ...prev,
-      unit: u,
     }));
   };
 
@@ -548,68 +506,13 @@ export default function ExpensesView({
           {/* 1. Chemical: Volume & Price Per Litre Calculator Panel */}
           {newExpense.isUnitPricing && (
             <div className="chemical-calc-panel animate-fade">
-              <div className="calc-panel-header">
-                <div className="calc-panel-title-wrap">
-                  <div className="calc-icon-badge">
-                    <FlaskConical size={16} />
-                  </div>
-                  <div>
-                    <div className="calc-panel-title">
-                      Chemical Volume & Unit Price Registration
-                    </div>
-                    <div className="calc-panel-sub">
-                      Whole price automatically calculated from volume bought × price per litre
-                    </div>
-                  </div>
-                </div>
-
-                <div className="calc-unit-switcher">
-                  <button
-                    type="button"
-                    className={`calc-unit-btn ${newExpense.unit === "L" ? "active" : ""}`}
-                    onClick={() => handleUnitChange("L")}
-                  >
-                    L (Litre)
-                  </button>
-                  <button
-                    type="button"
-                    className={`calc-unit-btn ${newExpense.unit === "kg" ? "active" : ""}`}
-                    onClick={() => handleUnitChange("kg")}
-                  >
-                    kg (Kilo)
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Chemical Preset Chips */}
-              <div className="quick-chemicals-bar">
-                <span className="quick-chemicals-label">Quick Chemical Presets:</span>
-                <div className="quick-chemicals-grid">
-                  {COMMON_CHEMICALS.map((chem) => (
-                    <button
-                      key={chem.name}
-                      type="button"
-                      className={`quick-chemical-chip ${newExpense.title === chem.name ? "selected" : ""}`}
-                      onClick={() => handleSelectChemicalPreset(chem)}
-                    >
-                      <Sparkles size={11} />
-                      <span>{chem.label}</span>
-                      {chem.defaultRate && (
-                        <span className="chip-rate-tag">
-                          ({chem.defaultRate} {currency}/{chem.unit})
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Volume & Price Per Litre Row */}
               <div className="form-group-row">
                 {/* Litres Bought */}
                 <div className="form-group">
                   <label className="form-label">
-                    <span>{newExpense.unit === "kg" ? "Weight Bought (kg)" : "Litres Bought (L)"} *</span>
+                    <span>Litres Bought (L) *</span>
                   </label>
                   <div className="input-with-adornment">
                     <input
@@ -621,7 +524,7 @@ export default function ExpensesView({
                       value={newExpense.litersBought}
                       onChange={(e) => handleLitersChange(e.target.value)}
                     />
-                    <span className="input-adornment-badge">{newExpense.unit || "L"}</span>
+                    <span className="input-adornment-badge">L</span>
                   </div>
 
                   {/* Volume Presets */}
@@ -633,7 +536,7 @@ export default function ExpensesView({
                         className="quick-vol-btn"
                         onClick={() => handleLitersChange(String(v))}
                       >
-                        +{v}{newExpense.unit || "L"}
+                        +{v}L
                       </button>
                     ))}
                   </div>
@@ -642,7 +545,7 @@ export default function ExpensesView({
                 {/* Price per Litre */}
                 <div className="form-group">
                   <label className="form-label">
-                    <span>Price per {newExpense.unit === "kg" ? "Kilogram" : "Litre"} ({currency}) *</span>
+                    <span>Price per Litre ({currency}) *</span>
                   </label>
                   <div className="input-with-adornment">
                     <input
@@ -654,9 +557,9 @@ export default function ExpensesView({
                       value={newExpense.pricePerLiter}
                       onChange={(e) => handlePricePerLiterChange(e.target.value)}
                     />
-                    <span className="input-adornment-badge">{currency}/{newExpense.unit || "L"}</span>
+                    <span className="input-adornment-badge">{currency}/L</span>
                   </div>
-                  <span className="form-label-hint">Rate per single {newExpense.unit === "kg" ? "kg" : "litre"}</span>
+                  <span className="form-label-hint">Rate per single litre</span>
                 </div>
               </div>
 
@@ -668,11 +571,11 @@ export default function ExpensesView({
                     <span className="calc-formula-text">
                       {parseFloat(newExpense.litersBought) > 0 && parseFloat(newExpense.pricePerLiter) > 0 ? (
                         <>
-                          <strong>{newExpense.litersBought} {newExpense.unit || "L"}</strong> ×{" "}
-                          <strong>{parseFloat(newExpense.pricePerLiter).toFixed(2)} {currency}/{newExpense.unit || "L"}</strong>
+                          <strong>{newExpense.litersBought} L</strong> ×{" "}
+                          <strong>{parseFloat(newExpense.pricePerLiter).toFixed(2)} {currency}/L</strong>
                         </>
                       ) : (
-                        "Fill volume and price per litre above"
+                        "Fill litres bought and price per litre above"
                       )}
                     </span>
                     <span className="calc-formula-sub">የጠቅላላ ዋጋ ስሌት • Whole Price Formula</span>
