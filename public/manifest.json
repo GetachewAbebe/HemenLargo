@@ -1,0 +1,17 @@
+{
+  "short_name": "Sukie POS",
+  "name": "Sukie Liquid Soap POS & Shop Management",
+  "description": "Point of Sale, Tank Inventory & Ethiopian Calendar Shop Management for Bulk Cleansers",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#f8fafc",
+  "theme_color": "#0d9488",
+  "display": "standalone",
+  "orientation": "any"
+}

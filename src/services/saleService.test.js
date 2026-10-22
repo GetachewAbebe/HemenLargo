@@ -3,6 +3,7 @@ import {
   calculateCartTotals,
   deductStockForSale,
   restoreStockForVoidedSale,
+  applyDebtRepayment,
 } from "./saleService";
 
 describe("Sale Service Domain Logic", () => {
@@ -78,5 +79,42 @@ describe("Sale Service Domain Logic", () => {
 
     expect(prod1.stockLiters).toBe(110);
     expect(prod1.soldLiters).toBe(10);
+  });
+
+  it("applies partial repayment to a customer debt", () => {
+    const debt = {
+      id: "debt-1",
+      customerName: "Abebe",
+      totalAmount: 1000,
+      paidAmount: 200,
+      remainingBalance: 800,
+      status: "Partially Paid",
+      payments: [],
+    };
+
+    const updated = applyDebtRepayment(debt, 300, "Telebirr", "Second installment");
+    expect(updated.paidAmount).toBe(500);
+    expect(updated.remainingBalance).toBe(500);
+    expect(updated.status).toBe("Partially Paid");
+    expect(updated.payments.length).toBe(1);
+    expect(updated.payments[0].amount).toBe(300);
+    expect(updated.payments[0].paymentMethod).toBe("Telebirr");
+  });
+
+  it("marks debt as Settled when repaid in full", () => {
+    const debt = {
+      id: "debt-2",
+      customerName: "Dawit",
+      totalAmount: 600,
+      paidAmount: 0,
+      remainingBalance: 600,
+      status: "Unpaid",
+      payments: [],
+    };
+
+    const updated = applyDebtRepayment(debt, 600, "Cash", "Cleared in full");
+    expect(updated.paidAmount).toBe(600);
+    expect(updated.remainingBalance).toBe(0);
+    expect(updated.status).toBe("Settled");
   });
 });

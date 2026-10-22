@@ -257,7 +257,100 @@ export const deleteExpenseFromSupabase = async (expenseId) => {
   }
 };
 
-export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onExpensesChange) => {
+export const normalizeDebtFromSupabase = (d) => {
+  if (!d) return null;
+  const totalAmount = Number(d.total_amount) || 0;
+  const paidAmount = Number(d.paid_amount) || 0;
+  const remaining = Number(d.remaining_balance ?? (totalAmount - paidAmount)) || 0;
+
+  return {
+    id: d.id,
+    customerName: d.customer_name || "Customer",
+    customerPhone: d.customer_phone || "N/A",
+    saleId: d.sale_id || "",
+    date: d.date || d.created_at || new Date().toISOString(),
+    totalAmount,
+    paidAmount,
+    remainingBalance: remaining,
+    dueDate: d.due_date || "",
+    status: d.status || (remaining <= 0 ? "Settled" : paidAmount > 0 ? "Partially Paid" : "Unpaid"),
+    notes: d.notes || "",
+    payments: Array.isArray(d.payments) ? d.payments : [],
+  };
+};
+
+export const fetchSupabaseDebts = async () => {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from("debts")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("Could not fetch debts from Supabase:", error.message);
+      return null;
+    }
+
+    if (data && data.length > 0) {
+      return data.map(normalizeDebtFromSupabase).filter(Boolean);
+    }
+    return null;
+  } catch (err) {
+    console.warn("fetchSupabaseDebts error:", err);
+    return null;
+  }
+};
+
+export const recordDebtInSupabase = async (debt) => {
+  if (!supabase) return;
+  try {
+    const payload = {
+      id: debt.id,
+      customer_name: debt.customerName,
+      customer_phone: debt.customerPhone || "N/A",
+      sale_id: debt.saleId || null,
+      date: debt.date || new Date().toISOString(),
+      total_amount: Number(debt.totalAmount) || 0,
+      paid_amount: Number(debt.paidAmount) || 0,
+      remaining_balance: Number(debt.remainingBalance) || 0,
+      due_date: debt.dueDate || null,
+      status: debt.status || "Unpaid",
+      notes: debt.notes || "",
+    };
+
+    const { error } = await supabase.from("debts").upsert([payload]);
+    if (error) {
+      console.warn("Supabase recordDebt error:", error.message);
+    }
+  } catch (err) {
+    console.warn("Supabase recordDebt failed:", err);
+  }
+};
+
+export const updateDebtInSupabase = async (debtId, updates) => {
+  if (!supabase) return;
+  try {
+    const payload = {};
+    if (updates.paidAmount !== undefined) payload.paid_amount = Number(updates.paidAmount);
+    if (updates.remainingBalance !== undefined) payload.remaining_balance = Number(updates.remainingBalance);
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.notes !== undefined) payload.notes = updates.notes;
+
+    const { error } = await supabase
+      .from("debts")
+      .update(payload)
+      .eq("id", debtId);
+
+    if (error) {
+      console.warn("Supabase updateDebt error:", error.message);
+    }
+  } catch (err) {
+    console.warn("Supabase updateDebt failed:", err);
+  }
+};
+
+export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onExpensesChange, onDebtsChange) => {
   if (!supabase) return () => {};
   try {
     const channel = supabase
@@ -281,6 +374,13 @@ export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onEx
         { event: "*", schema: "public", table: "expenses" },
         () => {
           if (onExpensesChange) onExpensesChange();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "debts" },
+        () => {
+          if (onDebtsChange) onDebtsChange();
         }
       )
       .subscribe();

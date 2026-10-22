@@ -226,3 +226,42 @@ export const INITIAL_EXPENSES = [
     notes: "Clean water for soap and bleach dilution",
   },
 ];
+
+export const INITIAL_DEBTS = [
+  {
+    id: "debt-101",
+    customerName: "Getu Melaku (Car Wash)",
+    customerPhone: "0912345678",
+    saleId: "REC-1005",
+    date: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(),
+    totalAmount: 1200,
+    paidAmount: 500,
+    remainingBalance: 700,
+    dueDate: "2019-02-15",
+    status: "Partially Paid",
+    notes: "Took 20L Largo Jerrycan for car wash. Paid 500 ETB upfront, 700 ETB remaining.",
+    payments: [
+      {
+        id: "pay-1",
+        date: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+        amount: 500,
+        paymentMethod: "Telebirr",
+        note: "Partial payment via Telebirr",
+      },
+    ],
+  },
+  {
+    id: "debt-102",
+    customerName: "Rahel Alemu (Hotel Laundry)",
+    customerPhone: "0923456789",
+    saleId: "REC-1006",
+    date: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
+    totalAmount: 950,
+    paidAmount: 0,
+    remainingBalance: 950,
+    dueDate: "2019-02-18",
+    status: "Unpaid",
+    notes: "10L Largo + 5L Barikina for hotel laundry. Promised to pay end of week.",
+    payments: [],
+  },
+];

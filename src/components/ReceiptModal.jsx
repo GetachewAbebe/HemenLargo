@@ -4,6 +4,7 @@ import {
   formatEthiopianDate,
   formatEthiopianTime,
 } from "../utils/ethiopianDate";
+import PaymentQRCode from "./common/PaymentQRCode";
 
 export default function ReceiptModal({ receipt, config = {}, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -244,13 +245,17 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
             <p className="receipt-thanks">
               {config.receiptFooter || "Thank you for shopping with us! አመሰግናለሁ!"}
             </p>
-            <p className="receipt-note-small">
-              Goods once sold from bulk tank cannot be returned after dispenser seal.
-            </p>
-            <div className="receipt-barcode">
-              ||||| | |||| ||| ||||||| || |||||| ||||
-            </div>
-            <span className="receipt-id-sub">{receipt.id}</span>
+            {/* Dynamic Scannable Payment & Verification QR Code */}
+            <PaymentQRCode
+              receiptId={receipt.id}
+              totalAmount={receipt.total}
+              paymentMethod={receipt.paymentMethod || "Telebirr"}
+              accountPhone={config.phone || "+251911000000"}
+              shopName={config.shopName || "Sukie"}
+              currency={config.currency || "ETB"}
+            />
+
+            <span className="receipt-id-sub">TXN #{receipt.id}</span>
           </div>
         </div>
       </div>

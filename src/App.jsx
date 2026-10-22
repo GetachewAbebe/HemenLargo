@@ -16,6 +16,7 @@ import "./App.css";
 // Lazy-loaded secondary views for code-splitting and instant initial load
 const SalesView = lazy(() => import("./components/SalesView"));
 const ExpensesView = lazy(() => import("./components/ExpensesView"));
+const DebtsView = lazy(() => import("./components/DebtsView"));
 
 function ViewLoader() {
   return (
@@ -120,6 +121,7 @@ function AppContent() {
                 onDeleteExpense={handleDeleteExpense}
               />
             )}
+            {activeTab === "debts" && <DebtsView />}
           </Suspense>
         </main>
       </div>

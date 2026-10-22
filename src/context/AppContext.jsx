@@ -9,16 +9,20 @@ import {
 import {
   deductStockForSale,
   restoreStockForVoidedSale,
+  applyDebtRepayment,
 } from "../services/saleService";
 import { restockProductStock } from "../services/inventoryService";
 import {
   fetchSupabaseProducts,
   fetchSupabaseSales,
   fetchSupabaseExpenses,
+  fetchSupabaseDebts,
   recordSaleInSupabase,
   updateProductStockInSupabase,
   recordExpenseInSupabase,
   deleteExpenseFromSupabase,
+  recordDebtInSupabase,
+  updateDebtInSupabase,
   subscribeToRealtimeChanges,
 } from "../services/supabaseService";
 
@@ -31,6 +35,7 @@ export function AppProvider({ children }) {
   const [products, setProducts] = useState(initialData.products);
   const [sales, setSales] = useState(initialData.sales);
   const [expenses, setExpenses] = useState(initialData.expenses);
+  const [debts, setDebts] = useState(initialData.debts || []);
   const [cloudStatus, setCloudStatus] = useState("connecting"); // 'connected' | 'connecting' | 'local'
 
   // Modal & Toast States
@@ -59,17 +64,17 @@ export function AppProvider({ children }) {
     return () => window.removeEventListener("sukie_storage_quota_warning", handleStorageWarning);
   }, []);
 
-
   // Sync with Supabase on mount & listen to real-time changes
   useEffect(() => {
     let isMounted = true;
 
     async function loadCloudData() {
       try {
-        const [cloudProds, cloudSales, cloudExpenses] = await Promise.all([
+        const [cloudProds, cloudSales, cloudExpenses, cloudDebts] = await Promise.all([
           fetchSupabaseProducts(),
           fetchSupabaseSales(),
           fetchSupabaseExpenses(),
+          fetchSupabaseDebts(),
         ]);
 
         if (!isMounted) return;
@@ -86,8 +91,12 @@ export function AppProvider({ children }) {
           setExpenses(cloudExpenses);
           saveToStorage("EXPENSES", cloudExpenses);
         }
+        if (cloudDebts && cloudDebts.length > 0) {
+          setDebts(cloudDebts);
+          saveToStorage("DEBTS", cloudDebts);
+        }
 
-        if (cloudProds || cloudSales || cloudExpenses) {
+        if (cloudProds || cloudSales || cloudExpenses || cloudDebts) {
           setCloudStatus("connected");
         } else {
           setCloudStatus("local");
@@ -122,6 +131,13 @@ export function AppProvider({ children }) {
           setExpenses(exps);
           saveToStorage("EXPENSES", exps);
         }
+      },
+      async () => {
+        const dbs = await fetchSupabaseDebts();
+        if (dbs && isMounted) {
+          setDebts(dbs);
+          saveToStorage("DEBTS", dbs);
+        }
       }
     );
 
@@ -140,6 +156,28 @@ export function AppProvider({ children }) {
     setSales(updatedSales);
     saveToStorage("PRODUCTS", updatedProducts);
     saveToStorage("SALES", updatedSales);
+
+    // If sale is on credit, automatically generate a debt record
+    if (newSale.paymentMethod === "Credit" || newSale.status === "Credit") {
+      const newDebt = {
+        id: `debt-${newSale.id.replace("REC-", "")}`,
+        customerName: newSale.customerName,
+        customerPhone: newSale.customerPhone,
+        saleId: newSale.id,
+        date: newSale.date,
+        totalAmount: newSale.total,
+        paidAmount: 0,
+        remainingBalance: newSale.total,
+        dueDate: newSale.creditDueDate || "",
+        status: "Unpaid",
+        notes: newSale.note || "Sale on credit",
+        payments: [],
+      };
+      const updatedDebts = [newDebt, ...debts];
+      setDebts(updatedDebts);
+      saveToStorage("DEBTS", updatedDebts);
+      recordDebtInSupabase(newDebt);
+    }
 
     // Asynchronously sync to Supabase cloud
     recordSaleInSupabase(newSale);
@@ -237,31 +275,71 @@ export function AppProvider({ children }) {
     showToast("Expense record deleted.");
   };
 
-  // 7. Save Shop Config
+  // 7. Debts Management Handlers
+  const handleRecordDebtRepayment = (debtId, paymentAmount, paymentMethod = "Cash", paymentNote = "") => {
+    const amount = parseFloat(paymentAmount) || 0;
+    if (amount <= 0) return;
+
+    let targetDebt = null;
+    const updatedDebts = debts.map((d) => {
+      if (d.id === debtId) {
+        const updated = applyDebtRepayment(d, amount, paymentMethod, paymentNote);
+        targetDebt = updated;
+        return updated;
+      }
+      return d;
+    });
+
+    if (targetDebt) {
+      updateDebtInSupabase(debtId, targetDebt);
+    }
+
+    setDebts(updatedDebts);
+    saveToStorage("DEBTS", updatedDebts);
+    showToast(`Repayment of ${amount.toFixed(2)} ${config.currency} recorded!`);
+  };
+
+  const handleCreateDebt = (newDebt) => {
+    const updated = [newDebt, ...debts];
+    setDebts(updated);
+    saveToStorage("DEBTS", updated);
+    recordDebtInSupabase(newDebt);
+    showToast(`Debt record created for "${newDebt.customerName}"`);
+  };
+
+  const handleDeleteDebt = (debtId) => {
+    const updated = debts.filter((d) => d.id !== debtId);
+    setDebts(updated);
+    saveToStorage("DEBTS", updated);
+    showToast("Debt record removed.");
+  };
+
+  // 8. Save Shop Config
   const handleSaveConfig = (newConfig) => {
     setConfig(newConfig);
     saveToStorage("SHOP_CONFIG", newConfig);
     showToast("Shop settings updated!");
   };
 
-  // 8. Reset to defaults
+  // 9. Reset to defaults
   const handleResetDefaults = () => {
     const fresh = resetToDefaults();
     setConfig(fresh.config);
     setProducts(fresh.products);
     setSales(fresh.sales);
     setExpenses(fresh.expenses);
+    setDebts(fresh.debts || []);
     showToast("Restored starter demo data.");
   };
 
-  // 9. Clear transactions only
+  // 10. Clear transactions only
   const handleClearTransactionsOnly = () => {
     setSales([]);
     saveToStorage("SALES", []);
     showToast("Sales transactions cleared. Ready for fresh transactions!");
   };
 
-  // 10. Import backup safely with schema validation
+  // 11. Import backup safely with schema validation
   const handleImportData = (rawImportedData) => {
     const sanitized = sanitizeImportPayload(rawImportedData);
     if (!sanitized) {
@@ -285,6 +363,10 @@ export function AppProvider({ children }) {
       setExpenses(sanitized.expenses);
       saveToStorage("EXPENSES", sanitized.expenses);
     }
+    if (sanitized.debts) {
+      setDebts(sanitized.debts);
+      saveToStorage("DEBTS", sanitized.debts);
+    }
     if (sanitized.users && sanitized.users.length > 0) {
       saveToStorage("USERS", sanitized.users);
     }
@@ -294,6 +376,11 @@ export function AppProvider({ children }) {
   const lowStockCount = useMemo(
     () => products.filter((p) => p.stockLiters <= (p.minStockAlert || 40)).length,
     [products]
+  );
+
+  const unpaidDebtsCount = useMemo(
+    () => debts.filter((d) => d.status !== "Settled" && (d.remainingBalance > 0 || d.totalAmount > (d.paidAmount || 0))).length,
+    [debts]
   );
 
   const currency = config?.currency || "ETB";
@@ -310,12 +397,15 @@ export function AppProvider({ children }) {
     setSales,
     expenses,
     setExpenses,
+    debts,
+    setDebts,
     activeReceipt,
     setActiveReceipt,
     toast,
     showToast,
     currency,
     lowStockCount,
+    unpaidDebtsCount,
     cloudStatus,
 
     // Handlers
@@ -327,6 +417,9 @@ export function AppProvider({ children }) {
     handleDeleteProduct,
     handleAddExpense,
     handleDeleteExpense,
+    handleRecordDebtRepayment,
+    handleCreateDebt,
+    handleDeleteDebt,
     handleSaveConfig,
     handleResetDefaults,
     handleClearTransactionsOnly,

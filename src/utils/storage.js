@@ -3,6 +3,7 @@ import {
   INITIAL_PRODUCTS,
   INITIAL_SALES,
   INITIAL_EXPENSES,
+  INITIAL_DEBTS,
 } from "../data/initialData";
 
 const STORAGE_KEYS = {
@@ -10,6 +11,7 @@ const STORAGE_KEYS = {
   PRODUCTS: "sukie_products_v2",
   SALES: "sukie_sales_v2",
   EXPENSES: "sukie_expenses_v2",
+  DEBTS: "sukie_debts_v2",
   USERS: "sukie_users_list_v1",
   SESSION: "sukie_active_session_v1",
 };
@@ -20,11 +22,13 @@ export const loadStoredData = () => {
     const rawProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
     const rawSales = localStorage.getItem(STORAGE_KEYS.SALES);
     const rawExpenses = localStorage.getItem(STORAGE_KEYS.EXPENSES);
+    const rawDebts = localStorage.getItem(STORAGE_KEYS.DEBTS);
 
     let config = rawConfig ? JSON.parse(rawConfig) : null;
     let products = rawProducts ? JSON.parse(rawProducts) : null;
     let sales = rawSales ? JSON.parse(rawSales) : null;
     let expenses = rawExpenses ? JSON.parse(rawExpenses) : null;
+    let debts = rawDebts ? JSON.parse(rawDebts) : null;
 
     // Validate config structure
     if (!config || typeof config !== "object") {
@@ -45,11 +49,12 @@ export const loadStoredData = () => {
       }));
     }
 
-    // Validate sales and expenses arrays
+    // Validate sales, expenses, and debts arrays
     if (!Array.isArray(sales)) sales = INITIAL_SALES;
     if (!Array.isArray(expenses)) expenses = INITIAL_EXPENSES;
+    if (!Array.isArray(debts)) debts = INITIAL_DEBTS;
 
-    return { config, products, sales, expenses };
+    return { config, products, sales, expenses, debts };
   } catch (error) {
     console.error("Critical error reading localStorage, falling back to safe starter defaults:", error);
     return {
@@ -57,6 +62,7 @@ export const loadStoredData = () => {
       products: INITIAL_PRODUCTS,
       sales: INITIAL_SALES,
       expenses: INITIAL_EXPENSES,
+      debts: INITIAL_DEBTS,
     };
   }
 };
@@ -69,7 +75,6 @@ export const saveToStorage = (key, data) => {
   } catch (err) {
     console.error(`Failed to save ${key} to localStorage:`, err);
     if (typeof window !== "undefined") {
-      // Dispatches custom event so Toast or Error Boundary can warn user without crashing
       window.dispatchEvent(
         new CustomEvent("sukie_storage_quota_warning", {
           detail: {
@@ -153,6 +158,10 @@ export const sanitizeImportPayload = (imported) => {
     sanitized.expenses = payload.expenses.filter((e) => e && e.id && e.amount != null);
   }
 
+  if (Array.isArray(payload.debts)) {
+    sanitized.debts = payload.debts.filter((d) => d && d.id && d.totalAmount != null);
+  }
+
   if (Array.isArray(payload.users)) {
     sanitized.users = payload.users;
   }
@@ -165,12 +174,12 @@ export const resetToDefaults = () => {
   localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
   localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify(INITIAL_SALES));
   localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(INITIAL_EXPENSES));
-  localStorage.removeItem("sukie_debts_v2");
+  localStorage.setItem(STORAGE_KEYS.DEBTS, JSON.stringify(INITIAL_DEBTS));
   return {
     config: INITIAL_SHOP_CONFIG,
     products: INITIAL_PRODUCTS,
     sales: INITIAL_SALES,
     expenses: INITIAL_EXPENSES,
+    debts: INITIAL_DEBTS,
   };
 };
-

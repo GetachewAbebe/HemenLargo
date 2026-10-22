@@ -1,0 +1,688 @@
+/* ---------------------------------------------------
+   DEBTS & STORE CREDIT VIEW STYLES
+   --------------------------------------------------- */
+.debts-view-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.debts-hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
+}
+
+.debts-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.debts-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.debts-avatar-badge {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  background: #ffe4e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.12);
+}
+
+.debts-main-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
+}
+
+.debts-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.btn-create-debt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
+  transition: all var(--transition-normal);
+}
+
+.btn-create-debt:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(225, 29, 72, 0.35);
+}
+
+/* KPI Cards Grid */
+.debts-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.debts-kpi-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-glass);
+  transition: all var(--transition-normal);
+}
+
+.debts-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-title-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.kpi-icon-pill {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-rose-subtle { background: #ffe4e6; }
+.bg-emerald-subtle { background: #d1fae5; }
+.bg-amber-subtle { background: #fef3c7; }
+.bg-cyan-subtle { background: #cffafe; }
+
+.kpi-val-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-num {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.kpi-currency {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.kpi-hint-text {
+  font-size: 0.73rem;
+  color: var(--text-subtle);
+}
+
+/* Toolbar */
+.debts-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.debts-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 260px;
+  max-width: 450px;
+}
+
+.search-icon-muted {
+  position: absolute;
+  left: 14px;
+  color: var(--text-subtle);
+  pointer-events: none;
+}
+
+.debts-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 42px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-main);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.debts-search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-subtle);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.debts-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(226, 232, 240, 0.45);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.filter-tab-pill {
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-tab-pill:hover {
+  color: var(--text-main);
+}
+
+.filter-tab-pill.active {
+  background: #ffffff;
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/* Debts List */
+.debts-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.debts-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-light);
+  text-align: center;
+}
+
+.empty-icon-muted {
+  color: var(--text-subtle);
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.empty-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.empty-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Debt Card Item */
+.debt-card-item {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all var(--transition-normal);
+}
+
+.debt-card-item:hover {
+  border-color: rgba(13, 148, 136, 0.3);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.debt-card-item.debt-settled {
+  opacity: 0.8;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.debt-card-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.debt-customer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1.2;
+  min-width: 240px;
+}
+
+.debt-customer-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.debt-customer-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.debt-status-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.status-unpaid {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+
+.status-partial {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-settled {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.debt-meta-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.debt-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.debt-meta-pill a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.debt-meta-pill a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Financial Col */
+.debt-financial-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.debt-balance-wrap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.balance-sub-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.balance-amount-text {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.balance-amount-text strong {
+  font-size: 1.25rem;
+  color: #e11d48;
+}
+
+.balance-unit {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.debt-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.debt-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.debt-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.fill-emerald { background: #10b981; }
+.fill-rose { background: #e11d48; }
+
+.debt-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-subtle);
+}
+
+/* Actions Col */
+.debt-actions-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-action-repay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.btn-action-repay:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+}
+
+.btn-action-reminder {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: #f1f5f9;
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-action-reminder:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.btn-action-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-action-expand:hover {
+  background: #f8fafc;
+  color: var(--text-main);
+}
+
+.btn-action-delete {
+  padding: 8px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-action-delete:hover {
+  color: #e11d48;
+  background: #ffe4e6;
+}
+
+/* History Accordion */
+.debt-history-panel {
+  border-top: 1px solid var(--border-light);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.no-payments-text {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  font-style: italic;
+}
+
+.payment-history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(241, 245, 249, 0.6);
+  border-radius: var(--radius-sm);
+}
+
+.payment-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.payment-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.payment-item-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.payment-amount {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.payment-method-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.payment-date {
+  font-size: 0.72rem;
+  color: var(--text-subtle);
+}
+
+.payment-note-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.debt-internal-notes {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+}
+
+/* Modal: Repay Callout */
+.repay-balance-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff1f2;
+  border: 1px solid #ffe4e6;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #9f1239;
+}
+
+.quick-repay-presets {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.preset-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.preset-btn:hover {
+  background: #e2e8f0;
+}
+
+.payment-options-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.payment-method-chip {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.payment-method-chip.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}

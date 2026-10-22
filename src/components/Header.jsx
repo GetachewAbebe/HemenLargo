@@ -8,6 +8,7 @@ const SHORTCUT_TAB_MAP = {
   "3": "inventory",
   "4": "sales",
   "5": "expenses",
+  "6": "debts",
 };
 
 export default function Header({
@@ -21,8 +22,9 @@ export default function Header({
   const context = useApp();
   const activeTab = propActiveTab || context.activeTab;
   const setActiveTab = propSetActiveTab || context.setActiveTab;
+  const unpaidDebtsCount = context.unpaidDebtsCount || 0;
 
-  // Global hotkey tab switching (1-5)
+  // Global hotkey tab switching (1-6)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (
@@ -68,6 +70,12 @@ export default function Header({
     },
     { id: "sales", label: "Sales Records" },
     { id: "expenses", label: "Expenses" },
+    {
+      id: "debts",
+      label: "Debts / ዕዳ",
+      badge: unpaidDebtsCount > 0 ? `${unpaidDebtsCount} due` : null,
+      badgeColor: "rose",
+    },
   ];
 
   return (

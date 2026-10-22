@@ -52,3 +52,25 @@ export const calculateCartTotals = (cart = [], discountAmount = 0, byocDiscountA
     estimatedProfit: Number(estimatedProfit.toFixed(2)),
   };
 };
+
+export const applyDebtRepayment = (debt, paymentAmount, paymentMethod = "Cash", note = "") => {
+  const amount = Math.max(0, parseFloat(paymentAmount) || 0);
+  const newPaid = Number(((debt.paidAmount || 0) + amount).toFixed(2));
+  const newRemaining = Math.max(0, Number((debt.totalAmount - newPaid).toFixed(2)));
+  const newStatus = newRemaining <= 0 ? "Settled" : "Partially Paid";
+  const newPayment = {
+    id: `pay-${Date.now().toString().slice(-6)}`,
+    date: new Date().toISOString(),
+    amount,
+    paymentMethod,
+    note,
+  };
+
+  return {
+    ...debt,
+    paidAmount: newPaid,
+    remainingBalance: newRemaining,
+    status: newStatus,
+    payments: [newPayment, ...(debt.payments || [])],
+  };
+};
