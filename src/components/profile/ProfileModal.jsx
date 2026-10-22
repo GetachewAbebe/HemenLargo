@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   User,
@@ -90,7 +91,7 @@ export default function ProfileModal({
     .slice(0, 2)
     .toUpperCase();
 
-  return (
+  const modalContent = (
     <div className="modal-backdrop animate-fade" onClick={onClose}>
       <div
         className="profile-modal-container animate-scale-up"
@@ -275,4 +276,8 @@ export default function ProfileModal({
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }

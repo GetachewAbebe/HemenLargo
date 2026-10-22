@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Printer, X, Check, Copy, MapPin, Phone } from "lucide-react";
 import {
   formatEthiopianDate,
@@ -56,7 +57,7 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
     });
   };
 
-  return (
+  const modalContent = (
     <div className="receipt-modal-backdrop animate-fade" onClick={onClose}>
       <div
         className="receipt-modal-dialog animate-pop"
@@ -261,4 +262,8 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }

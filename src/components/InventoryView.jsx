@@ -65,11 +65,12 @@ export default function InventoryView(props) {
 
   // Filtered products
   const filteredProducts = useMemo(() => {
+    const q = (searchQuery || "").toLowerCase();
     return products.filter((p) => {
       const matchSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.localName && p.localName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (p.scent && p.scent.toLowerCase().includes(searchQuery.toLowerCase()));
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.localName && p.localName.toLowerCase().includes(q)) ||
+        (p.scent && p.scent.toLowerCase().includes(q));
 
       const matchCat = categoryFilter === "All" || p.category === categoryFilter;
       return matchSearch && matchCat;

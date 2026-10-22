@@ -80,9 +80,29 @@ export default class ErrorBoundary extends Component {
                 </summary>
                 <pre className="error-stack-trace">
                   {this.state.error?.toString()}
-                  {"\n"}
+                  {"\n\nComponent Stack:\n"}
                   {this.state.errorInfo?.componentStack}
                 </pre>
+                <button
+                  type="button"
+                  className="btn-copy-error"
+                  style={{
+                    marginTop: "8px",
+                    padding: "6px 12px",
+                    fontSize: "0.78rem",
+                    background: "#f1f5f9",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    const text = `${this.state.error?.toString()}\n\n${this.state.errorInfo?.componentStack}`;
+                    navigator.clipboard?.writeText(text);
+                    alert("Error diagnostics copied to clipboard!");
+                  }}
+                >
+                  📋 Copy Error to Clipboard
+                </button>
               </details>
             </div>
 

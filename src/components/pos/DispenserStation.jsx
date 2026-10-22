@@ -14,11 +14,13 @@ export default function DispenserStation({
   const isLargo =
     product.id === "prod-1" ||
     product.id === "prod-largo" ||
-    product.name.includes("Largo") ||
-    product.name.includes("ላርጎ");
-  const isLowStock = product.stockLiters <= (product.minStockAlert || 50);
+    product.name?.includes("Largo") ||
+    product.name?.includes("ላርጎ");
+  const stock = Number(product.stockLiters) || 0;
+  const price = Number(product.pricePerLiter) || 0;
+  const isLowStock = stock <= (Number(product.minStockAlert) || 50);
   const tankCapacity = 600;
-  const tankPercent = Math.min(100, Math.round((product.stockLiters / tankCapacity) * 100));
+  const tankPercent = Math.min(100, Math.round((stock / tankCapacity) * 100));
 
   const handleDispense = (liters) => {
     soundFX.playPop();
@@ -56,7 +58,7 @@ export default function DispenserStation({
           <div className="tank-status-left">
             <Droplets size={16} className={isLargo ? "text-teal" : "text-cyan"} />
             <span>Tank Level:</span>
-            <strong className="tank-liters-bold">{product.stockLiters.toFixed(1)} L</strong>
+            <strong className="tank-liters-bold">{stock.toFixed(1)} L</strong>
             <span className="capacity-sub">/ 600L</span>
           </div>
           <div className="tank-actions-right">
@@ -96,14 +98,14 @@ export default function DispenserStation({
         <span className="section-micro-label">TAP TO ADD CONTAINER:</span>
         <div className="container-presets-grid">
           {CONTAINER_PRESETS.map((preset) => {
-            const calculatedPrice = (preset.liters * product.pricePerLiter).toFixed(0);
+            const calculatedPrice = (preset.liters * price).toFixed(0);
             return (
               <button
                 key={preset.label}
                 type="button"
                 className={`btn-container-card ${preset.popular ? "popular-card" : ""}`}
                 onClick={() => handleDispense(preset.liters)}
-                disabled={product.stockLiters < preset.liters}
+                disabled={stock < preset.liters}
                 title={`Dispense ${preset.liters}L of ${product.name}`}
               >
                 {preset.popular && <span className="popular-badge">★ Best Seller</span>}
@@ -131,11 +133,11 @@ export default function DispenserStation({
                 key={amt}
                 type="button"
                 className="quick-chip-btn"
-                disabled={product.stockLiters < amt}
+                disabled={stock < amt}
                 onClick={() => handleDispense(amt)}
                 title={
-                  product.stockLiters < amt
-                    ? `Not enough stock (${product.stockLiters.toFixed(1)}L left)`
+                  stock < amt
+                    ? `Not enough stock (${stock.toFixed(1)}L left)`
                     : `Dispense +${amt} Liters`
                 }
               >
@@ -181,7 +183,7 @@ export default function DispenserStation({
             <Plus size={15} />
             <span>
               {customLiterVal && parseFloat(customLiterVal) > 0
-                ? `Add ${(parseFloat(customLiterVal) * product.pricePerLiter).toFixed(0)} ${currency}`
+                ? `Add ${(parseFloat(customLiterVal) * price).toFixed(0)} ${currency}`
                 : "Add"}
             </span>
           </button>

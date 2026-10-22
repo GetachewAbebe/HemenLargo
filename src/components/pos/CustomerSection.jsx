@@ -79,7 +79,7 @@ export default function CustomerSection({
             onChange={(e) => {
               const val = e.target.value;
               setCustomerName(val);
-              const match = recentCustomers.find(([n]) => n.toLowerCase() === val.toLowerCase());
+              const match = recentCustomers.find(([n]) => n?.toLowerCase() === val.toLowerCase());
               if (match && match[1] && !customerPhone) {
                 setCustomerPhone(match[1]);
               }

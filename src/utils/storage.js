@@ -43,9 +43,15 @@ export const loadStoredData = () => {
     } else {
       products = products.map((p) => ({
         ...p,
-        stockLiters: typeof p.stockLiters === "number" && !isNaN(p.stockLiters) ? p.stockLiters : 0,
-        pricePerLiter: typeof p.pricePerLiter === "number" && !isNaN(p.pricePerLiter) ? p.pricePerLiter : 60,
-        costPerLiter: typeof p.costPerLiter === "number" && !isNaN(p.costPerLiter) ? p.costPerLiter : 35,
+        name: p.name || p.localName || "Liquid Soap",
+        localName: p.localName || p.name || "",
+        category: p.category || "General Cleanser",
+        scent: p.scent || "Fresh",
+        stockLiters: typeof p.stockLiters === "number" && !isNaN(p.stockLiters) ? p.stockLiters : (parseFloat(p.stockLiters) || 0),
+        pricePerLiter: typeof p.pricePerLiter === "number" && !isNaN(p.pricePerLiter) ? p.pricePerLiter : (parseFloat(p.pricePerLiter) || 60),
+        costPerLiter: typeof p.costPerLiter === "number" && !isNaN(p.costPerLiter) ? p.costPerLiter : (parseFloat(p.costPerLiter) || 35),
+        minStockAlert: typeof p.minStockAlert === "number" && !isNaN(p.minStockAlert) ? p.minStockAlert : (parseFloat(p.minStockAlert) || 40),
+        soldLiters: typeof p.soldLiters === "number" && !isNaN(p.soldLiters) ? p.soldLiters : (parseFloat(p.soldLiters) || 0),
       }));
     }
 

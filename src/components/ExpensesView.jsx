@@ -10,13 +10,13 @@ import {
   CreditCard,
   Banknote,
   Smartphone,
-  X,
   Check,
 } from "lucide-react";
 import {
   formatEthiopianDate,
   formatEthiopianTime,
 } from "../utils/ethiopianDate";
+import Modal from "./common/Modal";
 
 export default function ExpensesView({
   expenses,
@@ -271,127 +271,112 @@ export default function ExpensesView({
       </div>
 
       {/* Add Expense Modal */}
-      {isAddModalOpen && (
-        <div className="modal-backdrop animate-fade">
-          <div className="modal-box animate-pop">
-            <div className="modal-header">
-              <div className="modal-title-row">
-                <div className="stat-icon-wrapper stat-rose">
-                  <TrendingDown size={20} />
-                </div>
-                <div>
-                  <h3 className="modal-title">Record Shop Expense</h3>
-                  <p className="modal-subtitle">
-                    ቀን: <strong>{todayEthFormatted}</strong>
-                  </p>
-                </div>
-              </div>
-              <button className="modal-close-btn" onClick={() => setIsAddModalOpen(false)}>
-                <X size={20} />
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Record Shop Expense"
+        subtitle={`ቀን: ${todayEthFormatted}`}
+        icon={TrendingDown}
+      >
+        <form onSubmit={handleCreateExpense} className="modal-form">
+          <div className="form-group">
+            <label className="form-label">Expense Title / Description *</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. SLES Concentrated Surfactant (50kg Drum)"
+              className="form-input"
+              value={newExpense.title}
+              onChange={(e) => setNewExpense({ ...newExpense, title: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group-row">
+            <div className="form-group">
+              <label className="form-label">Category</label>
+              <select
+                className="form-input"
+                value={newExpense.category}
+                onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Amount ({currency}) *</label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                required
+                placeholder="e.g. 3500"
+                className="form-input"
+                value={newExpense.amount}
+                onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Paid Via</label>
+            <div className="payment-options-grid">
+              <button
+                type="button"
+                className={`payment-pill ${newExpense.paymentMethod === "Telebirr" ? "selected telebirr" : ""}`}
+                onClick={() => setNewExpense({ ...newExpense, paymentMethod: "Telebirr" })}
+              >
+                <Smartphone size={16} />
+                <span>Telebirr</span>
+              </button>
+              <button
+                type="button"
+                className={`payment-pill ${newExpense.paymentMethod === "Cash" ? "selected cash" : ""}`}
+                onClick={() => setNewExpense({ ...newExpense, paymentMethod: "Cash" })}
+              >
+                <Banknote size={16} />
+                <span>Cash</span>
+              </button>
+              <button
+                type="button"
+                className={`payment-pill ${newExpense.paymentMethod === "CBE Birr" ? "selected cbe" : ""}`}
+                onClick={() => setNewExpense({ ...newExpense, paymentMethod: "CBE Birr" })}
+              >
+                <CreditCard size={16} />
+                <span>CBE / Bank</span>
               </button>
             </div>
-
-            <form onSubmit={handleCreateExpense} className="modal-form">
-              <div className="form-group">
-                <label className="form-label">Expense Title / Description *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. SLES Concentrated Surfactant (50kg Drum)"
-                  className="form-input"
-                  value={newExpense.title}
-                  onChange={(e) => setNewExpense({ ...newExpense, title: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group-row">
-                <div className="form-group">
-                  <label className="form-label">Category</label>
-                  <select
-                    className="form-input"
-                    value={newExpense.category}
-                    onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                  >
-                    {categories.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Amount ({currency}) *</label>
-                  <input
-                    type="number"
-                    step="1"
-                    min="1"
-                    required
-                    placeholder="e.g. 3500"
-                    className="form-input"
-                    value={newExpense.amount}
-                    onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Paid Via</label>
-                <div className="payment-options-grid">
-                  <button
-                    type="button"
-                    className={`payment-pill ${newExpense.paymentMethod === "Telebirr" ? "selected telebirr" : ""}`}
-                    onClick={() => setNewExpense({ ...newExpense, paymentMethod: "Telebirr" })}
-                  >
-                    <Smartphone size={16} />
-                    <span>Telebirr</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`payment-pill ${newExpense.paymentMethod === "Cash" ? "selected cash" : ""}`}
-                    onClick={() => setNewExpense({ ...newExpense, paymentMethod: "Cash" })}
-                  >
-                    <Banknote size={16} />
-                    <span>Cash</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`payment-pill ${newExpense.paymentMethod === "CBE Birr" ? "selected cbe" : ""}`}
-                    onClick={() => setNewExpense({ ...newExpense, paymentMethod: "CBE Birr" })}
-                  >
-                    <CreditCard size={16} />
-                    <span>CBE / Bank</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Notes / Supplier Details</label>
-                <textarea
-                  rows="2"
-                  className="form-input"
-                  placeholder="Optional supplier contact, batch receipt number..."
-                  value={newExpense.notes}
-                  onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
-                ></textarea>
-              </div>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-modal-cancel"
-                  onClick={() => setIsAddModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-modal-submit">
-                  <Check size={18} />
-                  <span>Save Expense</span>
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+
+          <div className="form-group">
+            <label className="form-label">Notes / Supplier Details</label>
+            <textarea
+              rows="2"
+              className="form-input"
+              placeholder="Optional supplier contact, batch receipt number..."
+              value={newExpense.notes}
+              onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
+            ></textarea>
+          </div>
+
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="btn-modal-cancel"
+              onClick={() => setIsAddModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn-modal-submit">
+              <Check size={18} />
+              <span>Save Expense</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

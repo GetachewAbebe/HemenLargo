@@ -80,8 +80,8 @@ export default function BatchProductionWidget({
   // Find corresponding product in store tanks (by matching category or name)
   const matchedProduct = useMemo(() => {
     return (
-      products.find((p) => p.name.toLowerCase().includes(activeFormula.id)) ||
-      products.find((p) => p.name.includes("Largo") || p.name.includes("ላርጎ")) ||
+      products.find((p) => p.name?.toLowerCase().includes(activeFormula.id)) ||
+      products.find((p) => p.name?.includes("Largo") || p.name?.includes("ላርጎ")) ||
       products[0]
     );
   }, [products, activeFormula]);

@@ -4,15 +4,17 @@ export { isSupabaseConfigured };
 
 export const normalizeProductFromSupabase = (p) => {
   if (!p) return null;
-  const isLargo = p.id === "prod-largo" || p.name?.includes("Largo") || p.name?.includes("ላርጎ");
-  const isBerekina = p.id === "prod-berekina" || p.name?.includes("Berekina") || p.name?.includes("በረኪና");
+  const productName = p.name || p.product_name || p.local_name || "Liquid Soap";
+  const isLargo = p.id === "prod-largo" || productName.includes("Largo") || productName.includes("ላርጎ");
+  const isBerekina = p.id === "prod-berekina" || productName.includes("Berekina") || productName.includes("በረኪና");
 
   return {
     id: p.id,
-    name: p.name,
+    name: productName,
     localName:
       p.local_name ||
-      (isLargo ? "ላርጎ ፈሳሽ ሳሙና" : isBerekina ? "በረኪና ማጽጃ" : p.name),
+      p.localName ||
+      (isLargo ? "ላርጎ ፈሳሽ ሳሙና" : isBerekina ? "በረኪና ማጽጃ" : productName),
     category: p.category || (isBerekina ? "በረኪና" : "ላርጎ"),
     scent:
       p.scent ||

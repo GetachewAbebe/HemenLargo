@@ -68,12 +68,12 @@ export default function SalesView({
       // Search query
       const q = searchQuery.toLowerCase().trim();
       if (q) {
-        const matchId = sale.id.toLowerCase().includes(q);
+        const matchId = String(sale.id || "").toLowerCase().includes(q);
         const matchCustomer =
-          (sale.customerName && sale.customerName.toLowerCase().includes(q)) ||
-          (sale.customerPhone && sale.customerPhone.includes(q));
+          (sale.customerName && String(sale.customerName).toLowerCase().includes(q)) ||
+          (sale.customerPhone && String(sale.customerPhone).includes(q));
         const matchItems = sale.items?.some((i) =>
-          i.name.toLowerCase().includes(q)
+          (i.name || "").toLowerCase().includes(q)
         );
         if (!matchId && !matchCustomer && !matchItems) return false;
       }

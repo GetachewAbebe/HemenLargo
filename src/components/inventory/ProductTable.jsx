@@ -35,11 +35,14 @@ export default function ProductTable({
           </thead>
           <tbody>
             {products.map((p) => {
-              const isLow = p.stockLiters <= (p.minStockAlert || 40);
-              const isZero = p.stockLiters <= 0;
-              const marginPerL = p.pricePerLiter - p.costPerLiter;
-              const marginPercent = p.pricePerLiter > 0 ? ((marginPerL / p.pricePerLiter) * 100).toFixed(0) : 0;
-              const gaugePercent = Math.min(100, Math.max(5, (p.stockLiters / 400) * 100));
+              const stock = Number(p.stockLiters) || 0;
+              const cost = Number(p.costPerLiter) || 0;
+              const price = Number(p.pricePerLiter) || 0;
+              const isLow = stock <= (Number(p.minStockAlert) || 40);
+              const isZero = stock <= 0;
+              const marginPerL = price - cost;
+              const marginPercent = price > 0 ? ((marginPerL / price) * 100).toFixed(0) : 0;
+              const gaugePercent = Math.min(100, Math.max(5, (stock / 400) * 100));
 
               return (
                 <tr key={p.id}>
@@ -47,25 +50,25 @@ export default function ProductTable({
                     <div className="table-soap-info">
                       <div
                         className="soap-table-icon"
-                        style={{ backgroundColor: `${p.color}20`, color: p.color }}
+                        style={{ backgroundColor: `${p.color || "#0d9488"}20`, color: p.color || "#0d9488" }}
                       >
                         {p.iconEmoji || "🧴"}
                       </div>
                       <div>
-                        <strong className="soap-table-name">{p.name}</strong>
+                        <strong className="soap-table-name">{p.name || "Soap Product"}</strong>
                         {p.localName && <div className="soap-table-sub">{p.localName}</div>}
                         <div className="soap-scent-badge">{p.scent || "Standard"}</div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span className="table-category-tag">{p.category}</span>
+                    <span className="table-category-tag">{p.category || "General"}</span>
                   </td>
                   <td>
                     <div className="tank-level-wrap">
                       <div className="tank-level-header">
                         <span className={`tank-number ${isLow ? "text-rose" : "text-emerald"}`}>
-                          {p.stockLiters.toFixed(1)} L
+                          {stock.toFixed(1)} L
                         </span>
                         <span
                           className={`badge-pill ${
@@ -84,17 +87,17 @@ export default function ProductTable({
                           }}
                         ></div>
                       </div>
-                      <span className="tank-alert-threshold">Min alert: {p.minStockAlert}L</span>
+                      <span className="tank-alert-threshold">Min alert: {p.minStockAlert || 40}L</span>
                     </div>
                   </td>
                   <td>
                     <span className="price-tag-sub">
-                      {p.costPerLiter.toFixed(2)} {currency}
+                      {cost.toFixed(2)} {currency}
                     </span>
                   </td>
                   <td>
                     <strong className="price-tag-main">
-                      {p.pricePerLiter.toFixed(2)} {currency}
+                      {price.toFixed(2)} {currency}
                     </strong>
                   </td>
                   <td>
@@ -105,7 +108,7 @@ export default function ProductTable({
                   </td>
                   <td>
                     <span className="sold-liters-badge">
-                      {(p.soldLiters || 0).toFixed(1)} L
+                      {(Number(p.soldLiters) || 0).toFixed(1)} L
                     </span>
                   </td>
                   <td>

@@ -145,16 +145,16 @@ export default function POSView(props) {
       (p) =>
         p.id === "prod-largo" ||
         p.id === "prod-1" ||
-        p.name.includes("Largo") ||
-        p.name.includes("ላርጎ")
+        p.name?.includes("Largo") ||
+        p.name?.includes("ላርጎ")
     );
     const barikina = products.find(
       (p) =>
         p.id === "prod-berekina" ||
         p.id === "prod-2" ||
-        p.name.includes("Barikina") ||
-        p.name.includes("Berekina") ||
-        p.name.includes("በረኪና")
+        p.name?.includes("Barikina") ||
+        p.name?.includes("Berekina") ||
+        p.name?.includes("በረኪና")
     );
 
     if (largo && barikina) {
@@ -313,8 +313,8 @@ export default function POSView(props) {
             <span className="combo-desc">
               <strong>5L Largo + 2L Barikina</strong> ={" "}
               {(
-                5 * (products.find((p) => p.name.includes("Largo") || p.id === "prod-1")?.pricePerLiter || 60) +
-                2 * (products.find((p) => p.name.includes("Barikina") || p.id === "prod-2")?.pricePerLiter || 50)
+                5 * (products.find((p) => p.name?.includes("Largo") || p.id === "prod-1")?.pricePerLiter || 60) +
+                2 * (products.find((p) => p.name?.includes("Barikina") || p.name?.includes("Berekina") || p.id === "prod-2")?.pricePerLiter || 50)
               ).toLocaleString()}{" "}
               {currency}
             </span>
