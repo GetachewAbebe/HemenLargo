@@ -6,11 +6,14 @@ import {
   DollarSign,
   Calendar,
   Trash2,
-  Tag,
   CreditCard,
   Banknote,
   Smartphone,
   Check,
+  FlaskConical,
+  Beaker,
+  Calculator,
+  Sparkles,
 } from "lucide-react";
 import {
   formatEthiopianDate,
@@ -18,8 +21,20 @@ import {
 } from "../utils/ethiopianDate";
 import Modal from "./common/Modal";
 
+const COMMON_CHEMICALS = [
+  { name: "SLS / SLES (Sodium Lauryl Ether Sulfate)", label: "SLS / SLES (ፎም)", unit: "L", defaultRate: 70 },
+  { name: "LABSA / Sulfonic Acid (ማጽጃ አሲድ)", label: "Sulfonic Acid (LABSA)", unit: "L", defaultRate: 95 },
+  { name: "Caustic Soda (ሶዲየም ሃይድሮክሳይድ)", label: "Caustic Soda", unit: "kg", defaultRate: 110 },
+  { name: "Sodium Hypochlorite (ክሎሪን ኮንሰንትሬት)", label: "Chlorine Bleach", unit: "L", defaultRate: 45 },
+  { name: "CDEA Foam Booster (አረፋ ማቆያ)", label: "CDEA Booster", unit: "L", defaultRate: 120 },
+  { name: "Industrial Salt / NaCl (ውፍረት ሰጪ)", label: "Salt (NaCl)", unit: "kg", defaultRate: 15 },
+  { name: "Soda Ash (ማረጋጊያ ሶዳ)", label: "Soda Ash", unit: "kg", defaultRate: 65 },
+  { name: "Fragrance & Perfume Oil (ሽቶ)", label: "Fragrance / Perfume", unit: "L", defaultRate: 380 },
+  { name: "Liquid Soap Dye (ቀለም)", label: "Colorant / Dye", unit: "L", defaultRate: 150 },
+];
+
 export default function ExpensesView({
-  expenses,
+  expenses = [],
   currency = "ETB",
   onAddExpense,
   onDeleteExpense,
@@ -29,13 +44,19 @@ export default function ExpensesView({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [todayEthFormatted] = useState(() => formatEthiopianDate(new Date(), "full"));
 
-  const [newExpense, setNewExpense] = useState({
+  const initialExpenseState = {
     title: "",
     category: "Raw Materials & Chemicals",
+    litersBought: "",
+    pricePerLiter: "",
+    unit: "L",
     amount: "",
+    isUnitPricing: true,
     paymentMethod: "Telebirr",
     notes: "",
-  });
+  };
+
+  const [newExpense, setNewExpense] = useState(initialExpenseState);
 
   const categories = [
     "Raw Materials & Chemicals",
@@ -54,6 +75,10 @@ export default function ExpensesView({
   const rawMaterialTotal = expenses
     .filter((e) => e.category === "Raw Materials & Chemicals")
     .reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
+
+  const totalChemicalLiters = expenses
+    .filter((e) => e.category === "Raw Materials & Chemicals" && e.litersBought)
+    .reduce((acc, e) => acc + (parseFloat(e.litersBought) || 0), 0);
 
   const packagingTotal = expenses
     .filter((e) => e.category === "Packaging & Containers")
@@ -74,9 +99,121 @@ export default function ExpensesView({
     return true;
   });
 
+  const handleCategoryChange = (cat) => {
+    const isChemical = cat === "Raw Materials & Chemicals";
+    setNewExpense((prev) => ({
+      ...prev,
+      category: cat,
+      isUnitPricing: isChemical ? true : prev.isUnitPricing,
+    }));
+  };
+
+  const handleLitersChange = (val) => {
+    const liters = val;
+    const rate = newExpense.pricePerLiter;
+    let computedAmount = newExpense.amount;
+
+    if (liters !== "" && rate !== "") {
+      const lNum = parseFloat(liters);
+      const rNum = parseFloat(rate);
+      if (!isNaN(lNum) && !isNaN(rNum)) {
+        computedAmount = (lNum * rNum).toFixed(2);
+      }
+    }
+
+    setNewExpense((prev) => ({
+      ...prev,
+      litersBought: val,
+      amount: computedAmount,
+    }));
+  };
+
+  const handlePricePerLiterChange = (val) => {
+    const rate = val;
+    const liters = newExpense.litersBought;
+    let computedAmount = newExpense.amount;
+
+    if (liters !== "" && rate !== "") {
+      const lNum = parseFloat(liters);
+      const rNum = parseFloat(rate);
+      if (!isNaN(lNum) && !isNaN(rNum)) {
+        computedAmount = (lNum * rNum).toFixed(2);
+      }
+    }
+
+    setNewExpense((prev) => ({
+      ...prev,
+      pricePerLiter: val,
+      amount: computedAmount,
+    }));
+  };
+
+  const handleAmountChange = (val) => {
+    const amt = val;
+    const liters = parseFloat(newExpense.litersBought);
+    let updatedRate = newExpense.pricePerLiter;
+
+    // If volume is present, sync unit rate to whole price / volume
+    if (newExpense.isUnitPricing && !isNaN(liters) && liters > 0 && amt !== "") {
+      const aNum = parseFloat(amt);
+      if (!isNaN(aNum) && aNum >= 0) {
+        updatedRate = (aNum / liters).toFixed(2);
+      }
+    }
+
+    setNewExpense((prev) => ({
+      ...prev,
+      amount: val,
+      pricePerLiter: updatedRate,
+    }));
+  };
+
+  const handleSelectChemicalPreset = (chem) => {
+    const selectedUnit = chem.unit || "L";
+    const selectedRate = chem.defaultRate ? String(chem.defaultRate) : newExpense.pricePerLiter;
+    let computedAmount = newExpense.amount;
+
+    if (newExpense.litersBought && selectedRate) {
+      const lNum = parseFloat(newExpense.litersBought);
+      const rNum = parseFloat(selectedRate);
+      if (!isNaN(lNum) && !isNaN(rNum)) {
+        computedAmount = (lNum * rNum).toFixed(2);
+      }
+    }
+
+    setNewExpense((prev) => ({
+      ...prev,
+      title: chem.name,
+      unit: selectedUnit,
+      pricePerLiter: selectedRate,
+      amount: computedAmount,
+    }));
+  };
+
+  const handleUnitChange = (u) => {
+    setNewExpense((prev) => ({
+      ...prev,
+      unit: u,
+    }));
+  };
+
   const handleCreateExpense = (e) => {
     e.preventDefault();
     if (!newExpense.title.trim() || !newExpense.amount) return;
+
+    const liters = parseFloat(newExpense.litersBought);
+    const rate = parseFloat(newExpense.pricePerLiter);
+    const hasCalc = newExpense.isUnitPricing && !isNaN(liters) && liters > 0 && !isNaN(rate) && rate > 0;
+
+    let computedNotes = newExpense.notes.trim();
+    if (hasCalc) {
+      const calcSummary = `${liters} ${newExpense.unit || "L"} @ ${rate.toFixed(2)} ${currency}/${newExpense.unit || "L"}`;
+      if (!computedNotes) {
+        computedNotes = `Registered: ${calcSummary}`;
+      } else if (!computedNotes.includes(calcSummary)) {
+        computedNotes = `[${calcSummary}] ${computedNotes}`;
+      }
+    }
 
     const expenseRecord = {
       id: `exp-${Date.now().toString().slice(-6)}`,
@@ -85,18 +222,15 @@ export default function ExpensesView({
       category: newExpense.category,
       amount: parseFloat(newExpense.amount) || 0,
       paymentMethod: newExpense.paymentMethod,
-      notes: newExpense.notes.trim(),
+      litersBought: hasCalc ? liters : (parseFloat(newExpense.litersBought) || null),
+      pricePerLiter: hasCalc ? rate : (parseFloat(newExpense.pricePerLiter) || null),
+      unit: newExpense.unit || "L",
+      notes: computedNotes,
     };
 
     onAddExpense(expenseRecord);
     setIsAddModalOpen(false);
-    setNewExpense({
-      title: "",
-      category: "Raw Materials & Chemicals",
-      amount: "",
-      paymentMethod: "Telebirr",
-      notes: "",
-    });
+    setNewExpense(initialExpenseState);
   };
 
   return (
@@ -121,14 +255,22 @@ export default function ExpensesView({
           <div className="metric-header">
             <span className="metric-title">Chemicals & Raw Materials</span>
             <div className="metric-icon-wrap stat-cyan">
-              <Tag size={20} />
+              <FlaskConical size={20} />
             </div>
           </div>
           <div className="metric-value">
             {rawMaterialTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
             <span className="metric-unit">{currency}</span>
           </div>
-          <span className="metric-sub">Surfactants, scents, dye, soda ash</span>
+          <span className="metric-sub">
+            {totalChemicalLiters > 0 ? (
+              <>
+                <strong className="text-teal-700">{totalChemicalLiters.toLocaleString()} {currency === "ETB" ? "ሊትር" : "L"}</strong> registered • Surfactants & chemicals
+              </>
+            ) : (
+              "Surfactants, scents, dye, soda ash"
+            )}
+          </span>
         </div>
 
         <div className="metric-card">
@@ -220,7 +362,17 @@ export default function ExpensesView({
                 filteredExpenses.map((exp) => (
                   <tr key={exp.id}>
                     <td>
-                      <strong className="expense-title">{exp.title}</strong>
+                      <div className="expense-item-info">
+                        <strong className="expense-title">{exp.title}</strong>
+                        {exp.litersBought && exp.pricePerLiter ? (
+                          <span className="expense-rate-badge" title="Registered volume and price per unit">
+                            <Beaker size={12} />
+                            <span>
+                              {exp.litersBought} {exp.unit || "L"} @ {Number(exp.pricePerLiter).toFixed(2)} {currency}/{exp.unit || "L"}
+                            </span>
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
                     <td>
                       <span className="table-category-tag">{exp.category}</span>
@@ -242,9 +394,16 @@ export default function ExpensesView({
                       <span className="badge-pill badge-neutral">{exp.paymentMethod}</span>
                     </td>
                     <td>
-                      <strong className="price-tag-danger">
-                        -{parseFloat(exp.amount).toFixed(2)} {currency}
-                      </strong>
+                      <div>
+                        <strong className="price-tag-danger">
+                          -{parseFloat(exp.amount).toFixed(2)} {currency}
+                        </strong>
+                        {exp.litersBought && exp.pricePerLiter ? (
+                          <span className="price-sub-calc">
+                            {exp.litersBought} {exp.unit || "L"} × {Number(exp.pricePerLiter).toFixed(2)} {currency}
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
                     <td>
                       <span className="expense-note-cell">{exp.notes || "—"}</span>
@@ -270,13 +429,14 @@ export default function ExpensesView({
         </div>
       </div>
 
-      {/* Add Expense Modal */}
+      {/* Add Expense Modal with Chemical Volume & Unit Price Registration */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         title="Record Shop Expense"
         subtitle={`ቀን: ${todayEthFormatted}`}
         icon={TrendingDown}
+        maxWidth="560px"
       >
         <form onSubmit={handleCreateExpense} className="modal-form">
           <div className="form-group">
@@ -297,7 +457,7 @@ export default function ExpensesView({
               <select
                 className="form-input"
                 value={newExpense.category}
-                onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                onChange={(e) => handleCategoryChange(e.target.value)}
               >
                 {categories.map((c) => (
                   <option key={c} value={c}>
@@ -306,20 +466,197 @@ export default function ExpensesView({
                 ))}
               </select>
             </div>
+
             <div className="form-group">
-              <label className="form-label">Amount ({currency}) *</label>
+              <label className="form-label">
+                <span>Amount ({currency}) *</span>
+                {newExpense.isUnitPricing && (
+                  <span className="form-label-hint text-teal-600 font-semibold">(Whole Price)</span>
+                )}
+              </label>
               <input
                 type="number"
-                step="1"
-                min="1"
+                step="any"
+                min="0.01"
                 required
                 placeholder="e.g. 3500"
-                className="form-input"
+                className="form-input font-bold"
                 value={newExpense.amount}
-                onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+                onChange={(e) => handleAmountChange(e.target.value)}
               />
             </div>
           </div>
+
+          {/* Toggle for unit calculation if not chemical category */}
+          {newExpense.category !== "Raw Materials & Chemicals" && (
+            <div style={{ marginTop: "-6px", marginBottom: "8px" }}>
+              <button
+                type="button"
+                className="btn-toggle-unit-calc"
+                onClick={() =>
+                  setNewExpense((prev) => ({
+                    ...prev,
+                    isUnitPricing: !prev.isUnitPricing,
+                  }))
+                }
+              >
+                <Calculator size={14} />
+                <span>
+                  {newExpense.isUnitPricing
+                    ? "Switch to simple amount mode"
+                    : "+ Calculate whole price by litres / units bought"}
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* Chemical Volume & Price Per Litre Calculator Panel */}
+          {newExpense.isUnitPricing && (
+            <div className="chemical-calc-panel animate-fade">
+              <div className="calc-panel-header">
+                <div className="calc-panel-title-wrap">
+                  <div className="calc-icon-badge">
+                    <FlaskConical size={16} />
+                  </div>
+                  <div>
+                    <div className="calc-panel-title">
+                      {newExpense.category === "Raw Materials & Chemicals"
+                        ? "Chemical Volume & Unit Price Registration"
+                        : "Volume & Unit Pricing Calculator"}
+                    </div>
+                    <div className="calc-panel-sub">
+                      Whole price automatically calculated from volume bought × price per litre
+                    </div>
+                  </div>
+                </div>
+
+                <div className="calc-unit-switcher">
+                  <button
+                    type="button"
+                    className={`calc-unit-btn ${newExpense.unit === "L" ? "active" : ""}`}
+                    onClick={() => handleUnitChange("L")}
+                  >
+                    L (Litre)
+                  </button>
+                  <button
+                    type="button"
+                    className={`calc-unit-btn ${newExpense.unit === "kg" ? "active" : ""}`}
+                    onClick={() => handleUnitChange("kg")}
+                  >
+                    kg (Kilo)
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Chemical Preset Chips */}
+              <div className="quick-chemicals-bar">
+                <span className="quick-chemicals-label">Quick Chemical Presets:</span>
+                <div className="quick-chemicals-grid">
+                  {COMMON_CHEMICALS.map((chem) => (
+                    <button
+                      key={chem.name}
+                      type="button"
+                      className={`quick-chemical-chip ${newExpense.title === chem.name ? "selected" : ""}`}
+                      onClick={() => handleSelectChemicalPreset(chem)}
+                    >
+                      <Sparkles size={11} />
+                      <span>{chem.label}</span>
+                      {chem.defaultRate && (
+                        <span className="chip-rate-tag">
+                          ({chem.defaultRate} {currency}/{chem.unit})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Volume & Price Per Litre Row */}
+              <div className="form-group-row">
+                {/* Litres Bought */}
+                <div className="form-group">
+                  <label className="form-label">
+                    <span>{newExpense.unit === "kg" ? "Weight Bought (kg)" : "Litres Bought (L)"} *</span>
+                  </label>
+                  <div className="input-with-adornment">
+                    <input
+                      type="number"
+                      step="any"
+                      min="0.1"
+                      placeholder="e.g. 50"
+                      className="form-input"
+                      value={newExpense.litersBought}
+                      onChange={(e) => handleLitersChange(e.target.value)}
+                    />
+                    <span className="input-adornment-badge">{newExpense.unit || "L"}</span>
+                  </div>
+
+                  {/* Volume Presets */}
+                  <div className="quick-vol-chips">
+                    {[10, 20, 50, 100, 200].map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        className="quick-vol-btn"
+                        onClick={() => handleLitersChange(String(v))}
+                      >
+                        +{v}{newExpense.unit || "L"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price per Litre */}
+                <div className="form-group">
+                  <label className="form-label">
+                    <span>Price per {newExpense.unit === "kg" ? "Kilogram" : "Litre"} ({currency}) *</span>
+                  </label>
+                  <div className="input-with-adornment">
+                    <input
+                      type="number"
+                      step="any"
+                      min="0.01"
+                      placeholder="e.g. 70"
+                      className="form-input"
+                      value={newExpense.pricePerLiter}
+                      onChange={(e) => handlePricePerLiterChange(e.target.value)}
+                    />
+                    <span className="input-adornment-badge">{currency}/{newExpense.unit || "L"}</span>
+                  </div>
+                  <span className="form-label-hint">Rate per single {newExpense.unit === "kg" ? "kg" : "litre"}</span>
+                </div>
+              </div>
+
+              {/* Live Whole Price Breakdown Banner */}
+              <div className="calc-result-banner">
+                <div className="calc-result-left">
+                  <Calculator size={22} className="calc-result-icon" />
+                  <div className="calc-breakdown-details">
+                    <span className="calc-formula-text">
+                      {parseFloat(newExpense.litersBought) > 0 && parseFloat(newExpense.pricePerLiter) > 0 ? (
+                        <>
+                          <strong>{newExpense.litersBought} {newExpense.unit || "L"}</strong> ×{" "}
+                          <strong>{parseFloat(newExpense.pricePerLiter).toFixed(2)} {currency}/{newExpense.unit || "L"}</strong>
+                        </>
+                      ) : (
+                        "Fill volume and price per litre above"
+                      )}
+                    </span>
+                    <span className="calc-formula-sub">የጠቅላላ ዋጋ ስሌት • Whole Price Formula</span>
+                  </div>
+                </div>
+
+                <div className="calc-total-badge">
+                  <span className="calc-total-label">Whole Price (ጠቅላላ)</span>
+                  <strong className="calc-total-val">
+                    {parseFloat(newExpense.amount) > 0
+                      ? `${parseFloat(newExpense.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`
+                      : `0.00 ${currency}`}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label">Paid Via</label>
@@ -356,7 +693,11 @@ export default function ExpensesView({
             <textarea
               rows="2"
               className="form-input"
-              placeholder="Optional supplier contact, batch receipt number..."
+              placeholder={
+                newExpense.litersBought && newExpense.pricePerLiter
+                  ? `e.g. Supplier contact, batch receipt for ${newExpense.litersBought}${newExpense.unit || "L"} @ ${newExpense.pricePerLiter} ${currency}...`
+                  : "Optional supplier contact, batch receipt number..."
+              }
               value={newExpense.notes}
               onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
             ></textarea>

@@ -76,6 +76,21 @@ export const normalizeSaleFromSupabase = (s) => {
 
 export const normalizeExpenseFromSupabase = (e) => {
   if (!e) return null;
+  const notes = e.notes || e.note || "";
+  let litersBought = Number(e.liters_bought ?? e.litersBought) || null;
+  let pricePerLiter = Number(e.price_per_liter ?? e.pricePerLiter) || null;
+  let unit = e.unit || "L";
+
+  // If columns are not in cloud DB schema yet, recover gracefully from notes string
+  if (!litersBought && notes) {
+    const match = notes.match(/(\d+(?:\.\d+)?)\s*(L|kg)\s*@\s*(\d+(?:\.\d+)?)/i);
+    if (match) {
+      litersBought = parseFloat(match[1]);
+      unit = match[2];
+      pricePerLiter = parseFloat(match[3]);
+    }
+  }
+
   return {
     id: e.id,
     title: e.title || "Shop Expense",
@@ -83,7 +98,10 @@ export const normalizeExpenseFromSupabase = (e) => {
     amount: Number(e.amount) || 0,
     paymentMethod: e.payment_method || "Cash",
     date: e.date || e.created_at || new Date().toISOString(),
-    notes: e.notes || e.note || "",
+    litersBought,
+    pricePerLiter,
+    unit,
+    notes,
   };
 };
 
