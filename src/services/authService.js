@@ -69,6 +69,7 @@ export const registerUser = async ({ email, password, fullName, shopName, phone 
     email: email.trim().toLowerCase(),
     password,
     options: {
+      emailRedirectTo: new URL(import.meta.env.BASE_URL, window.location.href).toString(),
       data: {
         full_name: fullName.trim(),
         shop_name: shopName.trim(),

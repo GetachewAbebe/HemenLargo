@@ -22,7 +22,7 @@ The app requires a configured Supabase project. Local storage is used as a shop-
 2. In Supabase Auth settings, enable email/password and choose the email-confirmation behavior you need.
 3. Run [`supabase_schema.sql`](./supabase_schema.sql) in the SQL editor. It adds shop membership, per-shop row-level security, transactional sale/void/repayment functions, and supporting columns.
 4. Existing rows are assigned to the fixed legacy shop ID `11111111-1111-4111-8111-111111111111`. In Supabase Auth, create the owner user first. Then, in the SQL editor, add that user's UUID to `shop_members` with the legacy shop ID and role `owner`, and update the `shops` name. Do this before signing into the app with that account. Never disable RLS or add public read/write policies to make setup easier.
-5. Add the configured redirect URLs in Supabase Auth settings, then register an owner with a unique email address.
+5. In **Authentication → URL Configuration**, set the Site URL to the deployed app URL (for this GitHub Pages project, `https://getachewabebe.github.io/HemenLargo/`) and add that URL to the Redirect URLs allow list. Signup confirmation returns to the page where registration started, so add your local development URL (for example, `http://localhost:5173/**`) too if you test signup locally. Then register an owner with a unique email address.
 6. Deploy the site over HTTPS. Confirm one shop cannot read or modify another shop's rows before adding additional accounts.
 
 Newly registered users automatically receive a new shop. Existing user accounts from the old local PIN login are not migrated; create Supabase Auth accounts and remove old browser-local credentials by signing in once.
