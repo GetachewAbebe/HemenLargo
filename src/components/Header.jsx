@@ -1,4 +1,11 @@
 import React, { useEffect, useMemo } from "react";
+import {
+  HandCoins,
+  LayoutDashboard,
+  PackageOpen,
+  ReceiptText,
+  ShoppingCart,
+} from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 
@@ -7,6 +14,7 @@ const SHORTCUT_TAB_MAP = {
   "2": "sales",
   "3": "inventory",
   "4": "expenses",
+  "5": "debts",
 };
 
 export default function Header({
@@ -22,7 +30,7 @@ export default function Header({
   const activeTab = propActiveTab || context.activeTab;
   const setActiveTab = propSetActiveTab || context.setActiveTab;
 
-  // Global hotkey tab switching (1-4) & Quick Sale ('s' or 'q')
+  // Global hotkey tab switching (1-5) & Quick Sale ('s' or 'q')
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (
@@ -65,15 +73,17 @@ export default function Header({
     .toUpperCase();
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "sales", label: "Sales & POS" },
+    { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+    { id: "sales", label: "Sales", icon: ShoppingCart },
     {
       id: "inventory",
-      label: "Tanks & Stock",
+      label: "Inventory",
+      icon: PackageOpen,
       badge: lowStockCount > 0 ? `${lowStockCount} low` : null,
       badgeColor: "amber",
     },
-    { id: "expenses", label: "Expenses" },
+    { id: "expenses", label: "Expenses", icon: ReceiptText },
+    { id: "debts", label: "Customer credit", icon: HandCoins },
   ];
 
   return (
@@ -103,21 +113,26 @@ export default function Header({
           </button>
         </div>
 
-        {/* Center: Segmented Navigation Dock */}
-        <nav className="header-segmented-nav" aria-label="Main Navigation">
+        <nav className="header-segmented-nav" aria-label="Main navigation">
           {navItems.map((item) => {
-            const isActive = activeTab === item.id;
+            const isActive =
+              item.id === "sales"
+                ? activeTab === "sales" || activeTab === "pos"
+                : activeTab === item.id;
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
                 type="button"
                 className={`nav-segment-btn ${isActive ? "segment-active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
                 onClick={() => {
                   soundFX.playPop();
                   setActiveTab(item.id);
                 }}
-                title={`Switch to ${item.label}`}
+                title={item.label}
               >
+                <Icon className="segment-icon" size={17} strokeWidth={1.9} aria-hidden="true" />
                 <span className="segment-label">{item.label}</span>
                 {item.badge && (
                   <span className={`segment-badge badge-${item.badgeColor || "amber"}`}>

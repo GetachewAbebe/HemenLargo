@@ -100,21 +100,12 @@
   text-overflow: ellipsis;
 }
 
-/* 2. Text-Only Segmented Navigation Dock (Ultra-Premium Apple/Linear Style) */
+/* 2. Primary workspace navigation */
 .header-segmented-nav {
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: rgba(255, 255, 255, 0.76);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(226, 232, 240, 0.88);
-  border-radius: var(--radius-full);
-  padding: 4px;
-  box-shadow: 
-    0 4px 20px -2px rgba(15, 23, 42, 0.05),
-    0 1px 3px rgba(15, 23, 42, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  gap: 4px;
+  padding: 0 10px;
   overflow-x: auto;
   max-width: 100%;
   scrollbar-width: none;
@@ -127,42 +118,40 @@
 .nav-segment-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
-  border-radius: var(--radius-full);
-  border: 1px solid transparent;
+  gap: 7px;
+  padding: 12px 13px;
+  border: 0;
+  border-bottom: 2px solid transparent;
   background: transparent;
-  color: #475569;
-  font-size: 0.84rem;
-  font-weight: 550;
+  color: #526174;
+  font-size: 0.8rem;
+  font-weight: 650;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
   white-space: nowrap;
   position: relative;
   text-decoration: none;
-  letter-spacing: -0.012em;
+  border-radius: 8px 8px 0 0;
 }
 
 .nav-segment-btn:hover {
-  color: #0f172a;
-  background: rgba(241, 245, 249, 0.92);
-  transform: translateY(-1px);
+  color: #0f766e;
+  background: #f0fdfa;
 }
 
 .nav-segment-btn:active {
-  transform: scale(0.97);
+  background: #ccfbf1;
 }
 
-/* Active Segment Pill */
 .nav-segment-btn.segment-active {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-  color: #ffffff !important;
-  font-weight: 700;
-  border-color: rgba(13, 148, 136, 0.35);
-  box-shadow: 
-    0 3px 12px rgba(13, 148, 136, 0.35), 
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px);
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 750;
+  border-bottom-color: #0d9488;
+}
+
+.segment-icon {
+  flex-shrink: 0;
 }
 
 .segment-label {
@@ -184,7 +173,7 @@
 }
 
 .nav-segment-btn.segment-active .badge-amber {
-  background: #ffffff;
+  background: #fff7ed;
   color: #0f766e;
   border-color: rgba(255, 255, 255, 0.4);
 }
@@ -277,7 +266,7 @@
   transform: rotate(45deg);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .top-header-v2 {
     padding: 8px 16px;
   }
@@ -290,5 +279,33 @@
     order: 3;
     width: 100%;
     justify-content: flex-start;
+    padding: 0;
+    border-top: 1px solid #e8edf2;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-single-row-container {
+    gap: 6px;
+  }
+
+  .header-quick-sale-btn {
+    padding: 7px 10px;
+  }
+
+  .cashier-name-text {
+    display: none;
+  }
+
+  .nav-segment-btn {
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 10px;
+    font-size: 0.67rem;
+  }
+
+  .segment-icon {
+    width: 18px;
+    height: 18px;
   }
 }

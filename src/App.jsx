@@ -23,6 +23,7 @@ import "./App.css";
 
 // Lazy-loaded secondary views for code-splitting and instant initial load
 const ExpensesView = lazy(() => import("./components/ExpensesView"));
+const DebtsView = lazy(() => import("./components/DebtsView"));
 
 function ViewLoader() {
   return (
@@ -177,7 +178,7 @@ function AppContent() {
       {/* Toast Notification */}
       <Toast toast={toast} />
 
-      {/* Top Header with 5 Operational Tabs & Cashier Profile Trigger */}
+      {/* Primary navigation and cashier profile */}
       <Header
         config={config}
         sales={sales}
@@ -213,6 +214,7 @@ function AppContent() {
                 onDeleteExpense={handleDeleteExpense}
               />
             )}
+            {activeTab === "debts" && <DebtsView />}
           </Suspense>
         </main>
       </div>
