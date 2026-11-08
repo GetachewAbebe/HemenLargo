@@ -1,16 +1,4 @@
 import React, { useState, useMemo } from "react";
-import {
-  Plus,
-  CheckCircle,
-  AlertCircle,
-  CreditCard,
-  Banknote,
-  Smartphone,
-  Receipt,
-  Tag,
-  Zap,
-  Percent,
-} from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 import DispenserStation from "./pos/DispenserStation";
@@ -300,7 +288,6 @@ export default function POSView(props) {
         <div className="pos-top-action-banner">
           <div className="combo-banner-left">
             <span className="combo-tag-pill">
-              <Zap size={14} className="text-amber" />
               <strong>Quick Combo Deal</strong>
             </span>
             <span className="combo-desc">
@@ -313,7 +300,6 @@ export default function POSView(props) {
             </span>
           </div>
           <button type="button" className="btn-add-combo" onClick={handleAddCombo}>
-            <Plus size={15} />
             <span>+ Add Combo to Bill</span>
           </button>
         </div>
@@ -356,7 +342,6 @@ export default function POSView(props) {
                   onClick={props.onNavigateToRecords}
                   title="View sales records & receipt history"
                 >
-                  <Receipt size={14} />
                   <span>Sales Records</span>
                 </button>
               )}
@@ -371,7 +356,6 @@ export default function POSView(props) {
           {/* Validation Alert */}
           {errorMessage && (
             <div className="pos-error-banner animate-pop">
-              <AlertCircle size={16} />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -413,7 +397,6 @@ export default function POSView(props) {
             {/* Payment Method Selector */}
             <div className="field-group">
               <label className="field-label">
-                <CreditCard size={13} />
                 <span>Payment Channel</span>
               </label>
               <div className="payment-grid-v2">
@@ -425,7 +408,6 @@ export default function POSView(props) {
                     setPaymentMethod("Cash");
                   }}
                 >
-                  <Banknote size={18} />
                   <span>Cash (ጥሬ)</span>
                 </button>
 
@@ -437,7 +419,6 @@ export default function POSView(props) {
                     setPaymentMethod("Telebirr");
                   }}
                 >
-                  <Smartphone size={18} />
                   <span>Telebirr</span>
                 </button>
 
@@ -449,7 +430,6 @@ export default function POSView(props) {
                     setPaymentMethod("CBE Birr");
                   }}
                 >
-                  <CreditCard size={18} />
                   <span>CBE Birr</span>
                 </button>
               </div>
@@ -471,7 +451,6 @@ export default function POSView(props) {
               <div className="field-group">
                 <div className="discount-label-row">
                   <label className="field-label">
-                    <Percent size={13} />
                     <span>Discount ({currency})</span>
                   </label>
                   <button
@@ -480,7 +459,7 @@ export default function POSView(props) {
                     onClick={toggleByocDiscount}
                     title="Toggle 5 ETB Bring Your Own Bottle discount"
                   >
-                    🌿 Own Bottle (-5)
+                    Own Bottle (-5)
                   </button>
                 </div>
                 <input
@@ -508,7 +487,6 @@ export default function POSView(props) {
 
               <div className="field-group">
                 <label className="field-label">
-                  <Tag size={13} />
                   <span>Receipt Note</span>
                 </label>
                 <input
@@ -558,7 +536,6 @@ export default function POSView(props) {
               disabled={cart.length === 0}
               className={`btn-checkout-v2 ${cart.length > 0 ? "btn-checkout-active" : ""}`}
             >
-              <CheckCircle size={20} />
               <span>
                 Complete Sale & Print Receipt • {finalTotal.toFixed(2)} {currency}
               </span>

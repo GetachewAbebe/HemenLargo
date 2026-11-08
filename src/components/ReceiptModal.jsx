@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Printer, X, Check, Copy, MapPin, Phone } from "lucide-react";
 import {
   formatEthiopianDate,
   formatEthiopianTime,
@@ -40,14 +39,14 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
 
   const handleCopyText = () => {
     const lines = [
-      `🧾 ${config.shopName || "Sukie"} Receipt #${receipt.id}`,
+      `${config.shopName || "SUKIE ሱቄ"} Receipt #${receipt.id}`,
       `Date (ቀን): ${ethDateFormatted} (${new Date(receipt.date).toLocaleDateString()})`,
       `Customer: ${receipt.customerName || "Customer"}`,
       `Items:`,
       ...(receipt.items?.map((i) => ` - ${i.liters}L ${i.name}: ${i.totalPrice} ${config.currency}`) || []),
       `Total: ${receipt.total} ${config.currency} (${receipt.paymentMethod})`,
       receipt.cashTendered ? `Cash Received: ${receipt.cashTendered} ${config.currency} | Change: ${receipt.changeDue || 0} ${config.currency}` : null,
-      receipt.paymentMethod === "Credit" ? `⚠️ Store Credit Due: ${creditDueFormatted}` : null,
+      receipt.paymentMethod === "Credit" ? `Store Credit Due: ${creditDueFormatted}` : null,
       config.receiptFooter || "Thank you!",
     ].filter(Boolean).join("\n");
 
@@ -66,35 +65,31 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
         {/* Modal Controls (Hidden in print) */}
         <div className="no-print receipt-modal-actions-bar">
           <button className="btn-print-receipt" onClick={handlePrint}>
-            <Printer size={18} />
             <span>Print Receipt</span>
           </button>
           <button className="btn-secondary" onClick={handleCopyText} title="Copy Receipt for SMS/WhatsApp">
-            {copied ? <Check size={16} className="text-emerald" /> : <Copy size={16} />}
             <span>{copied ? "Copied!" : "Copy Text"}</span>
           </button>
           <button className="btn-close-receipt" onClick={onClose} title="Close">
-            <X size={20} />
+            <span>×</span>
           </button>
         </div>
-
 
         {/* Realistic POS Thermal Receipt Paper */}
         <div className="receipt-paper receipt-container">
           {/* Header */}
           <div className="receipt-header">
-            <div className="receipt-logo-icon">🫧</div>
-            <h2 className="receipt-shop-title">{config.shopName || "Sukie Liquid Soap"}</h2>
+            <h2 className="receipt-shop-title">{config.shopName || "SUKIE | ሱቄ"}</h2>
             <p className="receipt-tagline">{config.tagline || "Quality Detergents & Cleansers"}</p>
             <div className="receipt-contact-info">
               {config.address && (
                 <div className="contact-line">
-                  <MapPin size={12} /> {config.address}
+                  {config.address}
                 </div>
               )}
               {config.phone && (
                 <div className="contact-line">
-                  <Phone size={12} /> {config.phone}
+                  {config.phone}
                 </div>
               )}
             </div>
@@ -198,7 +193,7 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
                 </div>
               ) : (
                 <div className="receipt-stamp-watermark stamp-paid">
-                  <span>✓ PAID • ተከፍሏል</span>
+                  <span>PAID • ተከፍሏል</span>
                 </div>
               )}
             </div>
@@ -252,7 +247,7 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
               totalAmount={receipt.total}
               paymentMethod={receipt.paymentMethod || "Telebirr"}
               accountPhone={config.phone || "+251911000000"}
-              shopName={config.shopName || "Sukie"}
+              shopName={config.shopName || "SUKIE | ሱቄ"}
               currency={config.currency || "ETB"}
             />
 

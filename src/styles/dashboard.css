@@ -948,6 +948,37 @@
   font-family: monospace;
 }
 
+.dashboard-advanced-tools-toggle-bar {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 4px 0;
+}
+
+.btn-advanced-tools-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px dashed #94a3b8;
+  color: #475569;
+  padding: 8px 22px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-advanced-tools-toggle:hover {
+  background: #ffffff;
+  border-color: #0d9488;
+  color: #0d9488;
+  border-style: solid;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.12);
+  transform: translateY(-1px);
+}
+
 /* Recent Activity List */
 .recent-activity-list {
   display: flex;

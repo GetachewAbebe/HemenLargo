@@ -1,16 +1,15 @@
 import React, { useMemo } from "react";
-import { Package, Check, Sparkles, TrendingUp, AlertTriangle } from "lucide-react";
 import Modal from "../common/Modal";
 
 const CATEGORY_PRESETS = [
-  { id: "General Cleanser", label: "General (Largo)", emoji: "🧼" },
-  { id: "Kitchen & Dishes", label: "Dishes & Kitchen", emoji: "🍽️" },
-  { id: "Laundry", label: "Laundry & Fabrics", emoji: "👕" },
-  { id: "Personal Hygiene", label: "Hand Wash / Care", emoji: "🧴" },
-  { id: "Floors & Tiles", label: "Floors & Ceramic", emoji: "🧹" },
-  { id: "Sanitizer", label: "Bleach (Barikina)", emoji: "✨" },
-  { id: "Automotive", label: "Car Wash Soap", emoji: "🚗" },
-  { id: "Glass & Surfaces", label: "Glass & Surface", emoji: "🪟" },
+  { id: "General Cleanser", label: "General (Largo)" },
+  { id: "Kitchen & Dishes", label: "Dishes & Kitchen" },
+  { id: "Laundry", label: "Laundry & Fabrics" },
+  { id: "Personal Hygiene", label: "Hand Wash / Care" },
+  { id: "Floors & Tiles", label: "Floors & Ceramic" },
+  { id: "Sanitizer", label: "Bleach (Barikina)" },
+  { id: "Automotive", label: "Car Wash Soap" },
+  { id: "Glass & Surfaces", label: "Glass & Surface" },
 ];
 
 const COLOR_SWATCHES = [
@@ -23,8 +22,6 @@ const COLOR_SWATCHES = [
   { hex: "#10b981", name: "Fresh Mint" },
   { hex: "#64748b", name: "Crisp Pure" },
 ];
-
-const QUICK_EMOJIS = ["🧴", "🧼", "🫧", "🍋", "🌸", "🌿", "✨", "🧽", "🚗", "🧪"];
 
 export default function AddProductModal({
   isOpen,
@@ -52,7 +49,6 @@ export default function AddProductModal({
     setNewProduct((prev) => ({
       ...prev,
       category: cat.id,
-      iconEmoji: prev.iconEmoji || cat.emoji,
     }));
   };
 
@@ -62,7 +58,6 @@ export default function AddProductModal({
       onClose={onClose}
       title="Create New Soap Formula"
       subtitle="Define formula specifications, tank volume, and pricing tiers"
-      icon={Package}
       maxWidth="860px"
       className="modal-xl"
     >
@@ -106,11 +101,11 @@ export default function AddProductModal({
                   <button
                     key={cat.id}
                     type="button"
-                    className={`btn-category-chip ${newProduct.category === cat.id ? "chip-active" : ""
-                      }`}
+                    className={`btn-category-chip ${
+                      newProduct.category === cat.id ? "chip-active" : ""
+                    }`}
                     onClick={() => handleCategorySelect(cat)}
                   >
-                    <span className="chip-emoji">{cat.emoji}</span>
                     <span>{cat.label}</span>
                   </button>
                 ))}
@@ -176,28 +171,20 @@ export default function AddProductModal({
                 <strong className="calc-metric-val">{marginPct}%</strong>
               </div>
               <div
-                className={`margin-health-badge ${!isProfitable
+                className={`margin-health-badge ${
+                  !isProfitable
                     ? "margin-negative"
                     : isThin
-                      ? "margin-thin"
-                      : "margin-positive"
-                  }`}
+                    ? "margin-thin"
+                    : "margin-positive"
+                }`}
               >
                 {!isProfitable ? (
-                  <>
-                    <AlertTriangle size={13} />
-                    <span>Cost exceeds price</span>
-                  </>
+                  <span>Cost exceeds price</span>
                 ) : isThin ? (
-                  <>
-                    <TrendingUp size={13} />
-                    <span>Thin margin</span>
-                  </>
+                  <span>Thin margin</span>
                 ) : (
-                  <>
-                    <Sparkles size={13} />
-                    <span>Healthy margin</span>
-                  </>
+                  <span>Healthy margin</span>
                 )}
               </div>
             </div>
@@ -235,47 +222,29 @@ export default function AddProductModal({
               </div>
             </div>
 
-            {/* Color Swatches & Emoji Quick Selector */}
-            <div className="form-group-row">
-              <div className="form-group">
-                <label className="form-label">Liquid Soap Tint</label>
-                <div className="color-swatches-grid">
-                  {COLOR_SWATCHES.map((swatch) => (
-                    <button
-                      key={swatch.hex}
-                      type="button"
-                      title={swatch.name}
-                      className={`swatch-btn ${newProduct.color === swatch.hex ? "swatch-selected" : ""
-                        }`}
-                      style={{ backgroundColor: swatch.hex }}
-                      onClick={() => setNewProduct({ ...newProduct, color: swatch.hex })}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    className="form-color-picker"
-                    title="Custom tint picker"
-                    value={newProduct.color || "#0d9488"}
-                    onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })}
+            {/* Color Swatches */}
+            <div className="form-group">
+              <label className="form-label">Liquid Soap Tint</label>
+              <div className="color-swatches-grid">
+                {COLOR_SWATCHES.map((swatch) => (
+                  <button
+                    key={swatch.hex}
+                    type="button"
+                    title={swatch.name}
+                    className={`swatch-btn ${
+                      newProduct.color === swatch.hex ? "swatch-selected" : ""
+                    }`}
+                    style={{ backgroundColor: swatch.hex }}
+                    onClick={() => setNewProduct({ ...newProduct, color: swatch.hex })}
                   />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Formula Icon</label>
-                <div className="emoji-quick-row">
-                  {QUICK_EMOJIS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      className={`btn-emoji-quick ${newProduct.iconEmoji === emoji ? "emoji-selected" : ""
-                        }`}
-                      onClick={() => setNewProduct({ ...newProduct, iconEmoji: emoji })}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
+                ))}
+                <input
+                  type="color"
+                  className="form-color-picker"
+                  title="Custom tint picker"
+                  value={newProduct.color || "#0d9488"}
+                  onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })}
+                />
               </div>
             </div>
           </div>
@@ -293,7 +262,7 @@ export default function AddProductModal({
                 style={{ backgroundColor: newProduct.color || "#0d9488" }}
               />
 
-              {/* Bottle Simulation Visual */}
+              {/* Tank Level Simulation Visual */}
               <div className="preview-bottle-container">
                 <div
                   className="preview-liquid-fill"
@@ -307,9 +276,6 @@ export default function AddProductModal({
                 >
                   <div className="preview-liquid-wave"></div>
                 </div>
-                <span className="preview-bottle-emoji">
-                  {newProduct.iconEmoji || "🧴"}
-                </span>
               </div>
 
               {/* Title & Info */}
@@ -328,7 +294,7 @@ export default function AddProductModal({
                   {newProduct.category || "General Cleanser"}
                 </span>
                 {newProduct.scent && (
-                  <span className="preview-chip-tag">🌿 {newProduct.scent}</span>
+                  <span className="preview-chip-tag">{newProduct.scent}</span>
                 )}
               </div>
 
@@ -342,12 +308,13 @@ export default function AddProductModal({
 
               {/* Financial Return Pill */}
               <div
-                className={`preview-margin-indicator ${!isProfitable
+                className={`preview-margin-indicator ${
+                  !isProfitable
                     ? "margin-negative"
                     : isThin
-                      ? "margin-thin"
-                      : "margin-positive"
-                  }`}
+                    ? "margin-thin"
+                    : "margin-positive"
+                }`}
               >
                 <span>Unit Margin</span>
                 <span>
@@ -365,7 +332,6 @@ export default function AddProductModal({
             Cancel
           </button>
           <button type="submit" className="btn-modal-submit">
-            <Check size={18} />
             <span>Save & Add to Tank Farm</span>
           </button>
         </div>

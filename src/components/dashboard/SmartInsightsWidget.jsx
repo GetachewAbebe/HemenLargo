@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { Sparkles, Award, Smartphone, AlertTriangle, TrendingUp, CheckCircle2 } from "lucide-react";
 
 export default function SmartInsightsWidget({
   products = [],
@@ -29,8 +28,6 @@ export default function SmartInsightsWidget({
       list.push({
         id: "top-product",
         type: "success",
-        icon: Award,
-        iconColor: "#059669",
         bgClass: "insight-green",
         title: "Top Performer (ዋነኛ ምርት)",
         description: `"${topName}" is driving ${pct}% of your total volume (${topLiters.toFixed(1)}L sold).`,
@@ -52,8 +49,6 @@ export default function SmartInsightsWidget({
         list.push({
           id: "telebirr-share",
           type: "info",
-          icon: Smartphone,
-          iconColor: "#0284c7",
           bgClass: "insight-blue",
           title: "High Digital Adoption (ቴሌብር ክፍያ)",
           description: `${telebirrPct}% of sales paid via Telebirr (${telebirrTotal.toLocaleString()} ${currency}). Cash handling is reduced!`,
@@ -62,8 +57,6 @@ export default function SmartInsightsWidget({
         list.push({
           id: "cash-preference",
           type: "info",
-          icon: Smartphone,
-          iconColor: "#059669",
           bgClass: "insight-green",
           title: "Cash Liquidity (የጥሬ ገንዘብ ፍሰት)",
           description: `Cash register holds ${cashTotal.toLocaleString()} ${currency} (${Math.round((cashTotal / totalRev) * 100)}% of transactions).`,
@@ -79,8 +72,6 @@ export default function SmartInsightsWidget({
       list.push({
         id: "stock-alert",
         type: "warning",
-        icon: AlertTriangle,
-        iconColor: "#d97706",
         bgClass: "insight-amber",
         title: "Tank Refill Needed (ታንከር ይሙላ)",
         description: `"${lowStockProduct.name}" is low at ${lowStockProduct.stockLiters.toFixed(1)}L. Consider preparing a new batch.`,
@@ -89,8 +80,6 @@ export default function SmartInsightsWidget({
       list.push({
         id: "stock-healthy",
         type: "success",
-        icon: CheckCircle2,
-        iconColor: "#059669",
         bgClass: "insight-teal",
         title: "All Reservoirs Healthy (ታንከሮች ሙሉ ናቸው)",
         description: `All soap tanks are well-supplied above safety thresholds. Ready for peak hours!`,
@@ -103,8 +92,6 @@ export default function SmartInsightsWidget({
       list.push({
         id: "target-achieved",
         type: "celebrate",
-        icon: TrendingUp,
-        iconColor: "#7c3aed",
         bgClass: "insight-purple",
         title: "Target Smashed! (ግብ ተሳክቷል)",
         description: `Congratulations! You reached ${periodRevenue.toLocaleString()} ${currency} (${targetPct}% of goal).`,
@@ -114,8 +101,6 @@ export default function SmartInsightsWidget({
       list.push({
         id: "target-pace",
         type: "progress",
-        icon: TrendingUp,
-        iconColor: "#0d9488",
         bgClass: "insight-teal",
         title: "Goal Progress (የቀን ግብ)",
         description: `${targetPct}% of daily ${dailyTarget.toLocaleString()} ${currency} reached. ${remaining.toLocaleString()} ${currency} to go!`,
@@ -129,9 +114,6 @@ export default function SmartInsightsWidget({
     <div className="dashboard-widget-card smart-insights-widget animate-fade">
       <div className="widget-header-row">
         <div className="widget-title-wrap">
-          <div className="widget-icon-avatar bg-cyan-subtle">
-            <Sparkles size={18} className="text-cyan" />
-          </div>
           <div>
             <h4 className="widget-main-title">Shop Intelligence & Live Insights (የሱቅ ግንዛቤ)</h4>
             <span className="widget-sub-title">Automated sales velocity & operational highlights</span>
@@ -145,23 +127,14 @@ export default function SmartInsightsWidget({
       </div>
 
       <div className="smart-insights-grid">
-        {insights.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div key={item.id} className={`smart-insight-card ${item.bgClass}`}>
-              <div className="insight-card-header">
-                <div
-                  className="insight-icon-bubble"
-                  style={{ color: item.iconColor }}
-                >
-                  <Icon size={16} />
-                </div>
-                <strong className="insight-card-title">{item.title}</strong>
-              </div>
-              <p className="insight-card-desc">{item.description}</p>
+        {insights.map((item) => (
+          <div key={item.id} className={`smart-insight-card ${item.bgClass}`}>
+            <div className="insight-card-header">
+              <strong className="insight-card-title">{item.title}</strong>
             </div>
-          );
-        })}
+            <p className="insight-card-desc">{item.description}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

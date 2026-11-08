@@ -1,20 +1,4 @@
 import React, { useMemo, useState } from "react";
-import {
-  ShoppingCart,
-  Package,
-  TrendingDown,
-  DollarSign,
-  Droplets,
-  CalendarClock,
-  ArrowUpRight,
-  Zap,
-  Eye,
-  Sparkles,
-  CheckCircle2,
-  BarChart3,
-  Layers,
-  Calendar,
-} from "lucide-react";
 import { useApp } from "../context";
 import {
   formatEthiopianDate,
@@ -27,8 +11,6 @@ import AnalyticsView from "./AnalyticsView";
 import CashDrawerWidget from "./dashboard/CashDrawerWidget";
 import BatchProductionWidget from "./dashboard/BatchProductionWidget";
 import SalesTimelineChart from "./dashboard/SalesTimelineChart";
-import ProductShareWidget from "./dashboard/ProductShareWidget";
-import SmartInsightsWidget from "./dashboard/SmartInsightsWidget";
 import QuickSaleModal from "./common/QuickSaleModal";
 
 const EMPTY_ARR = [];
@@ -47,8 +29,9 @@ export default function DashboardView(props) {
   const currency = config?.currency || "ETB";
 
   const [todayDate] = React.useState(() => new Date());
-  const [selectedPeriod, setSelectedPeriod] = useState("today"); // 'today' | 'yesterday' | 'week' | 'month' | 'all'
+  const [selectedPeriod, setSelectedPeriod] = useState("today"); // 'today' | 'week' | 'month' | 'all'
   const [dashboardSubView, setDashboardSubView] = useState("overview"); // 'overview' | 'analytics'
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false); // Collapsible drawer for cash float & chemical mixer
 
   // Quick Sale Modal State
   const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
@@ -57,16 +40,12 @@ export default function DashboardView(props) {
   // Greeting based on current hour
   const hour = todayDate.getHours();
   let greetingAm = "እንደምን አደሩ";
-  let greetingEmoji = "☀️";
   if (hour >= 12 && hour < 17) {
     greetingAm = "እንደምን ዋሉ";
-    greetingEmoji = "🌤️";
   } else if (hour >= 17 && hour < 23) {
     greetingAm = "እንደምን አመሹ";
-    greetingEmoji = "🌙";
   } else if (hour >= 23 || hour < 6) {
     greetingAm = "ሰላም ቆዩ";
-    greetingEmoji = "✨";
   }
 
   const cashierName = config.ownerName || "Cashier";
@@ -75,15 +54,11 @@ export default function DashboardView(props) {
   // Dynamic Sales Filtering based on chosen period
   const periodSales = useMemo(() => {
     const nowTime = todayDate.getTime();
-    const yesterdayDate = new Date(nowTime - 24 * 60 * 60 * 1000);
 
     return sales.filter((s) => {
       const sDate = new Date(s.date);
       if (selectedPeriod === "today") {
         return isSameEthiopianDay(s.date, todayDate);
-      }
-      if (selectedPeriod === "yesterday") {
-        return isSameEthiopianDay(s.date, yesterdayDate);
       }
       if (selectedPeriod === "week") {
         return sDate >= new Date(nowTime - 7 * 24 * 60 * 60 * 1000);
@@ -98,15 +73,11 @@ export default function DashboardView(props) {
   // Dynamic Expenses Filtering based on chosen period
   const periodExpenses = useMemo(() => {
     const nowTime = todayDate.getTime();
-    const yesterdayDate = new Date(nowTime - 24 * 60 * 60 * 1000);
 
     return expenses.filter((e) => {
       const eDate = new Date(e.date);
       if (selectedPeriod === "today") {
         return isSameEthiopianDay(e.date, todayDate);
-      }
-      if (selectedPeriod === "yesterday") {
-        return isSameEthiopianDay(e.date, yesterdayDate);
       }
       if (selectedPeriod === "week") {
         return eDate >= new Date(nowTime - 7 * 24 * 60 * 60 * 1000);
@@ -179,25 +150,23 @@ export default function DashboardView(props) {
 
   const periodLabels = {
     today: "ዛሬ (Today)",
-    yesterday: "ትናንት (Yesterday)",
-    week: "በዚህ ሳምንት (This Week)",
-    month: "በዚህ ወር (This Month)",
-    all: "ሁሉንም (All Time)",
+    week: "በዚህ ሳምንት (Week)",
+    month: "በዚህ ወር (Month)",
+    all: "ሁሉንም (All)",
   };
 
   return (
     <div className="dashboard-layout animate-fade">
-      {/* 1. Executive Command Header Card */}
+      {/* 1. Sleek Command Header */}
       <div className="dashboard-hero-banner">
         <div className="hero-left-col">
           <div className="hero-greeting-line">
-            <span className="hero-greeting-emoji">{greetingEmoji}</span>
             <div className="hero-titles-wrap">
               <h2 className="hero-greeting-title">
-                {greetingAm}፣ {cashierName}!
+                {greetingAm}፣ {cashierName}
               </h2>
               <span className="hero-subtitle">
-                {config.shopName || "Sukie"} Operations Center • የሱቅ አጠቃላይ ማጠቃለያ ዳሽቦርድ
+                {config.shopName || "Sukie"} • የሱቅ አጠቃላይ ማጠቃለያ ዳሽቦርድ
               </span>
             </div>
           </div>
@@ -209,31 +178,28 @@ export default function DashboardView(props) {
               <strong>{ethDateFull}</strong>
             </span>
             <span className="hero-status-pill">
-              <CheckCircle2 size={13} className="text-emerald" />
               <span>Shift Active • Counter Open</span>
             </span>
           </div>
         </div>
 
-        {/* Action Buttons in Hero */}
+        {/* Clean, Prominent Action CTAs */}
         <div className="hero-right-actions">
           <button
             type="button"
             className="btn-hero-primary"
             onClick={() => openQuickSale()}
-            title="Instant 3-second sales registration"
+            title="Instant sales registration"
           >
-            <Zap size={18} />
-            <span>⚡ Quick Sale (ቀላል ሽያጭ)</span>
+            <span>Quick Sale (ቀላል ሽያጭ)</span>
           </button>
 
           <button
             type="button"
             className="btn-hero-secondary"
             onClick={() => handleNav("sales")}
-            title="Open Counter POS or Sales Records"
+            title="Open Counter POS"
           >
-            <ShoppingCart size={17} />
             <span>Sales & POS (ካውንተር)</span>
           </button>
         </div>
@@ -244,10 +210,9 @@ export default function DashboardView(props) {
         {/* Period Selector Tabs */}
         <div className="period-selector-pill-bar">
           <span className="period-selector-label">
-            <Calendar size={14} />
             <span>Period (ጊዜ):</span>
           </span>
-          {["today", "yesterday", "week", "month", "all"].map((p) => {
+          {["today", "week", "month", "all"].map((p) => {
             const isActive = selectedPeriod === p;
             return (
               <button
@@ -275,8 +240,7 @@ export default function DashboardView(props) {
               setDashboardSubView("overview");
             }}
           >
-            <Layers size={14} />
-            <span>Overview & Flow (አጠቃላይ)</span>
+            <span>Dashboard Overview</span>
           </button>
 
           <button
@@ -287,8 +251,7 @@ export default function DashboardView(props) {
               setDashboardSubView("analytics");
             }}
           >
-            <BarChart3 size={14} />
-            <span>Full P&L Reports (የፋይናንስ ሪፖርት)</span>
+            <span>Full Financial Report (ሪፖርት)</span>
           </button>
         </div>
       </div>
@@ -304,7 +267,7 @@ export default function DashboardView(props) {
         </div>
       ) : (
         <>
-          {/* 3. Key Financial & Operational Pulse Cards */}
+          {/* 3. The 4 Essential Financial & Operational Pulse Cards */}
           <div className="dashboard-kpi-grid">
             {/* Revenue */}
             <div className="dashboard-kpi-card card-kpi-revenue">
@@ -312,9 +275,7 @@ export default function DashboardView(props) {
                 <span className="kpi-title-text">
                   Revenue ({selectedPeriod === "today" ? "የዛሬ ሽያጭ" : "ሽያጭ"})
                 </span>
-                <div className="stat-icon-wrapper stat-emerald">
-                  <DollarSign size={18} />
-                </div>
+                <span className="kpi-tag-text">REVENUE</span>
               </div>
 
               <div className="kpi-value-row">
@@ -350,9 +311,7 @@ export default function DashboardView(props) {
             <div className="dashboard-kpi-card card-kpi-liters">
               <div className="kpi-card-header">
                 <span className="kpi-title-text">Liters Dispensed (የተቀዳ ፈሳሽ)</span>
-                <div className="stat-icon-wrapper stat-cyan">
-                  <Droplets size={18} />
-                </div>
+                <span className="kpi-tag-text">VOLUME</span>
               </div>
 
               <div className="kpi-value-row">
@@ -383,9 +342,7 @@ export default function DashboardView(props) {
             <div className="dashboard-kpi-card card-kpi-payments">
               <div className="kpi-card-header">
                 <span className="kpi-title-text">Payment Breakdown (ክፍያዎች)</span>
-                <div className="stat-icon-wrapper stat-amber">
-                  <Zap size={18} />
-                </div>
+                <span className="kpi-tag-text">PAYMENTS</span>
               </div>
 
               <div className="kpi-value-row">
@@ -442,9 +399,7 @@ export default function DashboardView(props) {
                 <span className="kpi-title-text">
                   Expenses & Profit (ወጪ እና ትርፍ)
                 </span>
-                <div className="stat-icon-wrapper stat-rose">
-                  <TrendingDown size={18} />
-                </div>
+                <span className="kpi-tag-text">NET</span>
               </div>
 
               <div className="kpi-value-row">
@@ -456,7 +411,6 @@ export default function DashboardView(props) {
 
               <div className="kpi-credit-status-box">
                 <span className={`credit-ok-pill ${periodNetIncome >= 0 ? "net-positive" : "net-negative"}`}>
-                  <CheckCircle2 size={13} />
                   <span>
                     Net: {periodNetIncome >= 0 ? `+${periodNetIncome.toLocaleString()}` : periodNetIncome.toLocaleString()} {currency}
                   </span>
@@ -469,45 +423,16 @@ export default function DashboardView(props) {
             </div>
           </div>
 
-          {/* 4. Sales Flow Activity Timeline (Lightweight Interactive Chart) */}
-          <SalesTimelineChart
-            sales={periodSales}
-            currency={currency}
-            period={selectedPeriod}
-          />
-
-          {/* 5. Product Mix & Smart Insights Row */}
-          <div className="dashboard-widgets-section">
-            <ProductShareWidget
-              products={products}
-              sales={periodSales}
-              currency={currency}
-              onQuickDispense={(productId) => openQuickSale(productId)}
-            />
-
-            <SmartInsightsWidget
-              products={products}
-              sales={periodSales}
-              expenses={periodExpenses}
-              currency={currency}
-              periodRevenue={periodRevenue}
-              dailyTarget={effectiveTarget}
-            />
-          </div>
-
-          {/* 6. Live Soap Reservoir Tanks Simulation */}
+          {/* 4. Live Soap Reservoirs Simulation (Largo & Barikina) */}
           <div className="dashboard-section">
             <div className="section-header-row">
               <div className="section-title-wrap">
-                <div className="section-title-icon-box">
-                  <Package size={18} />
-                </div>
                 <div>
                   <h3 className="section-main-heading">
-                    Liquid Soap Reservoirs & Tanks (የሳሙና ታንከሮች)
+                    Live Soap Reservoirs & Tanks (የሳሙና ታንከሮች)
                   </h3>
                   <span className="section-sub-heading">
-                    Real-time tank volume gauges, low-stock beacons, and 1-click dispensing
+                    Current levels, stock alerts, and rapid dispensing
                   </span>
                 </div>
               </div>
@@ -517,8 +442,7 @@ export default function DashboardView(props) {
                 className="section-link-btn"
                 onClick={() => handleNav("inventory")}
               >
-                <span>Manage Tank Farm</span>
-                <ArrowUpRight size={15} />
+                <span>Open Tank Farm →</span>
               </button>
             </div>
 
@@ -542,7 +466,7 @@ export default function DashboardView(props) {
                             borderColor: `${prod.color || "#0d9488"}35`,
                           }}
                         >
-                          {prod.iconEmoji || "🧴"}
+                          <span className="tank-initial-badge">{(prod.name || "S").charAt(0)}</span>
                         </div>
                         <div className="tank-title-texts">
                           <strong className="tank-name-bold">{prod.name}</strong>
@@ -575,8 +499,6 @@ export default function DashboardView(props) {
                           }}
                         >
                           <div className="cylinder-fluid-wave"></div>
-                          <span className="fluid-bubble b1">🫧</span>
-                          <span className="fluid-bubble b2">🫧</span>
                         </div>
 
                         <div className="cylinder-notches">
@@ -618,8 +540,7 @@ export default function DashboardView(props) {
                         onClick={() => openQuickSale(prod.id)}
                         title="Instant quick sale for this product"
                       >
-                        <Zap size={14} className="text-amber" />
-                        <span>⚡ Quick Sell</span>
+                        <span>Quick Sell</span>
                       </button>
 
                       <button
@@ -637,103 +558,19 @@ export default function DashboardView(props) {
             </div>
           </div>
 
-          {/* 7. Cash Drawer Shift Control & Soap Batch Production Mixer */}
-          <div className="dashboard-widgets-section">
-            <CashDrawerWidget
-              todaySales={periodSales}
-              todayExpenses={periodExpenses}
-              currency={currency}
-              cashierName={cashierName}
-            />
-
-            <BatchProductionWidget
-              products={products}
-              currency={currency}
-              onRestockLiters={onRestockLiters}
-              onAddExpense={onAddExpense}
-            />
-          </div>
-
-          {/* 8. Operations Launchpad & Activity Feed Bento Grid */}
+          {/* 5. Balanced 2-Column Deck: Sales Timeline (Left) & Recent Stream (Right) */}
           <div className="dashboard-two-col">
-            {/* Launchpad */}
+            {/* Left Column: Visual Sales Activity Timeline */}
+            <SalesTimelineChart
+              sales={periodSales}
+              currency={currency}
+              period={selectedPeriod}
+            />
+
+            {/* Right Column: Live Recent Transactions Feed */}
             <div className="dashboard-card-panel">
               <div className="panel-header-row">
                 <div className="panel-title-text">
-                  <Sparkles size={16} className="text-teal" />
-                  <span>Operations Launchpad (ፈጣን ማስጀመሪያ)</span>
-                </div>
-                <span className="panel-hint-text">Instant tools</span>
-              </div>
-
-              <div className="launchpad-grid">
-                <button
-                  type="button"
-                  className="launchpad-tile"
-                  onClick={() => openQuickSale()}
-                >
-                  <div className="tile-icon-box stat-emerald">
-                    <Zap size={18} />
-                  </div>
-                  <div className="tile-text-col">
-                    <strong className="tile-main-label">Quick Register</strong>
-                    <span className="tile-sub-label">Instant 3-sec customer sale</span>
-                  </div>
-                  <span className="tile-shortcut-key">Sale ⚡</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="launchpad-tile"
-                  onClick={() => handleNav("sales")}
-                >
-                  <div className="tile-icon-box stat-cyan">
-                    <ShoppingCart size={18} />
-                  </div>
-                  <div className="tile-text-col">
-                    <strong className="tile-main-label">Counter POS</strong>
-                    <span className="tile-sub-label">Full jerrycan dispenser station</span>
-                  </div>
-                  <span className="tile-shortcut-key">POS →</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="launchpad-tile"
-                  onClick={() => handleNav("inventory")}
-                >
-                  <div className="tile-icon-box stat-purple">
-                    <Package size={18} />
-                  </div>
-                  <div className="tile-text-col">
-                    <strong className="tile-main-label">Tanks & Stock</strong>
-                    <span className="tile-sub-label">Manage soap formulas & refill</span>
-                  </div>
-                  <span className="tile-shortcut-key">Tanks →</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="launchpad-tile"
-                  onClick={() => handleNav("expenses")}
-                >
-                  <div className="tile-icon-box stat-rose">
-                    <TrendingDown size={18} />
-                  </div>
-                  <div className="tile-text-col">
-                    <strong className="tile-main-label">Record Expense</strong>
-                    <span className="tile-sub-label">Chemicals, rent & shop costs</span>
-                  </div>
-                  <span className="tile-shortcut-key">Cost →</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Recent Activity Stream */}
-            <div className="dashboard-card-panel">
-              <div className="panel-header-row">
-                <div className="panel-title-text">
-                  <CalendarClock size={16} className="text-teal" />
                   <span>Recent Activity Stream (የቅርብ ጊዜ እንቅስቃሴዎች)</span>
                 </div>
                 <button
@@ -741,8 +578,7 @@ export default function DashboardView(props) {
                   className="section-link-btn"
                   onClick={() => handleNav("sales")}
                 >
-                  <span>View All</span>
-                  <ArrowUpRight size={14} />
+                  <span>View All →</span>
                 </button>
               </div>
 
@@ -781,7 +617,6 @@ export default function DashboardView(props) {
                               onClick={() => onSelectReceipt(act)}
                               title="View receipt"
                             >
-                              <Eye size={12} />
                               <span>Receipt</span>
                             </button>
                           )}
@@ -793,6 +628,42 @@ export default function DashboardView(props) {
               </div>
             </div>
           </div>
+
+          {/* 6. Optional Clean Accordion for Advanced Tools (Cash Drawer & Chemical Formula Mixer) */}
+          <div className="dashboard-advanced-tools-toggle-bar">
+            <button
+              type="button"
+              className="btn-advanced-tools-toggle"
+              onClick={() => {
+                soundFX.playPop();
+                setShowAdvancedTools(!showAdvancedTools);
+              }}
+            >
+              <span>
+                {showAdvancedTools
+                  ? "Hide Cash Drawer & Chemical Mixer [-]"
+                  : "Show Cash Drawer & Soap Chemical Mixer [+]"}
+              </span>
+            </button>
+          </div>
+
+          {showAdvancedTools && (
+            <div className="dashboard-widgets-section animate-fade">
+              <CashDrawerWidget
+                todaySales={periodSales}
+                todayExpenses={periodExpenses}
+                currency={currency}
+                cashierName={cashierName}
+              />
+
+              <BatchProductionWidget
+                products={products}
+                currency={currency}
+                onRestockLiters={onRestockLiters}
+                onAddExpense={onAddExpense}
+              />
+            </div>
+          )}
         </>
       )}
 

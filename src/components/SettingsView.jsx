@@ -1,16 +1,4 @@
-import React, { useState, useEffect } from "react";
-import {
-  Store,
-  Download,
-  Upload,
-  RefreshCw,
-  Trash2,
-  Check,
-  ShieldAlert,
-  Volume2,
-  VolumeX,
-  Calendar,
-} from "lucide-react";
+import React, { useState } from "react";
 import { exportAllDataAsJSON } from "../utils/storage";
 import { soundFX } from "../utils/audio";
 import { formatEthiopianDate } from "../utils/ethiopianDate";
@@ -23,55 +11,55 @@ export default function SettingsView({
   onClearTransactionsOnly,
 }) {
   const [formData, setFormData] = useState({ ...config });
+  const [prevConfig, setPrevConfig] = useState(config);
   const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
   const [savedCalendarSuccess, setSavedCalendarSuccess] = useState(false);
   const [isMuted, setIsMuted] = useState(() => soundFX.isMuted());
   const [previewNow] = useState(() => new Date());
 
-  useEffect(() => {
-    return soundFX.subscribe((muted) => setIsMuted(muted));
-  }, []);
-
-  const handleToggleMute = () => {
-    const next = soundFX.toggleMute();
-    setIsMuted(next);
-    if (!next) {
-      soundFX.playPop();
-    }
-  };
+  if (config !== prevConfig) {
+    setPrevConfig(config);
+    setFormData({ ...config });
+  }
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    onSaveConfig(formData);
     soundFX.playPop();
+    onSaveConfig(formData);
     setSavedProfileSuccess(true);
     setTimeout(() => setSavedProfileSuccess(false), 3000);
   };
 
   const handleSaveCalendar = (e) => {
     e.preventDefault();
-    onSaveConfig(formData);
     soundFX.playPop();
+    onSaveConfig(formData);
     setSavedCalendarSuccess(true);
     setTimeout(() => setSavedCalendarSuccess(false), 3000);
   };
 
+  const handleToggleMute = () => {
+    const nextMuted = soundFX.toggleMute();
+    setIsMuted(nextMuted);
+    if (!nextMuted) {
+      soundFX.playPop();
+    }
+  };
+
   const handleFileImport = (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target.result);
-        if (parsed.data) {
-          onImportData(parsed.data);
-          alert("Data successfully restored from backup file!");
-        } else {
-          alert("Invalid backup file format.");
-        }
+        soundFX.playCheckoutChime();
+        onImportData(parsed);
       } catch (err) {
-        alert("Failed to read backup file: " + err.message);
+        console.warn("Import failed:", err);
+        soundFX.playWarning();
+        alert("Failed to read JSON backup file. Please check file format.");
       }
     };
     reader.readAsText(file);
@@ -82,9 +70,6 @@ export default function SettingsView({
       {/* Store Information Form */}
       <div className="settings-card">
         <div className="settings-card-header">
-          <div className="stat-icon-wrapper stat-cyan">
-            <Store size={22} />
-          </div>
           <div>
             <h3 className="section-title">Shop Profile & Receipt Header</h3>
             <p className="section-subtitle">
@@ -96,7 +81,6 @@ export default function SettingsView({
         <form onSubmit={handleSaveProfile} className="settings-form">
           {savedProfileSuccess && (
             <div className="alert-success animate-fade">
-              <Check size={18} />
               <span>Shop profile details updated successfully!</span>
             </div>
           )}
@@ -198,7 +182,6 @@ export default function SettingsView({
 
           <div className="form-actions-row">
             <button type="submit" className="btn-primary">
-              <Check size={18} />
               <span>Save Shop Profile</span>
             </button>
           </div>
@@ -208,9 +191,6 @@ export default function SettingsView({
       {/* Calendar System & Localization Preferences */}
       <div className="settings-card">
         <div className="settings-card-header">
-          <div className="stat-icon-wrapper stat-emerald">
-            <Calendar size={22} />
-          </div>
           <div>
             <h3 className="section-title">Calendar System & Date Preferences (የቀን መቁጠሪያ)</h3>
             <p className="section-subtitle">
@@ -222,7 +202,6 @@ export default function SettingsView({
         <form onSubmit={handleSaveCalendar} className="settings-form">
           {savedCalendarSuccess && (
             <div className="alert-success animate-fade">
-              <Check size={18} />
               <span>Calendar preferences saved and applied across the app!</span>
             </div>
           )}
@@ -238,8 +217,8 @@ export default function SettingsView({
                 value={formData.calendarSystem || "ethiopian"}
                 onChange={(e) => setFormData({ ...formData, calendarSystem: e.target.value })}
               >
-                <option value="ethiopian">🇪🇹 Ethiopian Calendar (የኢትዮጵያ ዘመን አቆጣጠር) [Recommended]</option>
-                <option value="gregorian">🌐 Gregorian Calendar (የፈረንጆች አቆጣጠር)</option>
+                <option value="ethiopian">Ethiopian Calendar (የኢትዮጵያ ዘመን አቆጣጠር) [Recommended]</option>
+                <option value="gregorian">Gregorian Calendar (የፈረንጆች አቆጣጠር)</option>
               </select>
             </div>
 
@@ -266,7 +245,6 @@ export default function SettingsView({
           {/* Live Preview Card */}
           <div className="calendar-preview-card">
             <div className="calendar-preview-title">
-              <Calendar size={16} />
               <span>Live Date Preview (ቅድመ ዕይታ)</span>
             </div>
             <div className="calendar-preview-text">
@@ -286,7 +264,6 @@ export default function SettingsView({
 
           <div className="form-actions-row">
             <button type="submit" className="btn-primary">
-              <Check size={18} />
               <span>Save Calendar Preferences</span>
             </button>
           </div>
@@ -296,9 +273,6 @@ export default function SettingsView({
       {/* Data Management & Backups */}
       <div className="settings-card">
         <div className="settings-card-header">
-          <div className="stat-icon-wrapper stat-purple">
-            <Download size={20} />
-          </div>
           <div>
             <h3 className="section-title">Data Backup & Safety</h3>
             <p className="section-subtitle">
@@ -311,14 +285,12 @@ export default function SettingsView({
           {/* Export JSON */}
           <div className="backup-tile">
             <div className="backup-tile-header">
-              <Download size={20} className="text-cyan" />
               <strong>Download Backup (JSON)</strong>
             </div>
             <p className="backup-tile-desc">
               Save a full copy of your soaps catalog, inventory liters, sales receipts, and expenses to your device.
             </p>
             <button className="btn-secondary" onClick={exportAllDataAsJSON}>
-              <Download size={16} />
               <span>Export All Data Now</span>
             </button>
           </div>
@@ -326,14 +298,12 @@ export default function SettingsView({
           {/* Import JSON */}
           <div className="backup-tile">
             <div className="backup-tile-header">
-              <Upload size={20} className="text-purple" />
               <strong>Restore from Backup</strong>
             </div>
             <p className="backup-tile-desc">
               Upload a previously exported JSON backup file to restore all your shop records.
             </p>
             <label className="btn-secondary file-upload-label">
-              <Upload size={16} />
               <span>Choose Backup File</span>
               <input
                 type="file"
@@ -349,9 +319,6 @@ export default function SettingsView({
       {/* Audio & Sound Preferences */}
       <div className="settings-card">
         <div className="settings-card-header">
-          <div className={`stat-icon-wrapper ${isMuted ? "stat-rose" : "stat-cyan"}`}>
-            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-          </div>
           <div className="settings-header-text-flex">
             <div>
               <h3 className="section-title">POS Sound Effects & Cashier Audio</h3>
@@ -364,7 +331,6 @@ export default function SettingsView({
               className={`btn-sound-toggle-large ${isMuted ? "toggle-muted" : "toggle-active"}`}
               onClick={handleToggleMute}
             >
-              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
               <span>{isMuted ? "Sound: Muted" : "Sound: Active (ON)"}</span>
             </button>
           </div>
@@ -378,35 +344,35 @@ export default function SettingsView({
               className="btn-audio-test"
               onClick={() => soundFX.playPop()}
             >
-              🫧 Soap Bubble Pop
+              Pop Sound
             </button>
             <button
               type="button"
               className="btn-audio-test"
               onClick={() => soundFX.playBeep()}
             >
-              🔊 POS Scanner Beep
+              Scanner Beep
             </button>
             <button
               type="button"
               className="btn-audio-test"
               onClick={() => soundFX.playCoin()}
             >
-              🪙 Cash Coin Chime
+              Coin Chime
             </button>
             <button
               type="button"
               className="btn-audio-test"
               onClick={() => soundFX.playCheckoutChime()}
             >
-              🔔 Completion Fanfare
+              Completion Fanfare
             </button>
             <button
               type="button"
               className="btn-audio-test"
               onClick={() => soundFX.playWarning()}
             >
-              ⚠️ Low Stock Buzz
+              Stock Alert Buzz
             </button>
           </div>
         </div>
@@ -415,9 +381,6 @@ export default function SettingsView({
       {/* Danger Zone: Reset or Clear */}
       <div className="settings-card danger-card">
         <div className="settings-card-header">
-          <div className="stat-icon-wrapper stat-rose">
-            <ShieldAlert size={20} />
-          </div>
           <div>
             <h3 className="section-title text-rose">Maintenance & Reset</h3>
             <p className="section-subtitle">
@@ -439,7 +402,6 @@ export default function SettingsView({
               }
             }}
           >
-            <Trash2 size={16} />
             <span>Clear Sales Records (Keep Soaps)</span>
           </button>
 
@@ -455,7 +417,6 @@ export default function SettingsView({
               }
             }}
           >
-            <RefreshCw size={16} />
             <span>Reset to Starter Demo Data</span>
           </button>
         </div>

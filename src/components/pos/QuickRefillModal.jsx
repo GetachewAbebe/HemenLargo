@@ -1,5 +1,4 @@
 import React from "react";
-import { RefreshCw, CheckCircle } from "lucide-react";
 import Modal from "../common/Modal";
 
 export default function QuickRefillModal({
@@ -17,7 +16,6 @@ export default function QuickRefillModal({
       onClose={onClose}
       title={`Refill ${product.name}`}
       subtitle="Quick tank refill from newly brewed batch"
-      icon={RefreshCw}
       maxWidth="440px"
     >
       <form onSubmit={onConfirm} className="modal-form">
@@ -59,7 +57,6 @@ export default function QuickRefillModal({
             Cancel
           </button>
           <button type="submit" className="btn-modal-submit">
-            <CheckCircle size={18} />
             <span>Confirm Refill (+{refillAmount}L)</span>
           </button>
         </div>

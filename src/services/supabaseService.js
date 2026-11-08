@@ -21,7 +21,7 @@ export const normalizeProductFromSupabase = (p) => {
       p.fragrance_or_color ||
       (isBerekina ? "Clear / Chlorine" : "Lemon"),
     color: p.color || (isBerekina ? "#06b6d4" : "#0d9488"),
-    iconEmoji: p.icon_emoji || (isBerekina ? "✨" : "🧴"),
+    iconEmoji: p.icon_emoji || "",
     pricePerLiter: Number(p.price_per_liter ?? p.selling_price) || (isLargo ? 110 : 75),
     costPerLiter: Number(p.cost_per_liter ?? p.cost_price) || (isLargo ? 65 : 45),
     stockLiters: Number(p.stock_liters ?? p.current_stock) || 0,

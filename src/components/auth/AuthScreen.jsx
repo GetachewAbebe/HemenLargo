@@ -1,17 +1,4 @@
 import React, { useState } from "react";
-import {
-  Lock,
-  User,
-  Store,
-  Phone,
-  Eye,
-  EyeOff,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
 import { soundFX } from "../../utils/audio";
 import { loginUser, registerUser } from "../../services/authService";
 
@@ -100,9 +87,9 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
         {/* Brand Header */}
         <div className="auth-brand-block">
           <div className="auth-icon-avatar">
-            <span className="bubble-anim">🫧</span>
+            <span className="auth-avatar-text">S</span>
           </div>
-          <h1 className="auth-brand-title">SUKIE | ሱኪ</h1>
+          <h1 className="auth-brand-title">SUKIE | ሱቄ</h1>
           <p className="auth-brand-subtitle">
             Smart Liquid Soap Counter & Operations • የፈሳሽ ሳሙና እና በረኪና መሸጫና መቆጣጠሪያ
           </p>
@@ -129,13 +116,11 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
         {/* Feedback Messages */}
         {errorMessage && (
           <div className="auth-alert-box alert-error animate-fade">
-            <AlertCircle size={16} />
             <span>{errorMessage}</span>
           </div>
         )}
         {successMessage && (
           <div className="auth-alert-box alert-success animate-fade">
-            <CheckCircle2 size={16} />
             <span>{successMessage}</span>
           </div>
         )}
@@ -146,7 +131,6 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
             <div className="auth-field-group">
               <label className="auth-field-label">Username or Phone (የመግቢያ ስም / ስልክ)</label>
               <div className="auth-input-wrapper">
-                <User size={16} className="auth-input-icon" />
                 <input
                   type="text"
                   className="auth-text-input"
@@ -162,7 +146,6 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
             <div className="auth-field-group">
               <label className="auth-field-label">Security PIN or Password (ሚስጥር ቁጥር)</label>
               <div className="auth-input-wrapper">
-                <Lock size={16} className="auth-input-icon" />
                 <input
                   type={showPassword ? "text" : "password"}
                   className="auth-text-input"
@@ -175,16 +158,14 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
                   type="button"
                   className="auth-btn-pwd-toggle"
                   onClick={() => setShowPassword(!showPassword)}
-                  title={showPassword ? "Hide PIN" : "Show PIN"}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
 
             <button type="submit" className="auth-submit-btn">
               <span>Access POS Counter</span>
-              <ArrowRight size={17} />
             </button>
 
             {/* Quick Demo Cashier Switcher */}
@@ -195,8 +176,7 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
                 onClick={handleQuickDemoFill}
                 title="Fill demo credentials"
               >
-                <Sparkles size={13} className="text-teal" />
-                <span>One-Click Demo Cashier: <strong>Getachew</strong> (PIN: 1234)</span>
+                <span>Demo Cashier: <strong>Getachew</strong> (PIN: 1234)</span>
               </button>
             </div>
           </form>
@@ -209,7 +189,6 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
               <div className="auth-field-group">
                 <label className="auth-field-label">Full Name (ሙሉ ስም)</label>
                 <div className="auth-input-wrapper">
-                  <User size={15} className="auth-input-icon" />
                   <input
                     type="text"
                     className="auth-text-input"
@@ -241,11 +220,10 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
             <div className="auth-field-group">
               <label className="auth-field-label">Shop / Store Name (የሱቁ ስም)</label>
               <div className="auth-input-wrapper">
-                <Store size={15} className="auth-input-icon" />
                 <input
                   type="text"
                   className="auth-text-input"
-                  placeholder="e.g. Hemen Liquid Soap"
+                  placeholder="e.g. Sukie Liquid Soap"
                   value={regShopName}
                   onChange={(e) => setRegShopName(e.target.value)}
                   required
@@ -257,7 +235,6 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
               <div className="auth-field-group">
                 <label className="auth-field-label">Phone Number (ስልክ ቁጥር)</label>
                 <div className="auth-input-wrapper">
-                  <Phone size={15} className="auth-input-icon" />
                   <input
                     type="tel"
                     className="auth-text-input"
@@ -271,7 +248,6 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
               <div className="auth-field-group">
                 <label className="auth-field-label">Create Security PIN (4-Digit PIN)</label>
                 <div className="auth-input-wrapper">
-                  <Lock size={15} className="auth-input-icon" />
                   <input
                     type={showPassword ? "text" : "password"}
                     className="auth-text-input"
@@ -286,16 +262,14 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
                     type="button"
                     className="auth-btn-pwd-toggle"
                     onClick={() => setShowPassword(!showPassword)}
-                    title={showPassword ? "Hide PIN" : "Show PIN"}
                   >
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    {showPassword ? "Hide" : "Show"}
                   </button>
                 </div>
               </div>
             </div>
 
             <button type="submit" className="auth-submit-btn">
-              <ShieldCheck size={18} />
               <span>Register & Launch Store POS</span>
             </button>
           </form>

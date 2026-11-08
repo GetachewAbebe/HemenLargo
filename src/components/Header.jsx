@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo } from "react";
-import { Zap } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 
@@ -92,12 +91,12 @@ export default function Header({
             title="Sukie - Operations Dashboard"
           >
             <div className="brand-logo-gem">
-              <span className="brand-gem-emoji">🫧</span>
+              <span className="brand-gem-text">S</span>
             </div>
             <div className="brand-text-col">
               <div className="brand-name-row">
                 <span className="brand-name-en">SUKIE</span>
-                <span className="brand-name-am">ሱኪ</span>
+                <span className="brand-name-am">ሱቄ</span>
               </div>
               <span className="brand-tagline-text">{config.shopName || "Liquid Soap POS"}</span>
             </div>
@@ -142,8 +141,7 @@ export default function Header({
               }}
               title="Quick Sale Registration (Shortcut: S or Q)"
             >
-              <Zap size={13} />
-              <span>⚡ Quick Sale</span>
+              <span>Quick Sale</span>
             </button>
           )}
 
@@ -159,7 +157,6 @@ export default function Header({
             <span className="cashier-avatar-badge">{initials}</span>
             <span className="cashier-dot-online"></span>
             <span className="cashier-name-text">{displayName}</span>
-            <span className="cashier-settings-gear">⚙️</span>
           </button>
         </div>
       </div>

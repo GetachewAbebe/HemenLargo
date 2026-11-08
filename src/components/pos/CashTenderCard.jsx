@@ -1,5 +1,4 @@
 import React from "react";
-import { Banknote } from "lucide-react";
 import { soundFX } from "../../utils/audio";
 
 export default function CashTenderCard({
@@ -17,7 +16,6 @@ export default function CashTenderCard({
   return (
     <div className="cash-tender-card animate-fade">
       <div className="cash-tender-header">
-        <Banknote size={14} className="text-emerald" />
         <strong>Cash Tender & Change Due (ጥሬ ገንዘብ & መልስ)</strong>
       </div>
       <div className="cash-quick-denominations">

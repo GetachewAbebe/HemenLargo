@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { BarChart2 } from "lucide-react";
 import { formatEthiopianDate } from "../../utils/ethiopianDate";
 
 export default function SalesTimelineChart({
@@ -127,9 +126,6 @@ export default function SalesTimelineChart({
       {/* Chart Top Header */}
       <div className="chart-header-row">
         <div className="chart-title-wrap">
-          <div className="chart-icon-box stat-cyan">
-            <BarChart2 size={18} />
-          </div>
           <div>
             <h3 className="chart-main-title">Sales Flow & Activity Timeline (የሽያጭ ፍሰት)</h3>
             <span className="chart-subtitle">
@@ -143,7 +139,7 @@ export default function SalesTimelineChart({
         <div className="chart-meta-tags">
           {peakBucket && (
             <span className="peak-badge animate-pop">
-              <span>🔥 Peak:</span>
+              <span>Peak:</span>
               <strong>
                 {peakBucket.nameAm || peakBucket.label} ({peakBucket.total.toLocaleString()} {currency})
               </strong>

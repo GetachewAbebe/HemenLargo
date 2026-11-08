@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { Calendar, CalendarClock, RotateCcw, AlertTriangle } from "lucide-react";
 import { formatEthiopianDate } from "../../utils/ethiopianDate";
 import { soundFX } from "../../utils/audio";
 
@@ -48,7 +47,6 @@ export default function SaleDateSelector({
     <div className="pos-date-selector-card">
       <div className="pos-date-header-row">
         <label className="field-label">
-          <Calendar size={13} className="text-teal" />
           <span>Sale Registration Date (የሽያጭ ቀን)</span>
         </label>
         {isBackdated && (
@@ -61,7 +59,6 @@ export default function SaleDateSelector({
             }}
             title="Reset to current live date & time"
           >
-            <RotateCcw size={11} />
             <span>Reset to Today</span>
           </button>
         )}
@@ -77,7 +74,7 @@ export default function SaleDateSelector({
             onSelectMode("today");
           }}
         >
-          <span>⚡ ዛሬ (Today)</span>
+          <span>ዛሬ (Today)</span>
         </button>
 
         <button
@@ -99,7 +96,6 @@ export default function SaleDateSelector({
             onSelectMode("custom");
           }}
         >
-          <CalendarClock size={13} />
           <span>ቀን ይምረጡ (Pick)</span>
         </button>
       </div>
@@ -134,7 +130,6 @@ export default function SaleDateSelector({
       {/* Ethiopian Date Visual Badge */}
       <div className={`pos-date-preview-badge ${isBackdated ? "badge-backdated" : "badge-today"}`}>
         <div className="pos-date-badge-left">
-          <span className="pos-date-flag-icon">🇪🇹</span>
           <div className="pos-date-badge-text">
             <strong className="eth-full-date">
               {formatEthiopianDate(previewDate, "full")}
@@ -151,7 +146,6 @@ export default function SaleDateSelector({
         </div>
         {isBackdated && (
           <span className="backdated-warning-tag">
-            <AlertTriangle size={11} />
             <span>Backdated</span>
           </span>
         )}

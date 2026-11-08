@@ -1,9 +1,4 @@
 import React, { useState, useMemo } from "react";
-import {
-  Beaker,
-  PackagePlus,
-  CheckCircle2,
-} from "lucide-react";
 import { soundFX } from "../../utils/audio";
 
 const FORMULA_PRESETS = [
@@ -121,9 +116,6 @@ export default function BatchProductionWidget({
     <div className="dashboard-widget-card batch-production-card">
       <div className="widget-header-row">
         <div className="widget-title-wrap">
-          <div className="widget-icon-avatar bg-cyan-subtle">
-            <Beaker size={18} className="text-cyan" />
-          </div>
           <div>
             <h4 className="widget-main-title">Soap Production Batch Mixer (የሳሙና ማምረቻ ቀመር)</h4>
             <span className="widget-sub-title">Barrel raw materials, chemical costs, and profit planner</span>
@@ -210,7 +202,6 @@ export default function BatchProductionWidget({
       <div className="batch-action-row">
         {productionSuccess ? (
           <div className="batch-success-notice animate-fade">
-            <CheckCircle2 size={16} />
             <span>Success! Produced {batchSizeLiters}L added directly to reservoir tank!</span>
           </div>
         ) : (
@@ -220,7 +211,6 @@ export default function BatchProductionWidget({
             onClick={handleProduceBatch}
             title="Produce this batch and automatically add liters to tank"
           >
-            <PackagePlus size={17} />
             <span>Produce {batchSizeLiters}L & Refill {activeFormula.name.split(" ")[0]} Tank</span>
           </button>
         )}

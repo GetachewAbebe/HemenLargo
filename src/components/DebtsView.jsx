@@ -1,22 +1,4 @@
 import React, { useState, useMemo } from "react";
-import {
-  CreditCard,
-  Search,
-  Plus,
-  DollarSign,
-  Users,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Phone,
-  Check,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  X,
-  Trash2,
-  Send,
-} from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { formatEthiopianDate, formatEthiopianTime } from "../utils/ethiopianDate";
 import { useApp } from "../context";
@@ -164,9 +146,6 @@ export default function DebtsView() {
       <div className="debts-hero-banner">
         <div className="debts-hero-left">
           <div className="debts-title-row">
-            <div className="debts-avatar-badge">
-              <CreditCard size={24} className="text-rose" />
-            </div>
             <div>
               <h2 className="debts-main-title">Customer Credit & Debts (የደንበኞች ዕዳ መዝገብ)</h2>
               <p className="debts-subtitle">
@@ -185,7 +164,6 @@ export default function DebtsView() {
               setIsAddModalOpen(true);
             }}
           >
-            <Plus size={18} />
             <span>+ Add New Credit Record (አዲስ ዕዳ)</span>
           </button>
         </div>
@@ -197,9 +175,6 @@ export default function DebtsView() {
         <div className="debts-kpi-card card-kpi-rose">
           <div className="kpi-card-header">
             <span className="kpi-title-text">Outstanding Credit (ያልተሰበሰበ ዕዳ)</span>
-            <div className="kpi-icon-pill bg-rose-subtle">
-              <AlertTriangle size={18} className="text-rose" />
-            </div>
           </div>
           <div className="kpi-val-row">
             <span className="kpi-num text-rose">
@@ -216,9 +191,6 @@ export default function DebtsView() {
         <div className="debts-kpi-card card-kpi-emerald">
           <div className="kpi-card-header">
             <span className="kpi-title-text">Repayments Collected (የተመለሰ ገንዘብ)</span>
-            <div className="kpi-icon-pill bg-emerald-subtle">
-              <CheckCircle2 size={18} className="text-emerald" />
-            </div>
           </div>
           <div className="kpi-val-row">
             <span className="kpi-num text-emerald">
@@ -233,9 +205,6 @@ export default function DebtsView() {
         <div className="debts-kpi-card card-kpi-amber">
           <div className="kpi-card-header">
             <span className="kpi-title-text">Active Customers (ባለዕዳ ደንበኞች)</span>
-            <div className="kpi-icon-pill bg-amber-subtle">
-              <Users size={18} className="text-amber" />
-            </div>
           </div>
           <div className="kpi-val-row">
             <span className="kpi-num text-amber">{activeDebtorsCount}</span>
@@ -248,9 +217,6 @@ export default function DebtsView() {
         <div className="debts-kpi-card card-kpi-cyan">
           <div className="kpi-card-header">
             <span className="kpi-title-text">Settled Accounts (ሙሉ የተከፈሉ)</span>
-            <div className="kpi-icon-pill bg-cyan-subtle">
-              <DollarSign size={18} className="text-cyan" />
-            </div>
           </div>
           <div className="kpi-val-row">
             <span className="kpi-num text-cyan">{settledCount}</span>
@@ -263,7 +229,6 @@ export default function DebtsView() {
       {/* 3. Filter & Search Toolbar */}
       <div className="debts-toolbar-row">
         <div className="debts-search-wrap">
-          <Search size={18} className="search-icon-muted" />
           <input
             type="text"
             className="debts-search-input"
@@ -277,7 +242,7 @@ export default function DebtsView() {
               className="search-clear-btn"
               onClick={() => setSearchQuery("")}
             >
-              <X size={15} />
+              ×
             </button>
           )}
         </div>
@@ -330,7 +295,6 @@ export default function DebtsView() {
       <div className="debts-list-container">
         {filteredDebts.length === 0 ? (
           <div className="debts-empty-state">
-            <CreditCard size={42} className="empty-icon-muted" />
             <h4 className="empty-title">No customer debt records found</h4>
             <p className="empty-desc">
               {searchQuery
@@ -367,7 +331,7 @@ export default function DebtsView() {
                         }`}
                       >
                         {isSettled
-                          ? "✓ Settled (የተከፈለ)"
+                          ? "Settled (የተከፈለ)"
                           : debt.paidAmount > 0
                           ? "Partially Paid"
                           : "Unpaid (ያልተከፈለ)"}
@@ -377,17 +341,14 @@ export default function DebtsView() {
                     <div className="debt-meta-details">
                       {debt.customerPhone && debt.customerPhone !== "N/A" && (
                         <span className="debt-meta-pill">
-                          <Phone size={12} />
                           <a href={`tel:${debt.customerPhone}`}>{debt.customerPhone}</a>
                         </span>
                       )}
                       <span className="debt-meta-pill">
-                        <Calendar size={12} />
                         <span>Taken: {formatEthiopianDate(debt.date, "medium")}</span>
                       </span>
                       {debt.dueDate && (
                         <span className="debt-meta-pill text-amber">
-                          <Clock size={12} />
                           <span>Due: {debt.dueDate}</span>
                         </span>
                       )}
@@ -435,7 +396,6 @@ export default function DebtsView() {
                         onClick={() => handleOpenRepayModal(debt)}
                         title="Record Payment from customer"
                       >
-                        <DollarSign size={15} />
                         <span>Record Payment (ክፍያ ተቀበል)</span>
                       </button>
                     )}
@@ -447,15 +407,9 @@ export default function DebtsView() {
                       title="Copy Amharic SMS reminder to clipboard"
                     >
                       {copiedId === debt.id ? (
-                        <>
-                          <Check size={14} className="text-emerald" />
-                          <span>Copied SMS!</span>
-                        </>
+                        <span>Copied SMS!</span>
                       ) : (
-                        <>
-                          <Send size={14} />
-                          <span>Copy SMS Reminder</span>
-                        </>
+                        <span>Copy SMS Reminder</span>
                       )}
                     </button>
 
@@ -468,7 +422,6 @@ export default function DebtsView() {
                       }}
                       title="View payment history"
                     >
-                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       <span>{debt.payments?.length || 0} Payments</span>
                     </button>
 
@@ -482,7 +435,7 @@ export default function DebtsView() {
                       }}
                       title="Delete record"
                     >
-                      <Trash2 size={15} />
+                      <span>×</span>
                     </button>
                   </div>
                 </div>
@@ -549,7 +502,7 @@ export default function DebtsView() {
                 className="modal-close-btn"
                 onClick={() => setRepayModalDebt(null)}
               >
-                <X size={20} />
+                ×
               </button>
             </div>
 
@@ -638,7 +591,6 @@ export default function DebtsView() {
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
-                  <Check size={18} />
                   <span>Confirm Payment ({repayAmount} {currency})</span>
                 </button>
               </div>
@@ -661,7 +613,7 @@ export default function DebtsView() {
                 className="modal-close-btn"
                 onClick={() => setIsAddModalOpen(false)}
               >
-                <X size={20} />
+                ×
               </button>
             </div>
 
@@ -737,7 +689,6 @@ export default function DebtsView() {
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
-                  <Check size={18} />
                   <span>Save Debt Record</span>
                 </button>
               </div>

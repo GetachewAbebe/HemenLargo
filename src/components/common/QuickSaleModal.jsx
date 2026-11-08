@@ -1,7 +1,6 @@
 import React from "react";
 import Modal from "./Modal";
 import SimpleSaleRegister from "../pos/SimpleSaleRegister";
-import { Zap } from "lucide-react";
 
 export default function QuickSaleModal({
   isOpen,
@@ -18,9 +17,8 @@ export default function QuickSaleModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="⚡ Instant Sales Counter (ቀላል ሽያጭ)"
+      title="Instant Sales Counter (ቀላል ሽያጭ)"
       subtitle="Register customer sale in seconds without leaving your current screen"
-      icon={Zap}
       maxWidth="680px"
       className="quick-sale-modal-box"
     >
@@ -38,4 +36,3 @@ export default function QuickSaleModal({
     </Modal>
   );
 }
-

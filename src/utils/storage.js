@@ -147,7 +147,7 @@ export const sanitizeImportPayload = (imported) => {
       category: p.category || "General Cleanser",
       scent: p.scent || "",
       color: p.color || "#0d9488",
-      iconEmoji: p.iconEmoji || "🧴",
+      iconEmoji: p.iconEmoji || "",
       pricePerLiter: parseFloat(p.pricePerLiter) || 60,
       costPerLiter: parseFloat(p.costPerLiter) || 35,
       stockLiters: parseFloat(p.stockLiters) || 0,

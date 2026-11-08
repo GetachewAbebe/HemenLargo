@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { Edit2, Check, TrendingUp, Sparkles, AlertTriangle } from "lucide-react";
 import Modal from "../common/Modal";
 
 const COLOR_SWATCHES = [
@@ -43,7 +42,6 @@ export default function EditProductModal({
       onClose={onClose}
       title="Edit Soap Formula"
       subtitle={`Update pricing, formulation details, and thresholds for ${editForm.name}`}
-      icon={Edit2}
       maxWidth="580px"
     >
       <form onSubmit={onSubmit} className="modal-form">
@@ -132,20 +130,11 @@ export default function EditProductModal({
             }`}
           >
             {!isProfitable ? (
-              <>
-                <AlertTriangle size={13} />
-                <span>Loss</span>
-              </>
+              <span>Loss</span>
             ) : isThin ? (
-              <>
-                <TrendingUp size={13} />
-                <span>Thin</span>
-              </>
+              <span>Thin</span>
             ) : (
-              <>
-                <Sparkles size={13} />
-                <span>Healthy Margin</span>
-              </>
+              <span>Healthy Margin</span>
             )}
           </div>
         </div>
@@ -205,7 +194,6 @@ export default function EditProductModal({
             Cancel
           </button>
           <button type="submit" className="btn-modal-submit">
-            <Check size={18} />
             <span>Save Product Changes</span>
           </button>
         </div>

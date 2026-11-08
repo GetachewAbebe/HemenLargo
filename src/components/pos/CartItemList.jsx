@@ -1,5 +1,4 @@
 import React from "react";
-import { Plus, Minus, Trash2 } from "lucide-react";
 
 export default function CartItemList({
   cart,
@@ -10,7 +9,6 @@ export default function CartItemList({
   if (cart.length === 0) {
     return (
       <div className="cart-empty-state-v2">
-        <div className="empty-soap-bubble">🫧</div>
         <strong className="empty-title-v2">Cashier Ready</strong>
         <p className="empty-desc-v2">
           Tap any container size (0.5L to 20L Jerrycan) from Largo or Barikina on the left.
@@ -37,7 +35,7 @@ export default function CartItemList({
               onClick={() => onRemoveItem(item.productId)}
               title="Remove"
             >
-              <Trash2 size={15} />
+              ×
             </button>
           </div>
 
@@ -49,7 +47,7 @@ export default function CartItemList({
                 onClick={() => onUpdateLiters(item.productId, -0.5)}
                 title="Minus 0.5L"
               >
-                <Minus size={14} />
+                -
               </button>
               <span className="stepper-val">{item.liters.toFixed(1)} L</span>
               <button
@@ -58,7 +56,7 @@ export default function CartItemList({
                 onClick={() => onUpdateLiters(item.productId, 0.5)}
                 title="Add 0.5L"
               >
-                <Plus size={14} />
+                +
               </button>
             </div>
 

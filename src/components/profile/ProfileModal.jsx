@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import {
-  X,
-  User,
-  Settings,
-  Shield,
-  Phone,
-  Store,
-  LogOut,
-  Lock,
-  Save,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-} from "lucide-react";
 import { soundFX } from "../../utils/audio";
 import { updateActiveUserProfile } from "../../services/authService";
 import SettingsView from "../SettingsView";
@@ -55,27 +41,29 @@ export default function ProfileModal({
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
-    if (!currentUser?.id) return;
+    soundFX.playPop();
 
-    const updated = updateActiveUserProfile(currentUser.id, {
-      fullName,
-      phone,
-      shopName,
-      role: "Owner",
-      pin,
-    });
+    const updated = {
+      ...(currentUser || {}),
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      shopName: shopName.trim(),
+      pin: pin.trim(),
+    };
 
-    if (updated) {
-      soundFX.playSuccess();
-      onUpdateUser(updated);
+    const res = updateActiveUserProfile(updated);
+    if (res.success) {
+      if (onUpdateUser) {
+        onUpdateUser(res.user);
+      }
 
-      // Sync updated store name and owner name into store config
-      if (onSaveConfig) {
+      // Also update shop profile in config if owner
+      if (onSaveConfig && config) {
         onSaveConfig({
           ...config,
-          shopName,
-          ownerName: fullName,
-          phone,
+          shopName: shopName.trim(),
+          ownerName: fullName.trim(),
+          phone: phone.trim(),
         });
       }
 
@@ -106,7 +94,6 @@ export default function ProfileModal({
             <div className="profile-header-titles">
               <h2 className="profile-user-fullname">{fullName || "Cashier"}</h2>
               <span className="profile-user-role-badge">
-                <Shield size={12} />
                 <span>Owner (ባለቤት)</span>
               </span>
             </div>
@@ -118,7 +105,7 @@ export default function ProfileModal({
             onClick={onClose}
             title="Close Profile (Esc)"
           >
-            <X size={18} />
+            ×
           </button>
         </div>
 
@@ -132,7 +119,6 @@ export default function ProfileModal({
               setActiveTab("profile");
             }}
           >
-            <User size={15} />
             <span>Cashier Profile (መገለጫ)</span>
           </button>
 
@@ -144,7 +130,6 @@ export default function ProfileModal({
               setActiveTab("settings");
             }}
           >
-            <Settings size={15} />
             <span>Store & POS Settings (ማስተካከያ)</span>
           </button>
         </div>
@@ -155,7 +140,6 @@ export default function ProfileModal({
             <div className="profile-tab-pane animate-fade">
               {savedSuccess && (
                 <div className="profile-alert-ok">
-                  <CheckCircle2 size={16} />
                   <span>Profile updated successfully! ማስተካከያው ተቀምጧል።</span>
                 </div>
               )}
@@ -165,7 +149,6 @@ export default function ProfileModal({
                   <div className="profile-field">
                     <label className="profile-label">Full Name (ሙሉ ስም)</label>
                     <div className="profile-input-wrap">
-                      <User size={15} />
                       <input
                         type="text"
                         value={fullName}
@@ -179,7 +162,6 @@ export default function ProfileModal({
                   <div className="profile-field">
                     <label className="profile-label">Phone Number (ስልክ)</label>
                     <div className="profile-input-wrap">
-                      <Phone size={15} />
                       <input
                         type="tel"
                         value={phone}
@@ -192,7 +174,6 @@ export default function ProfileModal({
                   <div className="profile-field">
                     <label className="profile-label">Store / Shop Name (የሱቁ ስም)</label>
                     <div className="profile-input-wrap">
-                      <Store size={15} />
                       <input
                         type="text"
                         value={shopName}
@@ -206,7 +187,6 @@ export default function ProfileModal({
                   <div className="profile-field">
                     <label className="profile-label">Security PIN (ሚስጥር ቁጥር)</label>
                     <div className="profile-input-wrap">
-                      <Lock size={15} />
                       <input
                         type={showPin ? "text" : "password"}
                         value={pin}
@@ -222,7 +202,7 @@ export default function ProfileModal({
                         onClick={() => setShowPin(!showPin)}
                         title={showPin ? "Hide PIN" : "Show PIN"}
                       >
-                        {showPin ? <EyeOff size={15} /> : <Eye size={15} />}
+                        <span>{showPin ? "Hide" : "Show"}</span>
                       </button>
                     </div>
                   </div>
@@ -230,7 +210,6 @@ export default function ProfileModal({
 
                 <div className="profile-form-actions">
                   <button type="submit" className="btn-save-profile">
-                    <Save size={15} />
                     <span>Save Profile Changes</span>
                   </button>
                 </div>
@@ -252,7 +231,6 @@ export default function ProfileModal({
                   }}
                   title="Sign out of Sukie POS"
                 >
-                  <LogOut size={16} />
                   <span>Sign Out / Lock Terminal</span>
                 </button>
               </div>

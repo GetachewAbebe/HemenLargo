@@ -1,20 +1,5 @@
 import React, { useState } from "react";
 import {
-  TrendingDown,
-  Plus,
-  Search,
-  Trash2,
-  CreditCard,
-  Banknote,
-  Smartphone,
-  Check,
-  FlaskConical,
-  Beaker,
-  Calculator,
-  Users,
-  Building2,
-} from "lucide-react";
-import {
   formatEthiopianDate,
   formatEthiopianTime,
 } from "../utils/ethiopianDate";
@@ -204,9 +189,6 @@ export default function ExpensesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Total Shop Expenses</span>
-            <div className="metric-icon-wrap stat-rose">
-              <TrendingDown size={20} />
-            </div>
           </div>
           <div className="metric-value text-rose">
             {totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -218,9 +200,6 @@ export default function ExpensesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">1. Chemical Expenses</span>
-            <div className="metric-icon-wrap stat-cyan">
-              <FlaskConical size={20} />
-            </div>
           </div>
           <div className="metric-value">
             {chemicalTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -240,9 +219,6 @@ export default function ExpensesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">2. Salary Expenses</span>
-            <div className="metric-icon-wrap stat-purple">
-              <Users size={20} />
-            </div>
           </div>
           <div className="metric-value">
             {salaryTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -254,9 +230,6 @@ export default function ExpensesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">3. Shop Rent</span>
-            <div className="metric-icon-wrap stat-amber">
-              <Building2 size={20} />
-            </div>
           </div>
           <div className="metric-value">
             {rentTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -269,7 +242,6 @@ export default function ExpensesView({
       {/* Controls Bar */}
       <div className="inventory-controls-bar">
         <div className="inventory-search-wrap">
-          <Search size={18} className="search-icon" />
           <input
             type="text"
             className="inventory-search-input"
@@ -293,8 +265,7 @@ export default function ExpensesView({
         </div>
 
         <button className="btn-secondary" onClick={() => setIsAddModalOpen(true)}>
-          <Plus size={18} />
-          <span>Record Expense</span>
+          <span>+ Record Expense</span>
         </button>
       </div>
 
@@ -336,7 +307,6 @@ export default function ExpensesView({
                           <strong className="expense-title">{exp.title}</strong>
                           {exp.litersBought && exp.pricePerLiter ? (
                             <span className="expense-rate-badge" title="Registered volume and price per unit">
-                              <Beaker size={12} />
                               <span>
                                 {exp.litersBought} {exp.unit || "L"} @ {Number(exp.pricePerLiter).toFixed(2)} {currency}/{exp.unit || "L"}
                               </span>
@@ -390,7 +360,7 @@ export default function ExpensesView({
                             }
                           }}
                         >
-                          <Trash2 size={15} />
+                          <span>Delete</span>
                         </button>
                       </td>
                     </tr>
@@ -408,7 +378,6 @@ export default function ExpensesView({
         onClose={() => setIsAddModalOpen(false)}
         title="Record Shop Expense"
         subtitle={`ቀን: ${todayEthFormatted}`}
-        icon={TrendingDown}
         maxWidth="560px"
       >
         <form onSubmit={handleCreateExpense} className="modal-form">
@@ -421,7 +390,6 @@ export default function ExpensesView({
                 className={`category-pill ${newExpense.category === "Chemical" ? "selected chemical" : ""}`}
                 onClick={() => handleCategoryChange("Chemical")}
               >
-                <FlaskConical size={16} />
                 <span>1. Chemical</span>
               </button>
               <button
@@ -429,7 +397,6 @@ export default function ExpensesView({
                 className={`category-pill ${newExpense.category === "Salary" ? "selected salary" : ""}`}
                 onClick={() => handleCategoryChange("Salary")}
               >
-                <Users size={16} />
                 <span>2. Salary</span>
               </button>
               <button
@@ -437,7 +404,6 @@ export default function ExpensesView({
                 className={`category-pill ${newExpense.category === "Rent" ? "selected rent" : ""}`}
                 onClick={() => handleCategoryChange("Rent")}
               >
-                <Building2 size={16} />
                 <span>3. Rent</span>
               </button>
             </div>
@@ -566,7 +532,6 @@ export default function ExpensesView({
               {/* Live Whole Price Breakdown Banner */}
               <div className="calc-result-banner">
                 <div className="calc-result-left">
-                  <Calculator size={22} className="calc-result-icon" />
                   <div className="calc-breakdown-details">
                     <span className="calc-formula-text">
                       {parseFloat(newExpense.litersBought) > 0 && parseFloat(newExpense.pricePerLiter) > 0 ? (
@@ -602,7 +567,6 @@ export default function ExpensesView({
                 className={`payment-pill ${newExpense.paymentMethod === "Telebirr" ? "selected telebirr" : ""}`}
                 onClick={() => setNewExpense({ ...newExpense, paymentMethod: "Telebirr" })}
               >
-                <Smartphone size={16} />
                 <span>Telebirr</span>
               </button>
               <button
@@ -610,7 +574,6 @@ export default function ExpensesView({
                 className={`payment-pill ${newExpense.paymentMethod === "Cash" ? "selected cash" : ""}`}
                 onClick={() => setNewExpense({ ...newExpense, paymentMethod: "Cash" })}
               >
-                <Banknote size={16} />
                 <span>Cash</span>
               </button>
               <button
@@ -618,7 +581,6 @@ export default function ExpensesView({
                 className={`payment-pill ${newExpense.paymentMethod === "CBE Birr" ? "selected cbe" : ""}`}
                 onClick={() => setNewExpense({ ...newExpense, paymentMethod: "CBE Birr" })}
               >
-                <CreditCard size={16} />
                 <span>CBE / Bank</span>
               </button>
             </div>
@@ -652,7 +614,6 @@ export default function ExpensesView({
               Cancel
             </button>
             <button type="submit" className="btn-modal-submit">
-              <Check size={18} />
               <span>Save Expense</span>
             </button>
           </div>

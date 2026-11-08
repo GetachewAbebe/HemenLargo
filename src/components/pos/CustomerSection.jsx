@@ -1,5 +1,4 @@
 import React from "react";
-import { User, Phone } from "lucide-react";
 import { soundFX } from "../../utils/audio";
 
 export default function CustomerSection({
@@ -25,7 +24,7 @@ export default function CustomerSection({
           className={`chip-preset-btn ${customerName === "Walk-in Customer" || !customerName ? "chip-preset-active" : ""}`}
           onClick={() => applyPreset("Walk-in Customer", "")}
         >
-          <span>🚶 Walk-in</span>
+          <span>Walk-in</span>
         </button>
         {recentCustomers.length > 0 ? (
           recentCustomers.map(([name, phone]) => {
@@ -50,14 +49,14 @@ export default function CustomerSection({
               className={`chip-preset-btn ${customerName === "Local Cafe & Restaurant" ? "chip-preset-active" : ""}`}
               onClick={() => applyPreset("Local Cafe & Restaurant", "0911223344")}
             >
-              <span>☕ Cafe / Hotel</span>
+              <span>Cafe / Hotel</span>
             </button>
             <button
               type="button"
               className={`chip-preset-btn ${customerName === "Car Wash Station" ? "chip-preset-active" : ""}`}
               onClick={() => applyPreset("Car Wash Station", "0912987654")}
             >
-              <span>🚗 Car Wash</span>
+              <span>Car Wash</span>
             </button>
           </>
         )}
@@ -67,7 +66,6 @@ export default function CustomerSection({
       <div className="form-double-col">
         <div className="field-group">
           <label className="field-label">
-            <User size={13} />
             <span>Customer Name</span>
           </label>
           <input
@@ -94,7 +92,6 @@ export default function CustomerSection({
 
         <div className="field-group">
           <label className="field-label">
-            <Phone size={13} />
             <span>Phone Number</span>
           </label>
           <input

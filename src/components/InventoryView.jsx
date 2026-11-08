@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { Plus } from "lucide-react";
 import { useApp } from "../context";
 import InventoryStats from "./inventory/InventoryStats";
 import ProductTable from "./inventory/ProductTable";
@@ -38,7 +37,6 @@ export default function InventoryView(props) {
     category: "General Cleanser",
     scent: "",
     color: "#0d9488",
-    iconEmoji: "🧴",
     pricePerLiter: 60,
     costPerLiter: 35,
     stockLiters: 100,
@@ -134,7 +132,6 @@ export default function InventoryView(props) {
       category: "General Cleanser",
       scent: "",
       color: "#0d9488",
-      iconEmoji: "🧴",
       pricePerLiter: 60,
       costPerLiter: 35,
       stockLiters: 100,
@@ -183,8 +180,7 @@ export default function InventoryView(props) {
             className="btn-secondary"
             onClick={() => setIsAddModalOpen(true)}
           >
-            <Plus size={18} />
-            <span>Add Soap Variety</span>
+            <span>+ Add Soap Variety</span>
           </button>
         </div>
       </div>

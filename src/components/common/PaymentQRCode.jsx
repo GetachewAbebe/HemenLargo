@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import QRCode from "qrcode";
-import { QrCode, Smartphone } from "lucide-react";
 
 export default function PaymentQRCode({
   receiptId,
@@ -41,15 +40,9 @@ export default function PaymentQRCode({
     <div className="receipt-qr-section">
       <div className="qr-badge-title">
         {isDigital ? (
-          <>
-            <Smartphone size={12} />
-            <span>Scan to Pay with {paymentMethod} (በስልክ ይክፈሉ)</span>
-          </>
+          <span>Scan to Pay with {paymentMethod} (በስልክ ይክፈሉ)</span>
         ) : (
-          <>
-            <QrCode size={12} />
-            <span>Receipt Verification & Telebirr QR</span>
-          </>
+          <span>Receipt Verification & QR</span>
         )}
       </div>
 

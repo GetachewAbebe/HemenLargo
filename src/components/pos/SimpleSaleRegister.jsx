@@ -1,16 +1,4 @@
 import React, { useState, useMemo } from "react";
-import {
-  Zap,
-  CheckCircle2,
-  AlertCircle,
-  Plus,
-  Minus,
-  Trash2,
-  Banknote,
-  Smartphone,
-  CreditCard,
-  Receipt,
-} from "lucide-react";
 import { soundFX } from "../../utils/audio";
 import { formatEthiopianDate, formatEthiopianTime } from "../../utils/ethiopianDate";
 
@@ -275,9 +263,6 @@ export default function SimpleSaleRegister({
       {/* 1. Header Bar */}
       <div className="simple-sale-header">
         <div className="simple-sale-title-group">
-          <div className="simple-sale-badge-icon">
-            <Zap size={18} className="text-amber" />
-          </div>
           <div>
             <h3 className="simple-sale-title">Quick Sale Registration (ቀላል የሽያጭ መመዝገቢያ)</h3>
             <span className="simple-sale-subtitle">
@@ -296,7 +281,7 @@ export default function SimpleSaleRegister({
       {/* Error Alert if any */}
       {errorMessage && (
         <div className="simple-sale-alert-error animate-pop">
-          <AlertCircle size={16} />
+          <span className="simple-alert-tag">[!]</span>
           <span>{errorMessage}</span>
         </div>
       )}
@@ -328,7 +313,10 @@ export default function SimpleSaleRegister({
                 }}
               >
                 <div className="simple-prod-top">
-                  <span className="simple-prod-emoji">{prod.iconEmoji || "🧴"}</span>
+                  <span
+                    className="simple-prod-dot"
+                    style={{ backgroundColor: prod.color || "#0d9488" }}
+                  />
                   <span className="simple-prod-rate">
                     {prod.pricePerLiter} {currency}/L
                   </span>
@@ -387,7 +375,7 @@ export default function SimpleSaleRegister({
             onClick={() => handleStepLiters(-1)}
             title="Minus 1 liter"
           >
-            <Minus size={16} />
+            -
           </button>
 
           <div className="stepper-input-box">
@@ -413,7 +401,7 @@ export default function SimpleSaleRegister({
             onClick={() => handleStepLiters(1)}
             title="Plus 1 liter"
           >
-            <Plus size={16} />
+            +
           </button>
 
           <button
@@ -422,7 +410,6 @@ export default function SimpleSaleRegister({
             onClick={handleAddItemToCart}
             title="Add this item to an order with multiple products"
           >
-            <Plus size={14} />
             <span>+ Add to Order</span>
           </button>
         </div>
@@ -442,7 +429,7 @@ export default function SimpleSaleRegister({
                   onClick={() => handleRemoveCartItem(item.productId)}
                   title="Remove item"
                 >
-                  <Trash2 size={12} />
+                  x
                 </button>
               </span>
             ))}
@@ -466,7 +453,6 @@ export default function SimpleSaleRegister({
               setPaymentMethod("Cash");
             }}
           >
-            <Banknote size={18} />
             <span>Cash (ጥሬ ገንዘብ)</span>
           </button>
 
@@ -478,7 +464,6 @@ export default function SimpleSaleRegister({
               setPaymentMethod("Telebirr");
             }}
           >
-            <Smartphone size={18} />
             <span>Telebirr (ቴሌብር)</span>
           </button>
 
@@ -490,7 +475,6 @@ export default function SimpleSaleRegister({
               setPaymentMethod("CBE Birr");
             }}
           >
-            <CreditCard size={18} />
             <span>CBE Birr (ሲቢኢ)</span>
           </button>
 
@@ -502,7 +486,6 @@ export default function SimpleSaleRegister({
               setPaymentMethod("Credit");
             }}
           >
-            <Receipt size={18} />
             <span>Credit (በብድር)</span>
           </button>
         </div>
@@ -561,7 +544,7 @@ export default function SimpleSaleRegister({
                 setCustomerPhone("");
               }}
             >
-              🚶 Walk-in (መደበኛ)
+              Walk-in (መደበኛ)
             </button>
 
             {recentCustomers.map(([name, phone]) => (
@@ -584,7 +567,7 @@ export default function SimpleSaleRegister({
             className="btn-toggle-extra"
             onClick={() => setShowCustomerFields(!showCustomerFields)}
           >
-            {showCustomerFields ? "Hide Details ▲" : "+ Name / Phone / Discount ▼"}
+            {showCustomerFields ? "Hide Details" : "+ Name / Phone / Discount"}
           </button>
         </div>
 
@@ -665,7 +648,6 @@ export default function SimpleSaleRegister({
             onClick={handleRegisterSale}
             disabled={totalLiters <= 0}
           >
-            <CheckCircle2 size={18} />
             <span>
               Complete Sale • {finalTotal.toFixed(2)} {currency} (ሽያጩን አጠናቅቅ)
             </span>

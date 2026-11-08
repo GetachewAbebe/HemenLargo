@@ -1,24 +1,13 @@
 import React from "react";
-import {
-  TrendingUp,
-  DollarSign,
-  PieChart,
-  Award,
-  ArrowUpRight,
-  ArrowDownRight,
-  CheckCircle,
-  Package,
-  ShoppingBag,
-  Receipt,
-  FileSpreadsheet,
-} from "lucide-react";
+import { useApp } from "../context";
 
-export default function AnalyticsView({
-  sales = [],
-  expenses = [],
-  products = [],
-  currency = "ETB",
-}) {
+export default function AnalyticsView(props) {
+  const context = useApp();
+  const sales = props.sales ?? context.sales ?? [];
+  const expenses = props.expenses ?? context.expenses ?? [];
+  const products = props.products ?? context.products ?? [];
+  const currency = props.currency ?? context.currency ?? "ETB";
+
   // Financial Calculations
   const totalRevenue = sales.reduce((acc, s) => acc + (s.total || 0), 0);
   const totalGrossProfit = sales.reduce((acc, s) => acc + (s.profit || 0), 0);
@@ -90,9 +79,6 @@ export default function AnalyticsView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Total Sales Revenue</span>
-            <div className="metric-icon-wrap stat-cyan">
-              <DollarSign size={20} />
-            </div>
           </div>
           <div className="metric-value">
             {totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -104,9 +90,6 @@ export default function AnalyticsView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Gross Soap Margin</span>
-            <div className="metric-icon-wrap stat-emerald">
-              <TrendingUp size={20} />
-            </div>
           </div>
           <div className="metric-value text-emerald">
             {totalGrossProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -118,9 +101,6 @@ export default function AnalyticsView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Operating Expenses</span>
-            <div className="metric-icon-wrap stat-rose">
-              <TrendingUp size={20} style={{ transform: "rotate(180deg)" }} />
-            </div>
           </div>
           <div className="metric-value text-rose">
             {totalOperatingExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -132,9 +112,6 @@ export default function AnalyticsView({
         <div className={`metric-card ${netProfit >= 0 ? "card-highlight-green" : "card-highlight-red"}`}>
           <div className="metric-header">
             <span className="metric-title">Net Profit (True Income)</span>
-            <div className={`metric-icon-wrap ${netProfit >= 0 ? "stat-emerald" : "stat-rose"}`}>
-              {netProfit >= 0 ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
-            </div>
           </div>
           <div className={`metric-value ${netProfit >= 0 ? "text-emerald" : "text-rose"}`}>
             {netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -149,9 +126,6 @@ export default function AnalyticsView({
       {/* Balance Sheet Highlights: Inventory Capital & Retail Performance */}
       <div className="analytics-extra-stats-grid">
         <div className="analytics-stat-pill-card">
-          <div className="stat-pill-icon bg-cyan-subtle">
-            <Package size={18} className="text-cyan" />
-          </div>
           <div className="stat-pill-info">
             <span className="stat-pill-title">Tank Inventory Asset Value</span>
             <strong className="stat-pill-val">
@@ -162,9 +136,6 @@ export default function AnalyticsView({
         </div>
 
         <div className="analytics-stat-pill-card">
-          <div className="stat-pill-icon bg-emerald-subtle">
-            <ShoppingBag size={18} className="text-emerald" />
-          </div>
           <div className="stat-pill-info">
             <span className="stat-pill-title">Completed Orders</span>
             <strong className="stat-pill-val text-emerald">
@@ -175,9 +146,6 @@ export default function AnalyticsView({
         </div>
 
         <div className="analytics-stat-pill-card">
-          <div className="stat-pill-icon bg-purple-subtle">
-            <Receipt size={18} className="text-purple" />
-          </div>
           <div className="stat-pill-info">
             <span className="stat-pill-title">Average Order Value (AOV)</span>
             <strong className="stat-pill-val text-purple">
@@ -194,7 +162,6 @@ export default function AnalyticsView({
         <div className="analytics-card">
           <div className="card-header-row">
             <div className="card-title-wrap">
-              <Award size={20} className="text-amber" />
               <h3 className="section-title">Top Selling Soaps by Volume (Liters)</h3>
             </div>
             <span className="badge-pill badge-neutral">
@@ -237,7 +204,6 @@ export default function AnalyticsView({
           {/* Quick P&L Statement Breakdown */}
           <div className="pnl-breakdown-box">
             <div className="pnl-header">
-              <FileSpreadsheet size={16} className="text-teal" />
               <strong>P&L Summary (የትርፍና ኪሳራ መግለጫ)</strong>
             </div>
             <div className="pnl-rows-list">
@@ -271,7 +237,6 @@ export default function AnalyticsView({
         <div className="analytics-card">
           <div className="card-header-row">
             <div className="card-title-wrap">
-              <PieChart size={20} className="text-cyan" />
               <h3 className="section-title">Payment Channels Breakdown</h3>
             </div>
             <span className="badge-pill badge-neutral">
@@ -314,7 +279,6 @@ export default function AnalyticsView({
           {/* Shopkeeper Advice Card */}
           <div className="advice-box">
             <div className="advice-header">
-              <CheckCircle size={16} className="text-emerald" />
               <strong>Shop Profit Maximizer Tip</strong>
             </div>
             <p className="advice-text">
@@ -326,4 +290,3 @@ export default function AnalyticsView({
     </div>
   );
 }
-

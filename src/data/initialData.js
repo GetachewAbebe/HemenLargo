@@ -1,7 +1,7 @@
 // Default initial dataset for Sukie Liquid Soap Shop (Focused on Largo & Barikina)
 
 export const INITIAL_SHOP_CONFIG = {
-  shopName: "Sukie Liquid Soap",
+  shopName: "SUKIE | ሱቄ Liquid Soap",
   tagline: "ፈሳሽ ሳሙና (ላርጎ) እና በረኪና • Quality Cleansers",
   ownerName: "Getachew",
   phone: "+251 91 100 0000",
@@ -25,7 +25,6 @@ export const INITIAL_PRODUCTS = [
     category: "Liquid Soap (ላርጎ)",
     scent: "Fresh Foam Scent",
     color: "#0d9488", // Fresh Emerald Teal
-    iconEmoji: "🧴",
     pricePerLiter: 60,
     costPerLiter: 35,
     stockLiters: 480,
@@ -40,7 +39,6 @@ export const INITIAL_PRODUCTS = [
     category: "Bleach & Sanitizer (በረኪና)",
     scent: "Chlorine Clean",
     color: "#0284c7", // Crystal Blue
-    iconEmoji: "✨",
     pricePerLiter: 50,
     costPerLiter: 28,
     stockLiters: 320,

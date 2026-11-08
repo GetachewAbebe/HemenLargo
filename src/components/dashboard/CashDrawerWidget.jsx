@@ -1,11 +1,4 @@
 import React, { useState } from "react";
-import {
-  Banknote,
-  ArrowRightLeft,
-  Smartphone,
-  Edit3,
-  Save,
-} from "lucide-react";
 import { soundFX } from "../../utils/audio";
 
 export default function CashDrawerWidget({
@@ -56,9 +49,6 @@ export default function CashDrawerWidget({
     <div className="dashboard-widget-card cash-drawer-card">
       <div className="widget-header-row">
         <div className="widget-title-wrap">
-          <div className="widget-icon-avatar bg-emerald-subtle">
-            <Banknote size={18} className="text-emerald" />
-          </div>
           <div>
             <h4 className="widget-main-title">Cash Drawer & Counter Shift (የካውንተር ቁጥጥር)</h4>
             <span className="widget-sub-title">Real-time physical cash float vs digital channels</span>
@@ -95,7 +85,6 @@ export default function CashDrawerWidget({
             }}
             title="Adjust Opening Float"
           >
-            <Edit3 size={13} />
             <span>Float: {openingFloat.toLocaleString()} {currency}</span>
           </button>
         ) : (
@@ -109,7 +98,7 @@ export default function CashDrawerWidget({
               autoFocus
             />
             <button type="submit" className="btn-save-float" title="Save Opening Float">
-              <Save size={13} />
+              <span>Save</span>
             </button>
           </form>
         )}
@@ -136,13 +125,11 @@ export default function CashDrawerWidget({
       {/* Digital Bank & Mobile Channels Summary */}
       <div className="drawer-digital-row">
         <div className="digital-channel-chip">
-          <Smartphone size={14} className="text-teal" />
           <span>Telebirr:</span>
           <strong>{todayTelebirr.toLocaleString()} {currency}</strong>
         </div>
 
         <div className="digital-channel-chip">
-          <ArrowRightLeft size={14} className="text-blue" />
           <span>CBE Birr:</span>
           <strong>{todayCbeBirr.toLocaleString()} {currency}</strong>
         </div>

@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { Package, Droplets, Zap } from "lucide-react";
 import { soundFX } from "../../utils/audio";
 
 export default function ProductShareWidget({
@@ -18,7 +17,6 @@ export default function ProductShareWidget({
         name: p.name,
         localName: p.localName || "",
         color: p.color || "#0d9488",
-        emoji: p.iconEmoji || "🧴",
         pricePerLiter: p.pricePerLiter,
         stockLiters: p.stockLiters,
         minStockAlert: p.minStockAlert || 40,
@@ -52,9 +50,6 @@ export default function ProductShareWidget({
       {/* Header */}
       <div className="widget-header-row">
         <div className="widget-title-wrap">
-          <div className="widget-icon-avatar bg-emerald-subtle">
-            <Package size={18} className="text-teal" />
-          </div>
           <div>
             <h4 className="widget-main-title">Product Mix & Tank Distribution (የምርቶች ድርሻ)</h4>
             <span className="widget-sub-title">Liters sold & revenue earned by soap formula</span>
@@ -62,7 +57,6 @@ export default function ProductShareWidget({
         </div>
 
         <span className="period-liters-badge">
-          <Droplets size={13} />
           <span>{totalPeriodLiters.toFixed(1)} L Total Sold</span>
         </span>
       </div>
@@ -78,7 +72,17 @@ export default function ProductShareWidget({
             <div key={p.id} className="product-share-row">
               <div className="prod-share-top-line">
                 <div className="prod-identity-info">
-                  <span className="prod-emoji-icon">{p.emoji}</span>
+                  <span
+                    className="prod-color-dot"
+                    style={{
+                      display: "inline-block",
+                      width: "10px",
+                      height: "10px",
+                      borderRadius: "50%",
+                      backgroundColor: p.color,
+                      marginRight: "6px",
+                    }}
+                  />
                   <div>
                     <strong className="prod-title-text">{p.name}</strong>
                     <span className="prod-subtitle-text">{p.localName}</span>
@@ -105,7 +109,6 @@ export default function ProductShareWidget({
                       }}
                       title={`Quick sell ${p.name}`}
                     >
-                      <Zap size={13} />
                       <span>Sell</span>
                     </button>
                   )}
@@ -137,4 +140,3 @@ export default function ProductShareWidget({
     </div>
   );
 }
-

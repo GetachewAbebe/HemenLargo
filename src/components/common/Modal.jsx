@@ -1,12 +1,10 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
 
 export default function Modal({
   isOpen,
   onClose,
   title,
-  icon: Icon,
   subtitle,
   children,
   maxWidth = "480px",
@@ -41,7 +39,6 @@ export default function Modal({
       >
         <div className="modal-header">
           <div className="modal-header-icon-title">
-            {Icon && <Icon size={22} className="modal-icon text-teal" />}
             <div>
               <h3>{title}</h3>
               {subtitle && <p className="modal-subtitle">{subtitle}</p>}
@@ -53,7 +50,7 @@ export default function Modal({
             onClick={onClose}
             aria-label="Close modal"
           >
-            <X size={18} />
+            ×
           </button>
         </div>
         {children}

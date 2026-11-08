@@ -1,5 +1,4 @@
 import React from "react";
-import { RefreshCw, Edit2, Trash2, Droplets } from "lucide-react";
 
 export default function ProductTable({
   products,
@@ -11,7 +10,6 @@ export default function ProductTable({
   if (products.length === 0) {
     return (
       <div className="empty-table-state">
-        <Droplets size={40} className="text-muted" />
         <p>No products match your search or filter.</p>
       </div>
     );
@@ -49,11 +47,16 @@ export default function ProductTable({
                   <td>
                     <div className="table-soap-info">
                       <div
-                        className="soap-table-icon"
-                        style={{ backgroundColor: `${p.color || "#0d9488"}20`, color: p.color || "#0d9488" }}
-                      >
-                        {p.iconEmoji || "🧴"}
-                      </div>
+                        className="soap-table-dot"
+                        style={{
+                          width: "12px",
+                          height: "12px",
+                          borderRadius: "50%",
+                          backgroundColor: p.color || "#0d9488",
+                          marginRight: "8px",
+                          flexShrink: 0,
+                        }}
+                      />
                       <div>
                         <strong className="soap-table-name">{p.name || "Soap Product"}</strong>
                         {p.localName && <div className="soap-table-sub">{p.localName}</div>}
@@ -119,7 +122,6 @@ export default function ProductTable({
                         title="Refill / Add Liters to Tank"
                         onClick={() => onOpenRestock(p)}
                       >
-                        <RefreshCw size={15} />
                         <span>Refill</span>
                       </button>
                       <button
@@ -128,7 +130,7 @@ export default function ProductTable({
                         title="Edit Details & Prices"
                         onClick={() => onOpenEdit(p)}
                       >
-                        <Edit2 size={15} />
+                        <span>Edit</span>
                       </button>
                       <button
                         type="button"
@@ -140,7 +142,7 @@ export default function ProductTable({
                           }
                         }}
                       >
-                        <Trash2 size={15} />
+                        <span>Delete</span>
                       </button>
                     </div>
                   </td>

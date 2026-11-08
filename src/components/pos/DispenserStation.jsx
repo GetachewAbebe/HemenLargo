@@ -1,5 +1,4 @@
 import React from "react";
-import { Droplets, RefreshCw, Plus } from "lucide-react";
 import { soundFX } from "../../utils/audio";
 import { CONTAINER_PRESETS } from "../../constants/containers";
 
@@ -32,8 +31,8 @@ export default function DispenserStation({
       {/* Station Header */}
       <div className="station-header">
         <div className="station-title-wrap">
-          <div className="station-icon-bubble">
-            <span className="station-emoji">{product.iconEmoji || (isLargo ? "🧴" : "✨")}</span>
+          <div className="station-code-badge" style={{ backgroundColor: product.color || (isLargo ? "#0d9488" : "#0284c7") }}>
+            <span>{isLargo ? "L" : "B"}</span>
           </div>
           <div>
             <div className="station-tag-row">
@@ -56,14 +55,13 @@ export default function DispenserStation({
       <div className="station-tank-box">
         <div className="tank-gauge-info">
           <div className="tank-status-left">
-            <Droplets size={16} className={isLargo ? "text-teal" : "text-cyan"} />
             <span>Tank Level:</span>
             <strong className="tank-liters-bold">{stock.toFixed(1)} L</strong>
             <span className="capacity-sub">/ 600L</span>
           </div>
           <div className="tank-actions-right">
             <span className={`stock-status-pill ${isLowStock ? "pill-low" : "pill-ok"}`}>
-              {isLowStock ? "⚠️ Low Stock" : `${tankPercent}% Full`}
+              {isLowStock ? "Low Stock" : `${tankPercent}% Full`}
             </span>
             <button
               type="button"
@@ -71,7 +69,6 @@ export default function DispenserStation({
               title="Add liters directly to barrel"
               onClick={() => onOpenRefillModal(product)}
             >
-              <RefreshCw size={12} />
               <span>Refill</span>
             </button>
           </div>
@@ -108,9 +105,9 @@ export default function DispenserStation({
                 disabled={stock < preset.liters}
                 title={`Dispense ${preset.liters}L of ${product.name}`}
               >
-                {preset.popular && <span className="popular-badge">★ Best Seller</span>}
+                {preset.popular && <span className="popular-badge">Best Seller</span>}
                 <div className="container-icon-row">
-                  <span className="container-icon">{preset.icon}</span>
+                  <span className="container-code-pill">{preset.code}</span>
                   <span className="container-size-tag">{preset.label}</span>
                 </div>
                 <span className="container-title">{preset.name}</span>
@@ -168,7 +165,6 @@ export default function DispenserStation({
             <span className="pump-unit">L</span>
           </div>
 
-
           <button
             type="button"
             disabled={!customLiterVal || parseFloat(customLiterVal) <= 0}
@@ -180,7 +176,6 @@ export default function DispenserStation({
               }
             }}
           >
-            <Plus size={15} />
             <span>
               {customLiterVal && parseFloat(customLiterVal) > 0
                 ? `Add ${(parseFloat(customLiterVal) * price).toFixed(0)} ${currency}`

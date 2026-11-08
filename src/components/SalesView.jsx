@@ -1,15 +1,4 @@
 import React, { useState, useMemo } from "react";
-import {
-  Receipt,
-  Search,
-  Download,
-  Eye,
-  Trash2,
-  Droplets,
-  DollarSign,
-  TrendingUp,
-  Plus,
-} from "lucide-react";
 import { soundFX } from "../utils/audio";
 import {
   formatEthiopianDate,
@@ -21,7 +10,7 @@ import {
 
 export default function SalesView({
   sales,
-  config = {},
+  _config = {},
   currency = "ETB",
   onSelectReceipt,
   onVoidSale,
@@ -33,123 +22,128 @@ export default function SalesView({
 
   const [referenceNow] = useState(() => new Date());
   const currentEth = useMemo(() => getEthiopianToday(), []);
-  const isEthCal = config.calendarSystem !== "gregorian";
 
+  // Filter sales list based on selected date range, payment, and search keywords
   const filteredSales = useMemo(() => {
-    const nowTime = referenceNow.getTime();
-
-    return sales.filter((sale) => {
-      const saleDate = new Date(sale.date);
-
-      // Date filter
-      if (dateFilter === "today") {
-        if (isEthCal) {
-          if (!isSameEthiopianDay(sale.date, referenceNow)) return false;
-        } else {
-          const todayStr = referenceNow.toISOString().split("T")[0];
-          if (!sale.date.startsWith(todayStr)) return false;
+    return sales
+      .filter((sale) => {
+        // 1. Text Search Filter
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchesId = sale.id?.toLowerCase().includes(q);
+          const matchesCustomer = sale.customerName?.toLowerCase().includes(q);
+          const matchesPhone = sale.customerPhone?.toLowerCase().includes(q);
+          const matchesItem = sale.items?.some(
+            (i) =>
+              i.name?.toLowerCase().includes(q) ||
+              (i.localName && i.localName.toLowerCase().includes(q))
+          );
+          if (!matchesId && !matchesCustomer && !matchesPhone && !matchesItem) {
+            return false;
+          }
         }
-      } else if (dateFilter === "week") {
-        const oneWeekAgo = new Date(nowTime - 7 * 24 * 60 * 60 * 1000);
-        if (saleDate < oneWeekAgo) return false;
-      } else if (dateFilter === "month") {
-        if (isEthCal) {
-          // Current Ethiopian Month (e.g. Meskerem, Tikimt, etc.)
-          if (!isSameEthiopianMonth(sale.date, referenceNow)) return false;
-        } else {
-          const oneMonthAgo = new Date(nowTime - 30 * 24 * 60 * 60 * 1000);
-          if (saleDate < oneMonthAgo) return false;
+
+        // 2. Payment Method Filter
+        if (paymentFilter !== "all" && sale.paymentMethod !== paymentFilter) {
+          return false;
         }
-      }
 
-      // Payment method filter
-      if (paymentFilter !== "all" && sale.paymentMethod !== paymentFilter) {
-        return false;
-      }
+        // 3. Ethiopian Calendar Date Filter
+        if (dateFilter === "today") {
+          return isSameEthiopianDay(sale.date, referenceNow);
+        }
+        if (dateFilter === "week") {
+          const diffDays =
+            (referenceNow.getTime() - new Date(sale.date).getTime()) / (1000 * 3600 * 24);
+          return diffDays >= 0 && diffDays <= 7;
+        }
+        if (dateFilter === "month") {
+          return isSameEthiopianMonth(sale.date, referenceNow);
+        }
 
-      // Search query
-      const q = searchQuery.toLowerCase().trim();
-      if (q) {
-        const matchId = String(sale.id || "").toLowerCase().includes(q);
-        const matchCustomer =
-          (sale.customerName && String(sale.customerName).toLowerCase().includes(q)) ||
-          (sale.customerPhone && String(sale.customerPhone).includes(q));
-        const matchItems = sale.items?.some((i) =>
-          (i.name || "").toLowerCase().includes(q)
-        );
-        if (!matchId && !matchCustomer && !matchItems) return false;
-      }
+        return true;
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [sales, searchQuery, dateFilter, paymentFilter, referenceNow]);
 
-      return true;
-    });
-  }, [sales, dateFilter, paymentFilter, searchQuery, isEthCal, referenceNow]);
+  // Cumulative Totals
+  const totalRevenue = useMemo(() => {
+    return filteredSales.reduce((acc, sale) => acc + (sale.total || 0), 0);
+  }, [filteredSales]);
 
-  // Calculate summaries for filtered view
-  const totalRevenue = filteredSales.reduce((acc, s) => acc + (s.total || 0), 0);
-  const totalProfit = filteredSales.reduce((acc, s) => acc + (s.profit || 0), 0);
-  const totalLitersDispensed = filteredSales.reduce((acc, s) => {
-    return acc + (s.items?.reduce((iAcc, item) => iAcc + (item.liters || 0), 0) || 0);
-  }, 0);
+  const totalProfit = useMemo(() => {
+    return filteredSales.reduce((acc, sale) => acc + (sale.profit || 0), 0);
+  }, [filteredSales]);
 
-  // Export to CSV
+  const totalLitersDispensed = useMemo(() => {
+    return filteredSales.reduce((acc, sale) => {
+      const itemsLiters = sale.items?.reduce((sum, item) => sum + (item.liters || 0), 0) || 0;
+      return acc + itemsLiters;
+    }, 0);
+  }, [filteredSales]);
+
+  // Export Sales to CSV
   const handleExportCSV = () => {
     if (filteredSales.length === 0) return;
+
+    soundFX.playPop();
     const headers = [
       "Receipt ID",
-      "Ethiopian Date (ዓ.ም)",
-      "Gregorian Date & Time",
-      "Customer Name",
+      "Date (Gregorian)",
+      "Date (Ethiopian)",
+      "Customer",
       "Phone",
       "Payment Method",
+      "Items Breakdown",
       "Total Liters",
       "Subtotal",
       "Discount",
-      "Total (ETB)",
-      "Profit (ETB)",
-      "Status",
+      "Total Paid",
+      "Gross Profit",
     ];
 
-    const rows = filteredSales.map((s) => [
-      s.id,
-      `"${formatEthiopianDate(s.date, "medium")} ${formatEthiopianTime(s.date, false)}"`,
-      `"${new Date(s.date).toLocaleString()}"`,
-      `"${s.customerName || "Walk-in"}"`,
-      s.customerPhone || "N/A",
-      s.paymentMethod,
-      s.items?.reduce((acc, i) => acc + (i.liters || 0), 0) || 0,
-      s.subtotal || s.total,
-      s.discount || 0,
-      s.total,
-      s.profit || 0,
-      s.status || "Completed",
-    ]);
+    const rows = filteredSales.map((s) => {
+      const ethDate = formatEthiopianDate(s.date, "medium");
+      const gregDate = new Date(s.date).toLocaleString();
+      const itemsDesc = s.items?.map((i) => `${i.liters}L ${i.name}`).join(" + ") || "";
+      const litersSum = s.items?.reduce((sum, i) => sum + (i.liters || 0), 0) || 0;
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+      return [
+        `"${s.id}"`,
+        `"${gregDate}"`,
+        `"${ethDate}"`,
+        `"${(s.customerName || "Walk-in").replace(/"/g, '""')}"`,
+        `"${s.customerPhone || ""}"`,
+        `"${s.paymentMethod}"`,
+        `"${itemsDesc.replace(/"/g, '""')}"`,
+        litersSum.toFixed(2),
+        (s.subtotal || s.total).toFixed(2),
+        (s.discount || 0).toFixed(2),
+        s.total.toFixed(2),
+        (s.profit || 0).toFixed(2),
+      ].join(",");
+    });
 
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    const fileEthDate = currentEth
-      ? `${currentEth.year}_${currentEth.monthNameEn}_${currentEth.day}`
-      : "sales";
-    link.setAttribute("download", `sukie_sales_EC_${fileEthDate}.csv`);
+    link.setAttribute(
+      "download",
+      `sukie_sales_${new Date().toISOString().slice(0, 10)}.csv`
+    );
     document.body.appendChild(link);
     link.click();
-    link.remove();
+    document.body.removeChild(link);
   };
 
   return (
-    <div className="sales-layout animate-fade">
-      {/* Top Filtered Stats */}
+    <div className="view-content-wrapper animate-fade">
+      {/* Top 4 KPI Metric Summary Cards */}
       <div className="metrics-grid">
         <div className="metric-card">
           <div className="metric-header">
-            <span className="metric-title">Filtered Revenue</span>
-            <div className="metric-icon-wrap stat-emerald">
-              <DollarSign size={20} />
-            </div>
+            <span className="metric-title">Sales Revenue</span>
           </div>
           <div className="metric-value">
             {totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -161,9 +155,6 @@ export default function SalesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Gross Profit</span>
-            <div className="metric-icon-wrap stat-cyan">
-              <TrendingUp size={20} />
-            </div>
           </div>
           <div className="metric-value text-emerald">
             {totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
@@ -179,9 +170,6 @@ export default function SalesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Total Liters Dispensed</span>
-            <div className="metric-icon-wrap stat-purple">
-              <Droplets size={20} />
-            </div>
           </div>
           <div className="metric-value">
             {totalLitersDispensed.toFixed(1)} <span className="metric-unit">Liters</span>
@@ -192,9 +180,6 @@ export default function SalesView({
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-title">Average Order Value</span>
-            <div className="metric-icon-wrap stat-amber">
-              <Receipt size={20} />
-            </div>
           </div>
           <div className="metric-value">
             {filteredSales.length > 0
@@ -209,7 +194,6 @@ export default function SalesView({
       {/* Filter and Search Controls */}
       <div className="inventory-controls-bar">
         <div className="inventory-search-wrap">
-          <Search size={18} className="search-icon" />
           <input
             type="text"
             className="inventory-search-input"
@@ -256,14 +240,13 @@ export default function SalesView({
             onChange={(e) => setPaymentFilter(e.target.value)}
           >
             <option value="all">All Payment Methods (ሁሉንም)</option>
-            <option value="Cash">💵 Cash Only (ጥሬ ገንዘብ)</option>
-            <option value="Telebirr">📱 Telebirr Only (ቴሌብር)</option>
-            <option value="CBE Birr">💳 CBE Birr Only (ሲቢኢ ብር)</option>
+            <option value="Cash">Cash Only (ጥሬ ገንዘብ)</option>
+            <option value="Telebirr">Telebirr Only (ቴሌብር)</option>
+            <option value="CBE Birr">CBE Birr Only (ሲቢኢ ብር)</option>
           </select>
         </div>
 
         <button className="btn-secondary" onClick={handleExportCSV} title="Export CSV Spreadsheet">
-          <Download size={16} />
           <span>Export CSV</span>
         </button>
 
@@ -274,7 +257,6 @@ export default function SalesView({
             onClick={onNavigateToRegister}
             title="Open POS Register to record new sale"
           >
-            <Plus size={16} />
             <span>+ New Sale (አዲስ ሽያጭ)</span>
           </button>
         )}
@@ -301,7 +283,6 @@ export default function SalesView({
                 <tr>
                   <td colSpan="8" className="table-empty-cell">
                     <div className="empty-state-container">
-                      <div className="empty-state-icon">🫧</div>
                       <strong>No sales records found matching your filters</strong>
                       <p>Try adjusting your search keyword or switching between time ranges.</p>
                       {(dateFilter !== "all" || paymentFilter !== "all" || searchQuery) && (
@@ -393,7 +374,6 @@ export default function SalesView({
                             onClick={() => onSelectReceipt(sale)}
                             title="View / Print Receipt"
                           >
-                            <Eye size={15} />
                             <span>Receipt</span>
                           </button>
                           {onVoidSale && (
@@ -411,7 +391,7 @@ export default function SalesView({
                                 }
                               }}
                             >
-                              <Trash2 size={14} />
+                              <span>×</span>
                             </button>
                           )}
                         </div>

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Zap, ShoppingCart, Receipt } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 import POSView from "./POSView";
@@ -47,7 +46,6 @@ export default function SalesHubView({
               onClick={() => handleSwitchTab("simple")}
               title="Quick 3-step sale registration"
             >
-              <Zap size={16} className="text-amber" />
               <span>Quick Register (ቀላል ሽያጭ)</span>
             </button>
 
@@ -57,7 +55,6 @@ export default function SalesHubView({
               onClick={() => handleSwitchTab("counter")}
               title="Full dispenser station with jerrycans & containers"
             >
-              <ShoppingCart size={16} />
               <span>Counter Dispenser (ሙሉ ካውንተር)</span>
             </button>
 
@@ -67,7 +64,6 @@ export default function SalesHubView({
               onClick={() => handleSwitchTab("records")}
               title="Past sales history and printed receipts"
             >
-              <Receipt size={16} />
               <span>Sales Records (የሽያጭ መዝገብ)</span>
               {sales && sales.length > 0 && (
                 <span className="sales-hub-pill-badge">{sales.length}</span>

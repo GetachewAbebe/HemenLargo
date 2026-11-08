@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { AlertOctagon, RefreshCw, Download, LifeBuoy } from "lucide-react";
 import { exportAllDataAsJSON } from "../../utils/storage";
 
 export default class ErrorBoundary extends Component {
@@ -41,10 +40,6 @@ export default class ErrorBoundary extends Component {
       return (
         <div className="error-boundary-screen animate-fade">
           <div className="error-boundary-card">
-            <div className="error-boundary-icon-wrap">
-              <AlertOctagon size={42} className="text-rose" />
-            </div>
-
             <h1 className="error-boundary-title">
               ይቅርታ! ያልተጠበቀ ችግር አጋጥሟል (System Error)
             </h1>
@@ -58,7 +53,6 @@ export default class ErrorBoundary extends Component {
                 className="btn-primary"
                 onClick={this.handleReload}
               >
-                <RefreshCw size={18} />
                 <span>Reload Sukie POS (እንደገና ጫን)</span>
               </button>
 
@@ -67,7 +61,6 @@ export default class ErrorBoundary extends Component {
                 className="btn-secondary"
                 onClick={exportAllDataAsJSON}
               >
-                <Download size={18} />
                 <span>Export Emergency Data Backup (JSON)</span>
               </button>
             </div>
@@ -75,7 +68,6 @@ export default class ErrorBoundary extends Component {
             <div className="error-boundary-details">
               <details>
                 <summary>
-                  <LifeBuoy size={14} />
                   <span>Technical Diagnostics (የስህተት ዝርዝር)</span>
                 </summary>
                 <pre className="error-stack-trace">
@@ -101,7 +93,7 @@ export default class ErrorBoundary extends Component {
                     alert("Error diagnostics copied to clipboard!");
                   }}
                 >
-                  📋 Copy Error to Clipboard
+                  Copy Error to Clipboard
                 </button>
               </details>
             </div>

@@ -20,7 +20,6 @@ const ExpensesView = lazy(() => import("./components/ExpensesView"));
 function ViewLoader() {
   return (
     <div className="view-content-wrapper animate-fade" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "350px", color: "var(--primary)" }}>
-      <div className="bubble-anim" style={{ fontSize: "36px", marginBottom: "8px" }}>🫧</div>
       <span style={{ fontSize: "0.86rem", fontWeight: 700, color: "#64748b" }}>Loading View...</span>
     </div>
   );
@@ -55,9 +54,6 @@ function AppContent() {
   if (!config) {
     return (
       <div className="app-loading-screen">
-        <div className="bubble-anim" style={{ fontSize: "48px" }}>
-          🫧
-        </div>
         <h2>Loading Sukie Shop...</h2>
       </div>
     );

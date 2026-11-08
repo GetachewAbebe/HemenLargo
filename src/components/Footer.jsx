@@ -150,7 +150,7 @@ export default function Footer({
         <div className="footer-bottom-row">
           <div className="footer-copy-text">
             <span>© 2017/2026</span>
-            <strong>{config.shopName || "SUKIE ሱኪ"}</strong>
+            <strong>{config.shopName || "SUKIE ሱቄ"}</strong>
             <span>• Smart Liquid Soap Counter & Operations</span>
           </div>
 

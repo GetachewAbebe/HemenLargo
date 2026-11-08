@@ -1,5 +1,4 @@
 import React from "react";
-import { RefreshCw, Check } from "lucide-react";
 import Modal from "../common/Modal";
 
 export default function RestockModal({
@@ -21,7 +20,6 @@ export default function RestockModal({
       onClose={onClose}
       title="Restock Bulk Liters"
       subtitle={`Add freshly mixed bulk batch to ${product.name}`}
-      icon={RefreshCw}
       maxWidth="480px"
     >
       <form onSubmit={onSubmit} className="modal-form">
@@ -78,7 +76,6 @@ export default function RestockModal({
             Cancel
           </button>
           <button type="submit" className="btn-modal-submit">
-            <Check size={18} />
             <span>Confirm Tank Refill</span>
           </button>
         </div>

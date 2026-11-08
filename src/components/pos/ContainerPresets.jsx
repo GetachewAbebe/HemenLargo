@@ -18,8 +18,7 @@ export default function ContainerPresets({ product, onSelect, currency = "ETB" }
             onClick={() => onSelect(product, preset.liters)}
             disabled={isOutOfStock}
           >
-            {preset.popular && <span className="popular-badge">★ Popular</span>}
-            <span className="container-icon">{preset.icon}</span>
+            {preset.popular && <span className="popular-badge">Popular</span>}
             <div className="container-meta">
               <span className="container-size">{preset.label}</span>
               <span className="container-cost">
