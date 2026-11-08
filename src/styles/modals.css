@@ -131,6 +131,122 @@
   gap: 18px;
 }
 
+.add-product-form {
+  gap: 16px;
+}
+
+.add-product-type-fieldset {
+  min-width: 0;
+  border: 0;
+}
+
+.add-product-type-fieldset legend {
+  margin-bottom: 8px;
+}
+
+.add-product-type-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.add-product-type-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #dbe3eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.add-product-type-option:hover {
+  border-color: #99c9c4;
+  background: #f8fffd;
+}
+
+.add-product-type-option.selected {
+  border-color: #0d9488;
+  background: #f0fdfa;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.1);
+}
+
+.add-product-type-mark {
+  width: 10px;
+  height: 34px;
+  flex: 0 0 10px;
+  border-radius: 999px;
+}
+
+.add-product-type-option strong,
+.add-product-type-option small {
+  display: block;
+}
+
+.add-product-type-option strong {
+  font-size: 0.88rem;
+}
+
+.add-product-type-option small {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
+.add-product-type-check {
+  margin-left: auto;
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.add-product-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.add-product-margin-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.add-product-margin-summary strong {
+  color: #059669;
+  font-size: 0.82rem;
+}
+
+.add-product-margin-summary strong.margin-loss {
+  color: #e11d48;
+}
+
+.add-product-margin-summary strong.margin-thin-text {
+  color: #b45309;
+}
+
+@media (max-width: 520px) {
+  .add-product-pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-product-margin-summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+}
+
 .modal-actions {
   display: flex;
   align-items: center;

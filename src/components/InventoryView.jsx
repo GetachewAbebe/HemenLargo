@@ -33,17 +33,13 @@ export default function InventoryView(props) {
 
   // New Product Form State
   const [newProduct, setNewProduct] = useState({
-    name: "",
-    localName: "",
-    category: "General Cleanser",
-    scent: "",
+    category: "Largo",
     color: "#0d9488",
-    pricePerLiter: 60,
-    pricePerHalfLiter: 30,
-    costPerLiter: 35,
-    stockLiters: 100,
+    pricePerLiter: "",
+    pricePerHalfLiter: "",
+    costPerLiter: "",
+    stockLiters: "",
     minStockAlert: 40,
-    description: "",
   });
 
   // Edit Product Form State
@@ -116,31 +112,33 @@ export default function InventoryView(props) {
   const handleCreateProduct = (e) => {
     e.preventDefault();
     const id = createRecordId("soap");
+    const isBerekina = newProduct.category === "Berekina";
     const created = {
-      ...newProduct,
       id,
+      name: isBerekina ? "Berekina" : "Largo",
+      localName: isBerekina ? "በረኪና" : "ላርጎ",
+      category: isBerekina ? "Bleach & Sanitizer (በረኪና)" : "Liquid Soap (ላርጎ)",
+      scent: "",
+      color: isBerekina ? "#0284c7" : "#0d9488",
       pricePerLiter: parseFloat(newProduct.pricePerLiter) || 0,
       pricePerHalfLiter: parseFloat(newProduct.pricePerHalfLiter) || 0,
       costPerLiter: parseFloat(newProduct.costPerLiter) || 0,
       stockLiters: parseFloat(newProduct.stockLiters) || 0,
       minStockAlert: parseFloat(newProduct.minStockAlert) || 40,
       soldLiters: 0,
+      description: "",
     };
     onAddProduct(created);
     setIsAddModalOpen(false);
     // Reset form
     setNewProduct({
-      name: "",
-      localName: "",
-      category: "General Cleanser",
-      scent: "",
+      category: "Largo",
       color: "#0d9488",
-      pricePerLiter: 60,
-      pricePerHalfLiter: 30,
-      costPerLiter: 35,
-      stockLiters: 100,
+      pricePerLiter: "",
+      pricePerHalfLiter: "",
+      costPerLiter: "",
+      stockLiters: "",
       minStockAlert: 40,
-      description: "",
     });
   };
 

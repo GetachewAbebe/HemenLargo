@@ -1,26 +1,19 @@
 import React, { useMemo } from "react";
 import Modal from "../common/Modal";
 
-const CATEGORY_PRESETS = [
-  { id: "General Cleanser", label: "General (Largo)" },
-  { id: "Kitchen & Dishes", label: "Dishes & Kitchen" },
-  { id: "Laundry", label: "Laundry & Fabrics" },
-  { id: "Personal Hygiene", label: "Hand Wash / Care" },
-  { id: "Floors & Tiles", label: "Floors & Ceramic" },
-  { id: "Sanitizer", label: "Bleach (Barikina)" },
-  { id: "Automotive", label: "Car Wash Soap" },
-  { id: "Glass & Surfaces", label: "Glass & Surface" },
-];
-
-const COLOR_SWATCHES = [
-  { hex: "#0d9488", name: "Emerald Largo" },
-  { hex: "#0284c7", name: "Ocean Cyan" },
-  { hex: "#eab308", name: "Citrus Lemon" },
-  { hex: "#e11d48", name: "Berry Rose" },
-  { hex: "#8b5cf6", name: "Lavender Mist" },
-  { hex: "#d97706", name: "Amber Gold" },
-  { hex: "#10b981", name: "Fresh Mint" },
-  { hex: "#64748b", name: "Crisp Pure" },
+const PRODUCT_TYPES = [
+  {
+    id: "Largo",
+    localName: "ላርጎ",
+    category: "Liquid Soap (ላርጎ)",
+    color: "#0d9488",
+  },
+  {
+    id: "Berekina",
+    localName: "በረኪና",
+    category: "Bleach & Sanitizer (በረኪና)",
+    color: "#0284c7",
+  },
 ];
 
 export default function AddProductModal({
@@ -31,328 +24,160 @@ export default function AddProductModal({
   onSubmit,
   currency = "ETB",
 }) {
-  // Live margin & profit calculation
+  const selectedType = PRODUCT_TYPES.find((type) => type.id === newProduct.category) || PRODUCT_TYPES[0];
   const { profit, marginPct, isProfitable, isThin } = useMemo(() => {
     const price = parseFloat(newProduct.pricePerLiter) || 0;
     const cost = parseFloat(newProduct.costPerLiter) || 0;
-    const p = price - cost;
-    const m = price > 0 ? (p / price) * 100 : 0;
+    const margin = price > 0 ? ((price - cost) / price) * 100 : 0;
+
     return {
-      profit: p,
-      marginPct: m.toFixed(1),
-      isProfitable: p > 0,
-      isThin: p > 0 && m < 25,
+      profit: price - cost,
+      marginPct: margin.toFixed(1),
+      isProfitable: price > cost,
+      isThin: price > cost && margin < 25,
     };
   }, [newProduct.pricePerLiter, newProduct.costPerLiter]);
 
-  const handleCategorySelect = (cat) => {
-    setNewProduct((prev) => ({
-      ...prev,
-      category: cat.id,
-    }));
+  const updateField = (field) => (event) => {
+    setNewProduct((current) => ({ ...current, [field]: event.target.value }));
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Create New Soap Formula"
-      subtitle="Define formula specifications, tank volume, and pricing tiers"
-      maxWidth="860px"
-      className="modal-xl"
+      title="Add product"
+      subtitle="Choose a product and enter its prices and opening stock."
+      maxWidth="560px"
     >
-      <form onSubmit={onSubmit} className="modal-form">
-        <div className="modal-split-container">
-          {/* Left Column: Input Form Fields */}
-          <div className="modal-split-form-col">
-            {/* Name Fields */}
-            <div className="form-group-row">
-              <div className="form-group">
-                <label className="form-label">Soap Name (English) *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ultra Foam Dish Cleaner"
-                  className="form-input"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Amharic Name (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. የዕቃ ሳሙና (ሱፐር)"
-                  className="form-input"
-                  value={newProduct.localName}
-                  onChange={(e) => setNewProduct({ ...newProduct, localName: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Category Quick Chips */}
-            <div className="form-group">
-              <label className="form-label">
-                <span>Category</span>
-                <span className="form-label-hint">Select matching cleanser type</span>
-              </label>
-              <div className="category-chips-grid">
-                {CATEGORY_PRESETS.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    className={`btn-category-chip ${
-                      newProduct.category === cat.id ? "chip-active" : ""
-                    }`}
-                    onClick={() => handleCategorySelect(cat)}
-                  >
-                    <span>{cat.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Fragrance / Scent */}
-            <div className="form-group">
-              <label className="form-label">Fragrance / Scent</label>
-              <input
-                type="text"
-                placeholder="e.g. Lemon Breeze, Strawberry, Pine, Lavender, Ocean"
-                className="form-input"
-                value={newProduct.scent}
-                onChange={(e) => setNewProduct({ ...newProduct, scent: e.target.value })}
-              />
-            </div>
-
-            {/* Retail prices by container size and production cost */}
-            <div className="form-group-row">
-              <div className="form-group">
-                <label className="form-label">Selling Price / 1 L ({currency}) *</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  required
-                  placeholder="e.g. 70"
-                  className="form-input"
-                  value={newProduct.pricePerLiter}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, pricePerLiter: e.target.value })
-                  }
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Selling Price / 0.5 L ({currency}) *</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  required
-                  placeholder="e.g. 40"
-                  className="form-input"
-                  value={newProduct.pricePerHalfLiter}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, pricePerHalfLiter: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-            <div className="form-group-row">
-              <div className="form-group">
-                <label className="form-label">Production Cost / Liter ({currency}) *</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  required
-                  placeholder="e.g. 38"
-                  className="form-input"
-                  value={newProduct.costPerLiter}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, costPerLiter: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Dynamic Profit & Margin Summary */}
-            <div className="live-margin-calc-box">
-              <div className="margin-calc-metric">
-                <span className="calc-metric-label">Estimated Profit / L</span>
-                <strong className="calc-metric-val">
-                  {profit >= 0 ? `+${profit.toFixed(2)}` : profit.toFixed(2)} {currency}
-                </strong>
-              </div>
-              <div className="margin-calc-metric">
-                <span className="calc-metric-label">Gross Margin</span>
-                <strong className="calc-metric-val">{marginPct}%</strong>
-              </div>
-              <div
-                className={`margin-health-badge ${
-                  !isProfitable
-                    ? "margin-negative"
-                    : isThin
-                    ? "margin-thin"
-                    : "margin-positive"
-                }`}
-              >
-                {!isProfitable ? (
-                  <span>Cost exceeds price</span>
-                ) : isThin ? (
-                  <span>Thin margin</span>
-                ) : (
-                  <span>Healthy margin</span>
-                )}
-              </div>
-            </div>
-
-            {/* Tank Capacity & Alerts */}
-            <div className="form-group-row">
-              <div className="form-group">
-                <label className="form-label">Initial Tank Stock (Liters) *</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  required
-                  placeholder="e.g. 150"
-                  className="form-input"
-                  value={newProduct.stockLiters}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, stockLiters: e.target.value })
-                  }
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Low Stock Alert Threshold (Liters)</label>
-                <input
-                  type="number"
-                  step="5"
-                  min="0"
-                  placeholder="e.g. 40"
-                  className="form-input"
-                  value={newProduct.minStockAlert}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, minStockAlert: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Color Swatches */}
-            <div className="form-group">
-              <label className="form-label">Liquid Soap Tint</label>
-              <div className="color-swatches-grid">
-                {COLOR_SWATCHES.map((swatch) => (
-                  <button
-                    key={swatch.hex}
-                    type="button"
-                    title={swatch.name}
-                    className={`swatch-btn ${
-                      newProduct.color === swatch.hex ? "swatch-selected" : ""
-                    }`}
-                    style={{ backgroundColor: swatch.hex }}
-                    onClick={() => setNewProduct({ ...newProduct, color: swatch.hex })}
-                  />
-                ))}
-                <input
-                  type="color"
-                  className="form-color-picker"
-                  title="Custom tint picker"
-                  value={newProduct.color || "#0d9488"}
-                  onChange={(e) => setNewProduct({ ...newProduct, color: e.target.value })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Live Interactive Product Preview Card */}
-          <div className="modal-split-preview-col">
-            <span className="preview-col-label">
-              <span className="live-badge-dot"></span>
-              Live Product Card Preview
-            </span>
-
-            <div className="live-product-card-preview">
-              <div
-                className="preview-card-accent-bar"
-                style={{ backgroundColor: newProduct.color || "#0d9488" }}
-              />
-
-              {/* Tank Level Simulation Visual */}
-              <div className="preview-bottle-container">
-                <div
-                  className="preview-liquid-fill"
-                  style={{
-                    backgroundColor: newProduct.color || "#0d9488",
-                    height: `${Math.min(
-                      90,
-                      Math.max(25, ((newProduct.stockLiters || 100) / 600) * 100)
-                    )}%`,
-                  }}
+      <form onSubmit={onSubmit} className="modal-form add-product-form">
+        <fieldset className="add-product-type-fieldset">
+          <legend className="form-label">Product type</legend>
+          <div className="add-product-type-options">
+            {PRODUCT_TYPES.map((type) => {
+              const isSelected = selectedType.id === type.id;
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  className={`add-product-type-option ${isSelected ? "selected" : ""}`}
+                  aria-pressed={isSelected}
+                  onClick={() => setNewProduct((current) => ({ ...current, category: type.id }))}
                 >
-                  <div className="preview-liquid-wave"></div>
-                </div>
-              </div>
+                  <span className="add-product-type-mark" style={{ backgroundColor: type.color }} />
+                  <span>
+                    <strong>{type.id}</strong>
+                    <small>{type.localName}</small>
+                  </span>
+                  <span className="add-product-type-check" aria-hidden="true">
+                    {isSelected ? "✓" : ""}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
-              {/* Title & Info */}
-              <div className="preview-text-block">
-                <h4 className="preview-product-name">
-                  {newProduct.name || "Formula Name..."}
-                </h4>
-                <span className="preview-product-local">
-                  {newProduct.localName || "የፈሳሽ ሳሙና ስም"}
-                </span>
-              </div>
-
-              {/* Tags */}
-              <div className="preview-tags-row">
-                <span className="preview-chip-tag">
-                  {newProduct.category || "General Cleanser"}
-                </span>
-                {newProduct.scent && (
-                  <span className="preview-chip-tag">{newProduct.scent}</span>
-                )}
-              </div>
-
-              {/* Price Banner */}
-              <div className="preview-price-box">
-                <span className="preview-price-label">Retail prices</span>
-                <strong className="preview-price-val">
-                  1 L: {newProduct.pricePerLiter || 0} {currency}
-                </strong>
-                <strong className="preview-price-val">
-                  0.5 L: {newProduct.pricePerHalfLiter || 0} {currency}
-                </strong>
-              </div>
-
-              {/* Financial Return Pill */}
-              <div
-                className={`preview-margin-indicator ${
-                  !isProfitable
-                    ? "margin-negative"
-                    : isThin
-                    ? "margin-thin"
-                    : "margin-positive"
-                }`}
-              >
-                <span>Unit Margin</span>
-                <span>
-                  {profit >= 0 ? `+${profit.toFixed(1)}` : profit.toFixed(1)} {currency} (
-                  {marginPct}%)
-                </span>
-              </div>
-            </div>
+        <div className="add-product-pricing-grid">
+          <div className="form-group">
+            <label className="form-label" htmlFor="add-product-price-1l">
+              Selling price · 1 L ({currency})
+            </label>
+            <input
+              id="add-product-price-1l"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              className="form-input"
+              placeholder="Enter price"
+              value={newProduct.pricePerLiter}
+              onChange={updateField("pricePerLiter")}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="add-product-price-half">
+              Selling price · 0.5 L ({currency})
+            </label>
+            <input
+              id="add-product-price-half"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              className="form-input"
+              placeholder="Enter price"
+              value={newProduct.pricePerHalfLiter}
+              onChange={updateField("pricePerHalfLiter")}
+            />
           </div>
         </div>
 
-        {/* Modal Actions */}
+        <div className="add-product-pricing-grid">
+          <div className="form-group">
+            <label className="form-label" htmlFor="add-product-cost">
+              Production cost · 1 L ({currency})
+            </label>
+            <input
+              id="add-product-cost"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              className="form-input"
+              placeholder="Enter cost"
+              value={newProduct.costPerLiter}
+              onChange={updateField("costPerLiter")}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="add-product-opening-stock">
+              Opening stock (L)
+            </label>
+            <input
+              id="add-product-opening-stock"
+              type="number"
+              min="0"
+              step="0.1"
+              required
+              className="form-input"
+              placeholder="Enter liters in tank"
+              value={newProduct.stockLiters}
+              onChange={updateField("stockLiters")}
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label" htmlFor="add-product-low-stock">
+            Low-stock alert (L)
+          </label>
+          <input
+            id="add-product-low-stock"
+            type="number"
+            min="0"
+            step="0.1"
+            required
+            className="form-input"
+            value={newProduct.minStockAlert}
+            onChange={updateField("minStockAlert")}
+          />
+        </div>
+
+        <div className="add-product-margin-summary" aria-live="polite">
+          <span>Estimated profit per liter</span>
+          <strong className={!isProfitable ? "margin-loss" : isThin ? "margin-thin-text" : ""}>
+            {profit >= 0 ? "+" : ""}{profit.toFixed(2)} {currency}
+          </strong>
+          <span>Margin {marginPct}%</span>
+        </div>
+
         <div className="modal-actions">
           <button type="button" className="btn-modal-cancel" onClick={onClose}>
             Cancel
           </button>
           <button type="submit" className="btn-modal-submit">
-            <span>Save & Add to Tank Farm</span>
+            Add {selectedType.id}
           </button>
         </div>
       </form>
