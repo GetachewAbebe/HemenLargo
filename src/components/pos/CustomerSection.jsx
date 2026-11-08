@@ -42,24 +42,7 @@ export default function CustomerSection({
               </button>
             );
           })
-        ) : (
-          <>
-            <button
-              type="button"
-              className={`chip-preset-btn ${customerName === "Local Cafe & Restaurant" ? "chip-preset-active" : ""}`}
-              onClick={() => applyPreset("Local Cafe & Restaurant", "0911223344")}
-            >
-              <span>Cafe / Hotel</span>
-            </button>
-            <button
-              type="button"
-              className={`chip-preset-btn ${customerName === "Car Wash Station" ? "chip-preset-active" : ""}`}
-              onClick={() => applyPreset("Car Wash Station", "0912987654")}
-            >
-              <span>Car Wash</span>
-            </button>
-          </>
-        )}
+        ) : null}
       </div>
 
       {/* Customer Name & Phone Fields */}

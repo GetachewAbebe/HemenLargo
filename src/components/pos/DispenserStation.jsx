@@ -8,7 +8,6 @@ export default function DispenserStation({
   customLiterVal = "",
   onCustomLiterChange,
   onAddToCart,
-  onOpenRefillModal,
 }) {
   const isLargo =
     product.id === "prod-1" ||
@@ -63,14 +62,6 @@ export default function DispenserStation({
             <span className={`stock-status-pill ${isLowStock ? "pill-low" : "pill-ok"}`}>
               {isLowStock ? "Low Stock" : `${tankPercent}% Full`}
             </span>
-            <button
-              type="button"
-              className="btn-quick-refill-station"
-              title="Add liters directly to barrel"
-              onClick={() => onOpenRefillModal(product)}
-            >
-              <span>Refill</span>
-            </button>
           </div>
         </div>
         <div className="tank-liquid-track">
@@ -92,7 +83,7 @@ export default function DispenserStation({
 
       {/* Container Options Grid */}
       <div className="station-containers-section">
-        <span className="section-micro-label">TAP TO ADD CONTAINER:</span>
+        <span className="section-micro-label">CONTAINER SIZES</span>
         <div className="container-presets-grid">
           {CONTAINER_PRESETS.map((preset) => {
             const calculatedPrice = (preset.liters * price).toFixed(0);
@@ -123,7 +114,7 @@ export default function DispenserStation({
       {/* Custom Liter Input & Quick Stepper */}
       <div className="station-custom-pump">
         <div className="custom-pump-header">
-          <span className="section-micro-label">CUSTOM LITERS / REFILL:</span>
+          <span className="section-micro-label">CUSTOM QUANTITY</span>
           <div className="quick-chip-buttons">
             {[0.5, 1, 2, 5, 10].map((amt) => (
               <button

@@ -5,7 +5,6 @@ import DispenserStation from "./pos/DispenserStation";
 import CartItemList from "./pos/CartItemList";
 import CustomerSection from "./pos/CustomerSection";
 import CashTenderCard from "./pos/CashTenderCard";
-import QuickRefillModal from "./pos/QuickRefillModal";
 import SaleDateSelector from "./pos/SaleDateSelector";
 import { createRecordId } from "../utils/ids";
 
@@ -21,7 +20,7 @@ export default function POSView(props) {
   const sales = props.sales ?? context.sales;
   const currency = props.currency ?? context.currency;
   const onCompleteSale = props.onCompleteSale ?? context.handleCompleteSale;
-  const onRestockLiters = props.onRestockLiters ?? context.handleRestockLiters;
+  const setActiveTab = context.setActiveTab;
 
   const [cart, setCart] = useState([]);
   const [customerName, setCustomerName] = useState("");
@@ -41,10 +40,6 @@ export default function POSView(props) {
     const d = new Date();
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   });
-
-  // Inline Quick Refill Modal
-  const [refillModalProduct, setRefillModalProduct] = useState(null);
-  const [refillAmount, setRefillAmount] = useState(100);
 
   // Quick repeat customer suggestions from past sales
   const recentCustomers = useMemo(() => {
@@ -124,31 +119,6 @@ export default function POSView(props) {
     }
   };
 
-  // 1-Click Combo: 5L Largo + 2L Barikina
-  const handleAddCombo = () => {
-    soundFX.playPop();
-    const largo = products.find(
-      (p) =>
-        p.id === "prod-largo" ||
-        p.id === "prod-1" ||
-        p.name?.includes("Largo") ||
-        p.name?.includes("ላርጎ")
-    );
-    const barikina = products.find(
-      (p) =>
-        p.id === "prod-berekina" ||
-        p.id === "prod-2" ||
-        p.name?.includes("Barikina") ||
-        p.name?.includes("Berekina") ||
-        p.name?.includes("በረኪና")
-    );
-
-    if (largo && barikina) {
-      addToCart(largo, 5);
-      addToCart(barikina, 2);
-    }
-  };
-
   // Adjust liters in cart
   const updateCartLiters = (productId, delta) => {
     setErrorMessage("");
@@ -196,17 +166,6 @@ export default function POSView(props) {
     setByocDiscountActive(false);
     setSaleNotes("");
     setErrorMessage("");
-  };
-
-  // Quick Refill handler directly from station
-  const handleConfirmStationRefill = (e) => {
-    e.preventDefault();
-    if (!refillModalProduct || !refillAmount || parseFloat(refillAmount) <= 0) return;
-    if (onRestockLiters) {
-      onRestockLiters(refillModalProduct.id, parseFloat(refillAmount), refillModalProduct.costPerLiter);
-    }
-    soundFX.playCheckoutChime();
-    setRefillModalProduct(null);
   };
 
   // Calculations
@@ -284,43 +243,37 @@ export default function POSView(props) {
     <div className="pos-layout-v2 animate-fade">
       {/* Product selection and quantity entry */}
       <section className="pos-stations-col">
-        {/* Quick Action & Combo Banner */}
-        <div className="pos-top-action-banner">
-          <div className="combo-banner-left">
-            <span className="combo-tag-pill">
-              <strong>Quick Combo Deal</strong>
-            </span>
-            <span className="combo-desc">
-              <strong>5L Largo + 2L Barikina</strong> ={" "}
-              {(
-                5 * (products.find((p) => p.name?.includes("Largo") || p.id === "prod-1")?.pricePerLiter || 60) +
-                2 * (products.find((p) => p.name?.includes("Barikina") || p.name?.includes("Berekina") || p.id === "prod-2")?.pricePerLiter || 50)
-              ).toLocaleString()}{" "}
-              {currency}
-            </span>
+        <div className="register-products-heading">
+          <div>
+            <h2>Choose products</h2>
+            <p>Select a container size or enter a custom quantity.</p>
           </div>
-          <button type="button" className="btn-add-combo" onClick={handleAddCombo}>
-            <span>+ Add Combo to Bill</span>
-          </button>
+          <span>{products.length} {products.length === 1 ? "product" : "products"}</span>
         </div>
 
-        {/* The Two Dedicated Product Dispenser Stations */}
-        <div className="stations-grid">
-          {products.map((prod) => (
-            <DispenserStation
-              key={prod.id}
-              product={prod}
-              currency={currency}
-              customLiterVal={customLiters[prod.id] || ""}
-              onCustomLiterChange={(val) => setCustomLiters({ ...customLiters, [prod.id]: val })}
-              onAddToCart={addToCart}
-              onOpenRefillModal={(p) => {
-                setRefillModalProduct(p);
-                setRefillAmount(100);
-              }}
-            />
-          ))}
-        </div>
+        {products.length > 0 ? (
+          <div className="stations-grid">
+            {products.map((prod) => (
+              <DispenserStation
+                key={prod.id}
+                product={prod}
+                currency={currency}
+                customLiterVal={customLiters[prod.id] || ""}
+                onCustomLiterChange={(val) => setCustomLiters({ ...customLiters, [prod.id]: val })}
+                onAddToCart={addToCart}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="register-products-empty">
+            <span className="register-empty-mark" aria-hidden="true">+</span>
+            <h3>No products in this shop yet</h3>
+            <p>Add Largo, Barikina, or your other products to begin a sale. Product prices and available stock will appear here.</p>
+            <button type="button" onClick={() => setActiveTab("inventory")}>
+              Add products in Inventory
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Shared cart, customer details, and checkout */}
@@ -534,14 +487,6 @@ export default function POSView(props) {
         </div>
       </section>
 
-      {/* Station Refill Quick Modal */}
-      <QuickRefillModal
-        product={refillModalProduct}
-        refillAmount={refillAmount}
-        setRefillAmount={setRefillAmount}
-        onConfirm={handleConfirmStationRefill}
-        onClose={() => setRefillModalProduct(null)}
-      />
     </div>
   );
 }
