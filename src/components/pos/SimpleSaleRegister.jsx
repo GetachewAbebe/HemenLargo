@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { soundFX } from "../../utils/audio";
 import { formatEthiopianDate, formatEthiopianTime } from "../../utils/ethiopianDate";
+import { createRecordId } from "../../utils/ids";
 
 function generateReceiptId() {
   const d = new Date();
   const datePart = `${d.getFullYear().toString().slice(-2)}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  const randomPart = Math.floor(1000 + Math.random() * 9000);
-  return `REC-${datePart}-${randomPart}`;
+  return createRecordId(`REC-${datePart}`);
 }
 
 const COMMON_QUICK_LITERS = [1, 2, 3, 5, 10, 20];

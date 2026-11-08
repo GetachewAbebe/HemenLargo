@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { soundFX } from "../utils/audio";
 import { formatEthiopianDate, formatEthiopianTime } from "../utils/ethiopianDate";
 import { useApp } from "../context";
+import { createRecordId } from "../utils/ids";
 
 export default function DebtsView() {
   const {
@@ -104,7 +105,7 @@ export default function DebtsView() {
 
     soundFX.playSuccess();
     const newRecord = {
-      id: `debt-${Date.now().toString().slice(-6)}`,
+      id: createRecordId("debt"),
       customerName: newCustomerName.trim(),
       customerPhone: newCustomerPhone.trim() || "N/A",
       saleId: `MANUAL-${Date.now().toString().slice(-4)}`,

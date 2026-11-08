@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   build: {
+    manifest: 'asset-manifest.json',
     rollupOptions: {
       output: {
         manualChunks(id) {

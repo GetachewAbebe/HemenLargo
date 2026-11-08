@@ -7,6 +7,7 @@ import AddProductModal from "./inventory/AddProductModal";
 import EditProductModal from "./inventory/EditProductModal";
 import SearchBar from "./common/SearchBar";
 import { calculateInventoryMetrics } from "../services/inventoryService";
+import { createRecordId } from "../utils/ids";
 
 export default function InventoryView(props) {
   const context = useApp();
@@ -113,7 +114,7 @@ export default function InventoryView(props) {
   // Create Product
   const handleCreateProduct = (e) => {
     e.preventDefault();
-    const id = `soap-${Date.now().toString().slice(-4)}`;
+    const id = createRecordId("soap");
     const created = {
       ...newProduct,
       id,

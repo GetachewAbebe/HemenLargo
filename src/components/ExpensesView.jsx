@@ -3,6 +3,7 @@ import {
   formatEthiopianDate,
   formatEthiopianTime,
 } from "../utils/ethiopianDate";
+import { createRecordId } from "../utils/ids";
 import Modal from "./common/Modal";
 
 export default function ExpensesView({
@@ -165,7 +166,7 @@ export default function ExpensesView({
     }
 
     const expenseRecord = {
-      id: `exp-${Date.now().toString().slice(-6)}`,
+      id: createRecordId("exp"),
       date: new Date().toISOString(),
       title: newExpense.title.trim(),
       category: newExpense.category,

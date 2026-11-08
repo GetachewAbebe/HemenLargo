@@ -7,36 +7,100 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: github-pages
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build project
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Validate production Supabase configuration
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          node --input-type=module <<'NODE'
+          const url = process.env.VITE_SUPABASE_URL;
+          const key = process.env.VITE_SUPABASE_ANON_KEY;
+
+          if (!url || !key) {
+            console.error("Set the VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY GitHub Actions secrets before deploying.");
+            process.exit(1);
+          }
+
+          let parsedUrl;
+          try {
+            parsedUrl = new URL(url);
+          } catch {
+            console.error("VITE_SUPABASE_URL must be a valid HTTPS URL.");
+            process.exit(1);
+          }
+
+          if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname.endsWith(".supabase.co")) {
+            console.error("VITE_SUPABASE_URL must use an HTTPS Supabase project host.");
+            process.exit(1);
+          }
+
+          if (key.startsWith("sb_secret_")) {
+            console.error("VITE_SUPABASE_ANON_KEY must be a publishable/anon client key, never a secret or service-role key.");
+            process.exit(1);
+          }
+
+          if (key.startsWith("eyJ")) {
+            try {
+              const payload = JSON.parse(Buffer.from(key.split(".")[1], "base64url").toString("utf8"));
+              if (payload.role === "service_role") {
+                console.error("VITE_SUPABASE_ANON_KEY must not contain a service-role key.");
+                process.exit(1);
+              }
+            } catch {
+              console.error("VITE_SUPABASE_ANON_KEY is not a recognized publishable/anon key.");
+              process.exit(1);
+            }
+          }
+
+          console.log(`Production Supabase project: ${parsedUrl.hostname}`);
+          NODE
+
+      - name: Build production app
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
+
+      - name: Verify deployable assets
+        run: |
+          test -s dist/index.html
+          test -s dist/asset-manifest.json
+          test -s dist/sw.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: ./dist
 
   deploy:
     environment:
@@ -44,6 +108,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

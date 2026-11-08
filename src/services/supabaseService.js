@@ -2,6 +2,25 @@ import { supabase, isSupabaseConfigured } from "./supabaseClient";
 
 export { isSupabaseConfigured };
 
+const requireClient = () => {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  return supabase;
+};
+
+const fetchAll = async (table, configureQuery = (query) => query) => {
+  const client = requireClient();
+  const pageSize = 500;
+  const rows = [];
+
+  for (let from = 0; ; from += pageSize) {
+    let query = configureQuery(client.from(table).select("*"));
+    const { data, error } = await query.range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) return rows;
+  }
+};
+
 export const normalizeProductFromSupabase = (p) => {
   if (!p) return null;
   const productName = p.name || p.product_name || p.local_name || "Liquid Soap";
@@ -16,10 +35,7 @@ export const normalizeProductFromSupabase = (p) => {
       p.localName ||
       (isLargo ? "ላርጎ ፈሳሽ ሳሙና" : isBerekina ? "በረኪና ማጽጃ" : productName),
     category: p.category || (isBerekina ? "በረኪና" : "ላርጎ"),
-    scent:
-      p.scent ||
-      p.fragrance_or_color ||
-      (isBerekina ? "Clear / Chlorine" : "Lemon"),
+    scent: p.scent || p.fragrance_or_color || (isBerekina ? "Clear / Chlorine" : "Lemon"),
     color: p.color || (isBerekina ? "#06b6d4" : "#0d9488"),
     iconEmoji: p.icon_emoji || "",
     pricePerLiter: Number(p.price_per_liter ?? p.selling_price) || (isLargo ? 110 : 75),
@@ -45,17 +61,11 @@ export const normalizeSaleFromSupabase = (s) => {
         scent: i.scent || "Fresh",
       }))
     : [];
-
-  const totalLiters = items.reduce(
-    (acc, it) => acc + (Number(it.liters) || 0),
-    0
-  );
-
   const totalAmount = Number(s.total_amount ?? s.total) || 0;
-  const noteStr = s.notes || s.note || "";
 
   return {
-    id: s.invoice_number || s.id,
+    id: s.id,
+    invoiceNumber: s.invoice_number || s.id,
     date: s.date || s.created_at || new Date().toISOString(),
     customerName: s.customer_name || "Walk-in Customer",
     customerPhone: s.customer_phone || "N/A",
@@ -65,10 +75,10 @@ export const normalizeSaleFromSupabase = (s) => {
     discount: Number(s.discount) || 0,
     total: totalAmount,
     profit: Number(s.profit) || 0,
-    totalLiters: totalLiters || Number(s.total_liters) || 0,
-    cashTendered: s.cash_tendered ? Number(s.cash_tendered) : null,
-    changeDue: s.change_due ? Number(s.change_due) : null,
-    note: noteStr,
+    totalLiters: items.reduce((total, item) => total + item.liters, 0) || Number(s.total_liters) || 0,
+    cashTendered: s.cash_tendered == null ? null : Number(s.cash_tendered),
+    changeDue: s.change_due == null ? null : Number(s.change_due),
+    note: s.notes || s.note || "",
     status: s.status || s.payment_status || "Completed",
     creditDueDate: s.credit_due_date || null,
   };
@@ -81,7 +91,6 @@ export const normalizeExpenseFromSupabase = (e) => {
   let pricePerLiter = Number(e.price_per_liter ?? e.pricePerLiter) || null;
   let unit = e.unit || "L";
 
-  // If columns are not in cloud DB schema yet, recover gracefully from notes string
   if (!litersBought && notes) {
     const match = notes.match(/(\d+(?:\.\d+)?)\s*(L|kg)\s*@\s*(\d+(?:\.\d+)?)/i);
     if (match) {
@@ -105,311 +114,306 @@ export const normalizeExpenseFromSupabase = (e) => {
   };
 };
 
-export const fetchSupabaseProducts = async () => {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("id", { ascending: true });
-
-    if (error) {
-      console.warn("Could not fetch products from Supabase:", error.message);
-      return null;
-    }
-
-    if (data && data.length > 0) {
-      return data.map(normalizeProductFromSupabase).filter(Boolean);
-    }
-    return null;
-  } catch (err) {
-    console.warn("fetchSupabaseProducts error:", err);
-    return null;
-  }
-};
-
-export const fetchSupabaseSales = async () => {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("sales")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.warn("Could not fetch sales from Supabase:", error.message);
-      return null;
-    }
-
-    if (data && data.length > 0) {
-      return data.map(normalizeSaleFromSupabase).filter(Boolean);
-    }
-    return null;
-  } catch (err) {
-    console.warn("fetchSupabaseSales error:", err);
-    return null;
-  }
-};
-
-export const fetchSupabaseExpenses = async () => {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("expenses")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.warn("Could not fetch expenses from Supabase:", error.message);
-      return null;
-    }
-
-    if (data && data.length > 0) {
-      return data.map(normalizeExpenseFromSupabase).filter(Boolean);
-    }
-    return null;
-  } catch (err) {
-    console.warn("fetchSupabaseExpenses error:", err);
-    return null;
-  }
-};
-
-export const recordSaleInSupabase = async (sale) => {
-  if (!supabase) return;
-  try {
-    const totalAmount = Number(sale.total ?? sale.total_amount) || 0;
-    const noteText = sale.note || sale.notes || "";
-
-    const payload = {
-      id: sale.id,
-      invoice_number: sale.id?.replace("REC-", "INV-") || sale.id,
-      date: sale.date || new Date().toISOString(),
-      customer_name: sale.customerName || "Walk-in Customer",
-      customer_phone: sale.customerPhone || "N/A",
-      items: (sale.items || []).map((it) => ({
-        productId: it.productId,
-        productName: it.name,
-        quantity: it.liters,
-        unitPrice: it.pricePerLiter,
-        subtotal: it.totalPrice,
-      })),
-      subtotal: Number(sale.subtotal) || totalAmount,
-      discount: Number(sale.discount) || 0,
-      total: totalAmount,
-      total_amount: totalAmount,
-      total_cost: sale.items?.reduce((acc, it) => acc + (it.totalCost || 0), 0) || 0,
-      profit: Number(sale.profit) || 0,
-      total_liters: Number(sale.totalLiters) || 0,
-      payment_method: sale.paymentMethod || "Cash",
-      cash_tendered: sale.cashTendered || null,
-      change_due: sale.changeDue || null,
-      note: noteText,
-      notes: noteText,
-      credit_due_date: sale.creditDueDate || null,
-      status: sale.status || (sale.paymentMethod === "Credit" ? "Credit" : "Completed"),
-      payment_status: sale.paymentMethod === "Credit" ? "pending" : "paid",
-      pricing_tier: "retail",
-    };
-
-    const { error } = await supabase.from("sales").insert([payload]);
-    if (error) {
-      console.warn("Supabase recordSale error:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase recordSale failed:", err);
-  }
-};
-
-export const updateProductStockInSupabase = async (productId, newStockLiters) => {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from("products")
-      .update({
-        stock_liters: Number(newStockLiters),
-      })
-      .eq("id", productId);
-
-    if (error) {
-      console.warn("Supabase updateProductStock error:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase updateProductStock failed:", err);
-  }
-};
-
-export const recordExpenseInSupabase = async (expense) => {
-  if (!supabase) return;
-  try {
-    const payload = {
-      id: expense.id,
-      title: expense.title,
-      category: expense.category || "Supplies",
-      amount: Number(expense.amount) || 0,
-      payment_method: expense.paymentMethod || "Cash",
-      date: expense.date || new Date().toISOString(),
-      note: expense.notes || "",
-      notes: expense.notes || "",
-    };
-
-    const { error } = await supabase.from("expenses").insert([payload]);
-    if (error) {
-      console.warn("Supabase recordExpense error:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase recordExpense failed:", err);
-  }
-};
-
-export const deleteExpenseFromSupabase = async (expenseId) => {
-  if (!supabase) return;
-  try {
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", expenseId);
-
-    if (error) {
-      console.warn("Supabase deleteExpense error:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase deleteExpense failed:", err);
-  }
-};
-
-export const normalizeDebtFromSupabase = (d) => {
-  if (!d) return null;
-  const totalAmount = Number(d.total_amount) || 0;
-  const paidAmount = Number(d.paid_amount) || 0;
-  const remaining = Number(d.remaining_balance ?? (totalAmount - paidAmount)) || 0;
+export const normalizeDebtFromSupabase = (debt, payments = []) => {
+  if (!debt) return null;
+  const totalAmount = Number(debt.total_amount) || 0;
+  const paidAmount = Number(debt.paid_amount) || 0;
+  const remainingBalance = Number(debt.remaining_balance ?? (totalAmount - paidAmount)) || 0;
 
   return {
-    id: d.id,
-    customerName: d.customer_name || "Customer",
-    customerPhone: d.customer_phone || "N/A",
-    saleId: d.sale_id || "",
-    date: d.date || d.created_at || new Date().toISOString(),
+    id: debt.id,
+    customerName: debt.customer_name || "Customer",
+    customerPhone: debt.customer_phone || "N/A",
+    saleId: debt.sale_id || "",
+    date: debt.date || debt.created_at || new Date().toISOString(),
     totalAmount,
     paidAmount,
-    remainingBalance: remaining,
-    dueDate: d.due_date || "",
-    status: d.status || (remaining <= 0 ? "Settled" : paidAmount > 0 ? "Partially Paid" : "Unpaid"),
-    notes: d.notes || "",
-    payments: Array.isArray(d.payments) ? d.payments : [],
+    remainingBalance,
+    dueDate: debt.due_date || "",
+    status: debt.status || (remainingBalance <= 0 ? "Settled" : paidAmount > 0 ? "Partially Paid" : "Unpaid"),
+    notes: debt.notes || "",
+    payments,
   };
 };
 
+export const fetchSupabaseProducts = async () =>
+  (await fetchAll("products", (query) => query.order("id", { ascending: true })))
+    .map(normalizeProductFromSupabase)
+    .filter(Boolean);
+
+export const fetchSupabaseSales = async () =>
+  (await fetchAll("sales", (query) => query.neq("status", "Voided").order("created_at", { ascending: false })))
+    .map(normalizeSaleFromSupabase)
+    .filter(Boolean);
+
+export const fetchSupabaseExpenses = async () =>
+  (await fetchAll("expenses", (query) => query.order("created_at", { ascending: false })))
+    .map(normalizeExpenseFromSupabase)
+    .filter(Boolean);
+
 export const fetchSupabaseDebts = async () => {
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("debts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.warn("Could not fetch debts from Supabase:", error.message);
-      return null;
-    }
-
-    if (data && data.length > 0) {
-      return data.map(normalizeDebtFromSupabase).filter(Boolean);
-    }
-    return null;
-  } catch (err) {
-    console.warn("fetchSupabaseDebts error:", err);
-    return null;
+  const [debts, payments] = await Promise.all([
+    fetchAll("debts", (query) => query.order("created_at", { ascending: false })),
+    fetchAll("debt_payments", (query) => query.order("date", { ascending: false })),
+  ]);
+  const paymentsByDebt = new Map();
+  for (const payment of payments) {
+    const list = paymentsByDebt.get(payment.debt_id) || [];
+    list.push({
+      id: payment.id,
+      date: payment.date,
+      amount: Number(payment.amount),
+      paymentMethod: payment.payment_method,
+      note: payment.note,
+    });
+    paymentsByDebt.set(payment.debt_id, list);
   }
+  return debts.map((debt) => normalizeDebtFromSupabase(debt, paymentsByDebt.get(debt.id) || [])).filter(Boolean);
+};
+
+export const fetchSupabaseConfig = async () => {
+  const client = requireClient();
+  const { data, error } = await client.from("shop_config").select("*").order("updated_at", { ascending: false }).limit(1);
+  if (error) throw error;
+  const row = data?.[0];
+  if (!row) return null;
+  return {
+    shopName: row.shop_name || row.store_name,
+    tagline: row.tagline,
+    ownerName: row.owner_name,
+    phone: row.phone,
+    address: row.address || row.location,
+    currency: row.currency,
+    calendarSystem: row.calendar_system,
+    calendarStyle: row.calendar_style,
+    receiptFooter: row.receipt_footer,
+    taxRate: Number(row.tax_rate ?? row.vat_percent) || 0,
+  };
+};
+
+export const recordSaleInSupabase = async (sale) => {
+  const totalAmount = Number(sale.total ?? sale.total_amount) || 0;
+  const { error } = await requireClient().rpc("record_sale", {
+    p_sale: {
+      id: sale.id,
+      invoice_number: sale.id?.replace("REC-", "INV-") || sale.id,
+      date: sale.date,
+      customer_name: sale.customerName,
+      customer_phone: sale.customerPhone,
+      payment_method: sale.paymentMethod,
+      items: sale.items || [],
+      subtotal: sale.subtotal,
+      discount: sale.discount,
+      total: totalAmount,
+      total_liters: sale.totalLiters,
+      total_cost: sale.items?.reduce((total, item) => total + (Number(item.totalCost) || 0), 0) || 0,
+      profit: sale.profit,
+      cash_tendered: sale.cashTendered,
+      change_due: sale.changeDue,
+      note: sale.note,
+      credit_due_date: sale.creditDueDate,
+      debt_id: sale.paymentMethod === "Credit" ? `debt-${sale.id.replace("REC-", "")}` : null,
+      status: sale.status,
+    },
+  });
+  if (error) throw error;
+};
+
+export const voidSaleInSupabase = async (saleId) => {
+  const { error } = await requireClient().rpc("void_sale", { p_sale_id: saleId });
+  if (error) throw error;
+};
+
+export const clearShopSalesInSupabase = async () => {
+  const { error } = await requireClient().rpc("clear_shop_sales");
+  if (error) throw error;
+};
+
+export const upsertProductInSupabase = async (product) => {
+  const payload = {
+    id: product.id,
+    name: product.name,
+    local_name: product.localName || "",
+    category: product.category,
+    scent: product.scent,
+    color: product.color,
+    icon_emoji: product.iconEmoji || "",
+    price_per_liter: product.pricePerLiter,
+    cost_per_liter: product.costPerLiter,
+    stock_liters: product.stockLiters,
+    min_stock_alert: product.minStockAlert,
+    sold_liters: product.soldLiters || 0,
+    description: product.description || "",
+  };
+  const { error } = await requireClient().from("products").upsert(payload, { onConflict: "shop_id,id" });
+  if (error) throw error;
+};
+
+export const updateProductStockInSupabase = async (productId, newStockLiters) => {
+  const { data, error } = await requireClient()
+    .from("products")
+    .update({ stock_liters: Number(newStockLiters) })
+    .eq("id", productId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error(`Product ${productId} was not found in the cloud shop.`);
+};
+
+export const deleteProductFromSupabase = async (productId) => {
+  const { error } = await requireClient().from("products").delete().eq("id", productId);
+  if (error) throw error;
+};
+
+export const recordExpenseInSupabase = async (expense) => {
+  const payload = {
+    id: expense.id,
+    title: expense.title,
+    category: expense.category || "Supplies",
+    amount: Number(expense.amount) || 0,
+    payment_method: expense.paymentMethod || "Cash",
+    date: expense.date || new Date().toISOString(),
+    note: expense.notes || "",
+    notes: expense.notes || "",
+  };
+  const { error } = await requireClient().from("expenses").upsert(payload);
+  if (error) throw error;
+};
+
+export const deleteExpenseFromSupabase = async (expenseId) => {
+  const { error } = await requireClient().from("expenses").delete().eq("id", expenseId);
+  if (error) throw error;
 };
 
 export const recordDebtInSupabase = async (debt) => {
-  if (!supabase) return;
-  try {
-    const payload = {
-      id: debt.id,
-      customer_name: debt.customerName,
-      customer_phone: debt.customerPhone || "N/A",
-      sale_id: debt.saleId || null,
-      date: debt.date || new Date().toISOString(),
-      total_amount: Number(debt.totalAmount) || 0,
-      paid_amount: Number(debt.paidAmount) || 0,
-      remaining_balance: Number(debt.remainingBalance) || 0,
-      due_date: debt.dueDate || null,
-      status: debt.status || "Unpaid",
-      notes: debt.notes || "",
-    };
+  const payload = {
+    id: debt.id,
+    customer_name: debt.customerName,
+    customer_phone: debt.customerPhone || "N/A",
+    sale_id: debt.saleId || null,
+    date: debt.date || new Date().toISOString(),
+    total_amount: Number(debt.totalAmount) || 0,
+    paid_amount: Number(debt.paidAmount) || 0,
+    remaining_balance: Number(debt.remainingBalance) || 0,
+    due_date: debt.dueDate || null,
+    status: debt.status || "Unpaid",
+    notes: debt.notes || "",
+  };
+  const { error } = await requireClient().from("debts").upsert(payload);
+  if (error) throw error;
+};
 
-    const { error } = await supabase.from("debts").upsert([payload]);
-    if (error) {
-      console.warn("Supabase recordDebt error:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase recordDebt failed:", err);
+export const deleteDebtFromSupabase = async (debtId) => {
+  const { error } = await requireClient().from("debts").delete().eq("id", debtId);
+  if (error) throw error;
+};
+
+export const recordDebtPaymentInSupabase = async (debtId, payment) => {
+  const { error } = await requireClient().rpc("record_debt_payment", {
+    p_payment: {
+      id: payment.id,
+      debt_id: debtId,
+      amount: payment.amount,
+      payment_method: payment.paymentMethod,
+      note: payment.note,
+      date: payment.date,
+    },
+  });
+  if (error) throw error;
+};
+
+export const addInitialProductsInSupabase = async (products) => {
+  if (!products.length) return;
+  const { error } = await requireClient().from("products").upsert(
+    products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      local_name: product.localName || "",
+      category: product.category,
+      scent: product.scent,
+      color: product.color,
+      icon_emoji: product.iconEmoji || "",
+      price_per_liter: product.pricePerLiter,
+      cost_per_liter: product.costPerLiter,
+      stock_liters: product.stockLiters,
+      min_stock_alert: product.minStockAlert,
+      sold_liters: product.soldLiters || 0,
+      description: product.description || "",
+    })),
+    { onConflict: "shop_id,id", ignoreDuplicates: true }
+  );
+  if (error) throw error;
+};
+
+export const updateShopConfigInSupabase = async (config, shopId) => {
+  const payload = {
+    id: shopId,
+    shop_id: shopId,
+    shop_name: config.shopName,
+    store_name: config.shopName,
+    tagline: config.tagline,
+    owner_name: config.ownerName,
+    phone: config.phone,
+    address: config.address,
+    location: config.address,
+    currency: config.currency,
+    calendar_system: config.calendarSystem,
+    calendar_style: config.calendarStyle,
+    receipt_footer: config.receiptFooter,
+    tax_rate: config.taxRate || 0,
+    vat_percent: config.taxRate || 0,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await requireClient().from("shop_config").upsert(payload);
+  if (error) throw error;
+};
+
+export const runCloudOperation = async (operation) => {
+  switch (operation.type) {
+    case "sale":
+      return recordSaleInSupabase(operation.payload);
+    case "void_sale":
+      return voidSaleInSupabase(operation.payload.saleId);
+    case "clear_sales":
+      return clearShopSalesInSupabase();
+    case "stock_update":
+      return updateProductStockInSupabase(operation.payload.productId, operation.payload.stockLiters);
+    case "product_upsert":
+      return upsertProductInSupabase(operation.payload);
+    case "product_delete":
+      return deleteProductFromSupabase(operation.payload.productId);
+    case "expense_upsert":
+      return recordExpenseInSupabase(operation.payload);
+    case "expense_delete":
+      return deleteExpenseFromSupabase(operation.payload.expenseId);
+    case "debt_upsert":
+      return recordDebtInSupabase(operation.payload);
+    case "debt_delete":
+      return deleteDebtFromSupabase(operation.payload.debtId);
+    case "debt_payment":
+      return recordDebtPaymentInSupabase(operation.payload.debtId, operation.payload.payment);
+    case "config_upsert":
+      return updateShopConfigInSupabase(operation.payload.config, operation.payload.shopId);
+    case "initial_products":
+      return addInitialProductsInSupabase(operation.payload.products);
+    default:
+      throw new Error(`Unknown pending cloud operation: ${operation.type}`);
   }
 };
 
-export const updateDebtInSupabase = async (debtId, updates) => {
-  if (!supabase) return;
-  try {
-    const payload = {};
-    if (updates.paidAmount !== undefined) payload.paid_amount = Number(updates.paidAmount);
-    if (updates.remainingBalance !== undefined) payload.remaining_balance = Number(updates.remainingBalance);
-    if (updates.status !== undefined) payload.status = updates.status;
-    if (updates.notes !== undefined) payload.notes = updates.notes;
-
-    const { error } = await supabase
-      .from("debts")
-      .update(payload)
-      .eq("id", debtId);
-
-    if (error) {
-      console.warn("Supabase updateDebt error:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase updateDebt failed:", err);
-  }
-};
-
-export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onExpensesChange, onDebtsChange) => {
+export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onExpensesChange, onDebtsChange, onConfigChange) => {
   if (!supabase) return () => {};
-  try {
-    const channel = supabase
-      .channel("supabase-realtime-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "products" },
-        () => {
-          if (onProductsChange) onProductsChange();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "sales" },
-        () => {
-          if (onSalesChange) onSalesChange();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "expenses" },
-        () => {
-          if (onExpensesChange) onExpensesChange();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "debts" },
-        () => {
-          if (onDebtsChange) onDebtsChange();
-        }
-      )
-      .subscribe();
+  const channel = supabase
+    .channel("supabase-realtime-changes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "products" }, onProductsChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "sales" }, onSalesChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "expenses" }, onExpensesChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "debts" }, onDebtsChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "debt_payments" }, onDebtsChange)
+    .on("postgres_changes", { event: "*", schema: "public", table: "shop_config" }, onConfigChange)
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  } catch (err) {
-    console.warn("Realtime subscription error:", err);
-    return () => {};
-  }
+  return () => {
+    supabase.removeChannel(channel);
+  };
 };

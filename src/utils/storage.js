@@ -12,17 +12,20 @@ const STORAGE_KEYS = {
   SALES: "sukie_sales_v2",
   EXPENSES: "sukie_expenses_v2",
   DEBTS: "sukie_debts_v2",
-  USERS: "sukie_users_list_v1",
-  SESSION: "sukie_active_session_v1",
 };
 
-export const loadStoredData = () => {
+const getStorageKey = (key, shopId) => {
+  const baseKey = STORAGE_KEYS[key] || key;
+  return shopId ? `${baseKey}:${shopId}` : baseKey;
+};
+
+export const loadStoredData = (shopId = null) => {
   try {
-    const rawConfig = localStorage.getItem(STORAGE_KEYS.SHOP_CONFIG);
-    const rawProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-    const rawSales = localStorage.getItem(STORAGE_KEYS.SALES);
-    const rawExpenses = localStorage.getItem(STORAGE_KEYS.EXPENSES);
-    const rawDebts = localStorage.getItem(STORAGE_KEYS.DEBTS);
+    const rawConfig = localStorage.getItem(getStorageKey("SHOP_CONFIG", shopId));
+    const rawProducts = localStorage.getItem(getStorageKey("PRODUCTS", shopId));
+    const rawSales = localStorage.getItem(getStorageKey("SALES", shopId));
+    const rawExpenses = localStorage.getItem(getStorageKey("EXPENSES", shopId));
+    const rawDebts = localStorage.getItem(getStorageKey("DEBTS", shopId));
 
     let config = rawConfig ? JSON.parse(rawConfig) : null;
     let products = rawProducts ? JSON.parse(rawProducts) : null;
@@ -38,7 +41,7 @@ export const loadStoredData = () => {
     }
 
     // Validate products array and fields
-    if (!Array.isArray(products) || products.length === 0) {
+    if (!Array.isArray(products) || (!shopId && products.length === 0)) {
       products = INITIAL_PRODUCTS;
     } else {
       products = products.map((p) => ({
@@ -56,9 +59,9 @@ export const loadStoredData = () => {
     }
 
     // Validate sales, expenses, and debts arrays
-    if (!Array.isArray(sales)) sales = INITIAL_SALES;
-    if (!Array.isArray(expenses)) expenses = INITIAL_EXPENSES;
-    if (!Array.isArray(debts)) debts = INITIAL_DEBTS;
+    if (!Array.isArray(sales)) sales = shopId ? [] : INITIAL_SALES;
+    if (!Array.isArray(expenses)) expenses = shopId ? [] : INITIAL_EXPENSES;
+    if (!Array.isArray(debts)) debts = shopId ? [] : INITIAL_DEBTS;
 
     return { config, products, sales, expenses, debts };
   } catch (error) {
@@ -66,16 +69,16 @@ export const loadStoredData = () => {
     return {
       config: INITIAL_SHOP_CONFIG,
       products: INITIAL_PRODUCTS,
-      sales: INITIAL_SALES,
-      expenses: INITIAL_EXPENSES,
-      debts: INITIAL_DEBTS,
+      sales: shopId ? [] : INITIAL_SALES,
+      expenses: shopId ? [] : INITIAL_EXPENSES,
+      debts: shopId ? [] : INITIAL_DEBTS,
     };
   }
 };
 
-export const saveToStorage = (key, data) => {
+export const saveToStorage = (key, data, shopId = null) => {
   try {
-    const storageKey = STORAGE_KEYS[key] || key;
+    const storageKey = getStorageKey(key, shopId);
     localStorage.setItem(storageKey, JSON.stringify(data));
     return true;
   } catch (err) {
@@ -94,16 +97,9 @@ export const saveToStorage = (key, data) => {
   }
 };
 
-export const exportAllDataAsJSON = () => {
+export const exportAllDataAsJSON = (shopId = null) => {
   try {
-    const currentData = loadStoredData();
-    let usersList = [];
-    try {
-      const rawUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-      if (rawUsers) usersList = JSON.parse(rawUsers);
-    } catch {
-      // Ignore user parse fail
-    }
+    const currentData = loadStoredData(shopId);
 
     const exportPayload = {
       appName: "Sukie Liquid Soap Management",
@@ -111,7 +107,6 @@ export const exportAllDataAsJSON = () => {
       exportedAt: new Date().toISOString(),
       data: {
         ...currentData,
-        users: usersList,
       },
     };
 
@@ -127,6 +122,32 @@ export const exportAllDataAsJSON = () => {
     console.error("Failed to generate backup JSON file:", err);
     return false;
   }
+};
+
+export const exportLegacyLocalDataAsJSON = () => {
+  const legacyKeys = [
+    STORAGE_KEYS.SHOP_CONFIG,
+    STORAGE_KEYS.PRODUCTS,
+    STORAGE_KEYS.SALES,
+    STORAGE_KEYS.EXPENSES,
+    STORAGE_KEYS.DEBTS,
+  ];
+  if (!legacyKeys.some((key) => localStorage.getItem(key) !== null)) return false;
+
+  const exportPayload = {
+    appName: "Sukie Liquid Soap Management",
+    version: "2.5-production",
+    exportedAt: new Date().toISOString(),
+    data: loadStoredData(),
+  };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+  const downloadAnchor = document.createElement("a");
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `sukie_legacy_backup_${new Date().toISOString().split("T")[0]}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  return true;
 };
 
 export const sanitizeImportPayload = (imported) => {
@@ -168,19 +189,15 @@ export const sanitizeImportPayload = (imported) => {
     sanitized.debts = payload.debts.filter((d) => d && d.id && d.totalAmount != null);
   }
 
-  if (Array.isArray(payload.users)) {
-    sanitized.users = payload.users;
-  }
-
   return sanitized;
 };
 
-export const resetToDefaults = () => {
-  localStorage.setItem(STORAGE_KEYS.SHOP_CONFIG, JSON.stringify(INITIAL_SHOP_CONFIG));
-  localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
-  localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify(INITIAL_SALES));
-  localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(INITIAL_EXPENSES));
-  localStorage.setItem(STORAGE_KEYS.DEBTS, JSON.stringify(INITIAL_DEBTS));
+export const resetToDefaults = (shopId = null) => {
+  localStorage.setItem(getStorageKey("SHOP_CONFIG", shopId), JSON.stringify(INITIAL_SHOP_CONFIG));
+  localStorage.setItem(getStorageKey("PRODUCTS", shopId), JSON.stringify(INITIAL_PRODUCTS));
+  localStorage.setItem(getStorageKey("SALES", shopId), JSON.stringify(INITIAL_SALES));
+  localStorage.setItem(getStorageKey("EXPENSES", shopId), JSON.stringify(INITIAL_EXPENSES));
+  localStorage.setItem(getStorageKey("DEBTS", shopId), JSON.stringify(INITIAL_DEBTS));
   return {
     config: INITIAL_SHOP_CONFIG,
     products: INITIAL_PRODUCTS,

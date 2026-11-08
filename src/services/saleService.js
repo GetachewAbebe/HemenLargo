@@ -1,11 +1,18 @@
+import { createRecordId } from "../utils/ids";
+
 // Domain service for sales, inventory deductions, and credit conversions
 
 export const deductStockForSale = (products, saleItems) => {
+  const quantities = new Map();
+  for (const item of saleItems) {
+    quantities.set(item.productId, (quantities.get(item.productId) || 0) + (Number(item.liters) || 0));
+  }
+
   return products.map((prod) => {
-    const soldItem = saleItems.find((item) => item.productId === prod.id);
-    if (soldItem) {
-      const newStock = Math.max(0, prod.stockLiters - soldItem.liters);
-      const newSold = (prod.soldLiters || 0) + soldItem.liters;
+    const litersSold = quantities.get(prod.id);
+    if (litersSold) {
+      const newStock = Math.max(0, prod.stockLiters - litersSold);
+      const newSold = (prod.soldLiters || 0) + litersSold;
       return {
         ...prod,
         stockLiters: Number(newStock.toFixed(2)),
@@ -17,11 +24,16 @@ export const deductStockForSale = (products, saleItems) => {
 };
 
 export const restoreStockForVoidedSale = (products, saleItems) => {
+  const quantities = new Map();
+  for (const item of saleItems || []) {
+    quantities.set(item.productId, (quantities.get(item.productId) || 0) + (Number(item.liters) || 0));
+  }
+
   return products.map((prod) => {
-    const soldItem = saleItems?.find((item) => item.productId === prod.id);
-    if (soldItem) {
-      const restoredStock = Number((prod.stockLiters + (soldItem.liters || 0)).toFixed(2));
-      const restoredSold = Number(Math.max(0, (prod.soldLiters || 0) - (soldItem.liters || 0)).toFixed(2));
+    const litersRestored = quantities.get(prod.id);
+    if (litersRestored) {
+      const restoredStock = Number((prod.stockLiters + litersRestored).toFixed(2));
+      const restoredSold = Number(Math.max(0, (prod.soldLiters || 0) - litersRestored).toFixed(2));
       return {
         ...prod,
         stockLiters: restoredStock,
@@ -54,12 +66,17 @@ export const calculateCartTotals = (cart = [], discountAmount = 0, byocDiscountA
 };
 
 export const applyDebtRepayment = (debt, paymentAmount, paymentMethod = "Cash", note = "") => {
-  const amount = Math.max(0, parseFloat(paymentAmount) || 0);
+  const remainingBalance = Math.max(
+    0,
+    Number(debt.remainingBalance ?? debt.totalAmount - (debt.paidAmount || 0))
+  );
+  const amount = Math.min(remainingBalance, Math.max(0, parseFloat(paymentAmount) || 0));
+  if (amount === 0) return debt;
   const newPaid = Number(((debt.paidAmount || 0) + amount).toFixed(2));
-  const newRemaining = Math.max(0, Number((debt.totalAmount - newPaid).toFixed(2)));
+  const newRemaining = Math.max(0, Number((remainingBalance - amount).toFixed(2)));
   const newStatus = newRemaining <= 0 ? "Settled" : "Partially Paid";
   const newPayment = {
-    id: `pay-${Date.now().toString().slice(-6)}`,
+    id: createRecordId("pay"),
     date: new Date().toISOString(),
     amount,
     paymentMethod,

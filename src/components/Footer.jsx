@@ -71,6 +71,14 @@ export default function Footer({
   }
 
   const cashierName = config.ownerName || "Cashier";
+  const cloudLabel = {
+    connected: "Supabase Cloud Synced",
+    connecting: "Connecting to Cloud",
+    pending: "Cloud Changes Pending",
+    error: "Cloud Sync Error",
+    local: "Local / Offline",
+  }[cloudStatus] || "Local / Offline";
+  const cloudColor = cloudStatus === "connected" ? "#3b82f6" : cloudStatus === "pending" ? "#d97706" : cloudStatus === "error" ? "#dc2626" : "#64748b";
 
   return (
     <footer className="no-print app-footer-v2">
@@ -87,20 +95,17 @@ export default function Footer({
             {/* Cloud Status */}
             <span
               className="footer-op-pill"
-              style={
-                cloudStatus === "connected"
-                  ? { background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" }
-                  : { background: "#f8fafc", color: "#64748b", borderColor: "#e2e8f0" }
-              }
+              aria-live="polite"
+              style={{ background: cloudStatus === "connected" ? "#eff6ff" : cloudStatus === "pending" ? "#fffbeb" : cloudStatus === "error" ? "#fef2f2" : "#f8fafc", color: cloudColor, borderColor: cloudStatus === "connected" ? "#bfdbfe" : cloudStatus === "pending" ? "#fde68a" : cloudStatus === "error" ? "#fecaca" : "#e2e8f0" }}
             >
               <span
                 className="footer-pulse-dot"
                 style={{
-                  backgroundColor: cloudStatus === "connected" ? "#3b82f6" : "#94a3b8",
+                  backgroundColor: cloudColor,
                   boxShadow: cloudStatus === "connected" ? "0 0 6px #60a5fa" : "none",
                 }}
               ></span>
-              <span>{cloudStatus === "connected" ? "Supabase Cloud Synced" : "Local Offline"}</span>
+              <span>{cloudLabel}</span>
             </span>
 
             {/* Cashier Greeting */}

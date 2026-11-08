@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeProductFromSupabase } from "./supabaseService";
+import { normalizeProductFromSupabase, normalizeSaleFromSupabase } from "./supabaseService";
 import { calculateInventoryMetrics } from "./inventoryService";
 
 describe("Application Crash Protection & Data Normalization", () => {
@@ -32,5 +32,17 @@ describe("Application Crash Protection & Data Normalization", () => {
     expect(metrics.totalLitersInStock).toBe(50);
     expect(metrics.totalStockCostValue).toBe(1500);
     expect(metrics.totalPotentialRetail).toBe(2500);
+  });
+
+  it("preserves the sale primary key separately from its invoice display number", () => {
+    const sale = normalizeSaleFromSupabase({
+      id: "REC-2026-unique",
+      invoice_number: "INV-2026-unique",
+      items: [],
+      total: 25,
+    });
+
+    expect(sale.id).toBe("REC-2026-unique");
+    expect(sale.invoiceNumber).toBe("INV-2026-unique");
   });
 });

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { soundFX } from "../../utils/audio";
+import { createRecordId } from "../../utils/ids";
 
 const FORMULA_PRESETS = [
   {
@@ -48,7 +49,7 @@ const FORMULA_PRESETS = [
 
 function createProductionExpenseRecord(batchSizeLiters, formulaName, totalCost, costPerLiter, currency) {
   return {
-    id: `exp-prod-${Date.now().toString().slice(-6)}`,
+    id: createRecordId("exp-prod"),
     date: new Date().toISOString(),
     title: `Raw Chemicals: ${batchSizeLiters}L ${formulaName} Batch`,
     category: "Chemical",

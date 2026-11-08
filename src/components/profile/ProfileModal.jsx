@@ -19,9 +19,8 @@ export default function ProfileModal({
   const [fullName, setFullName] = useState(currentUser?.fullName || config?.ownerName || "Getachew");
   const [phone, setPhone] = useState(currentUser?.phone || config?.phone || "+251 91 100 0000");
   const [shopName, setShopName] = useState(currentUser?.shopName || config?.shopName || "Sukie Liquid Soap");
-  const [pin, setPin] = useState(currentUser?.pin || "1234");
-  const [showPin, setShowPin] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Close on Escape key and prevent background scroll
   useEffect(() => {
@@ -39,25 +38,20 @@ export default function ProfileModal({
     };
   }, [onClose]);
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
     soundFX.playPop();
 
-    const updated = {
-      ...(currentUser || {}),
-      fullName: fullName.trim(),
-      phone: phone.trim(),
-      shopName: shopName.trim(),
-      pin: pin.trim(),
-    };
-
-    const res = updateActiveUserProfile(updated);
-    if (res.success) {
+    try {
+      const updated = await updateActiveUserProfile({
+        fullName: fullName.trim(),
+        phone: phone.trim(),
+        shopName: shopName.trim(),
+      });
       if (onUpdateUser) {
-        onUpdateUser(res.user);
+        onUpdateUser(updated);
       }
 
-      // Also update shop profile in config if owner
       if (onSaveConfig && config) {
         onSaveConfig({
           ...config,
@@ -67,8 +61,12 @@ export default function ProfileModal({
         });
       }
 
+      setErrorMessage("");
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (error) {
+      console.error("Could not update the authenticated profile:", error);
+      setErrorMessage(`Profile update failed: ${error.message}`);
     }
   };
 
@@ -143,6 +141,11 @@ export default function ProfileModal({
                   <span>Profile updated successfully! ማስተካከያው ተቀምጧል።</span>
                 </div>
               )}
+              {errorMessage && (
+                <div className="auth-alert-box alert-error" role="alert">
+                  <span>{errorMessage}</span>
+                </div>
+              )}
 
               <form onSubmit={handleSaveProfile} className="profile-form">
                 <div className="profile-form-grid">
@@ -184,28 +187,6 @@ export default function ProfileModal({
                     </div>
                   </div>
 
-                  <div className="profile-field">
-                    <label className="profile-label">Security PIN (ሚስጥር ቁጥር)</label>
-                    <div className="profile-input-wrap">
-                      <input
-                        type={showPin ? "text" : "password"}
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value)}
-                        required
-                        minLength={4}
-                        maxLength={12}
-                        placeholder="Enter 4-digit PIN"
-                      />
-                      <button
-                        type="button"
-                        className="btn-profile-pwd-toggle"
-                        onClick={() => setShowPin(!showPin)}
-                        title={showPin ? "Hide PIN" : "Show PIN"}
-                      >
-                        <span>{showPin ? "Hide" : "Show"}</span>
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="profile-form-actions">
@@ -242,6 +223,7 @@ export default function ProfileModal({
               <div className="profile-settings-embed">
                 <SettingsView
                   config={config}
+                  shopId={currentUser?.shopId}
                   onSaveConfig={onSaveConfig}
                   onResetDefaults={onResetDefaults}
                   onImportData={onImportData}

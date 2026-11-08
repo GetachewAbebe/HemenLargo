@@ -9,6 +9,7 @@ export default function SettingsView({
   onResetDefaults,
   onImportData,
   onClearTransactionsOnly,
+  shopId,
 }) {
   const [formData, setFormData] = useState({ ...config });
   const [prevConfig, setPrevConfig] = useState(config);
@@ -290,7 +291,7 @@ export default function SettingsView({
             <p className="backup-tile-desc">
               Save a full copy of your soaps catalog, inventory liters, sales receipts, and expenses to your device.
             </p>
-            <button className="btn-secondary" onClick={exportAllDataAsJSON}>
+            <button className="btn-secondary" onClick={() => exportAllDataAsJSON(shopId)}>
               <span>Export All Data Now</span>
             </button>
           </div>
@@ -301,7 +302,7 @@ export default function SettingsView({
               <strong>Restore from Backup</strong>
             </div>
             <p className="backup-tile-desc">
-              Upload a previously exported JSON backup file to restore all your shop records.
+              Restore a backup to this device only. Cloud records are not overwritten.
             </p>
             <label className="btn-secondary file-upload-label">
               <span>Choose Backup File</span>
@@ -384,7 +385,7 @@ export default function SettingsView({
           <div>
             <h3 className="section-title text-rose">Maintenance & Reset</h3>
             <p className="section-subtitle">
-              Reset demo transactions or restore original starter soaps.
+              Clear synced sales records or restore starter demo data on this device only.
             </p>
           </div>
         </div>

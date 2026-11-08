@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import Header from "./components/Header";
 import InventoryView from "./components/InventoryView";
 import DashboardView from "./components/DashboardView";
@@ -10,7 +10,14 @@ import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import QuickSaleModal from "./components/common/QuickSaleModal";
 import { AppProvider, useApp } from "./context";
-import { getActiveSession, logoutUser } from "./services/authService";
+import {
+  cacheShopId,
+  ensureUserShop,
+  getCachedShopId,
+  getActiveSession,
+  logoutUser,
+  subscribeToAuthChanges,
+} from "./services/authService";
 import SalesHubView from "./components/SalesHubView";
 import "./App.css";
 
@@ -43,13 +50,100 @@ function AppContent() {
     handleResetDefaults,
     handleClearTransactionsOnly,
     handleImportData,
+    activateShop,
+    deactivateShop,
+    showToast,
   } = useApp();
 
-  const [currentUser, setCurrentUser] = useState(() => getActiveSession());
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [isGlobalQuickSaleOpen, setIsGlobalQuickSaleOpen] = useState(false);
+  const activationTasks = useRef(new Map());
+  const activeAuthUserId = useRef(null);
 
   const { handleCompleteSale } = useApp();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const acceptUser = (user) => {
+      if (!user) {
+        activeAuthUserId.current = null;
+        setCurrentUser(null);
+        setAuthError("");
+        deactivateShop();
+        setAuthLoading(false);
+        return Promise.resolve();
+      }
+
+      if (activeAuthUserId.current === user.id) return Promise.resolve();
+      const existingTask = activationTasks.current.get(user.id);
+      if (existingTask) return existingTask;
+
+      setAuthLoading(true);
+      if (activeAuthUserId.current !== user.id) {
+        setCurrentUser(null);
+        deactivateShop();
+      }
+
+      const task = ensureUserShop(user.shopName)
+        .then((shopId) => {
+          if (!isMounted) return;
+          cacheShopId(user.id, shopId);
+          activateShop(shopId);
+          activeAuthUserId.current = user.id;
+          setCurrentUser({ ...user, shopId });
+          setAuthError("");
+          setAuthLoading(false);
+        })
+        .catch((error) => {
+          if (!isMounted) return;
+          console.error("Could not open the authenticated shop:", error);
+          const cachedShopId = getCachedShopId(user.id);
+          if (cachedShopId && typeof navigator !== "undefined" && !navigator.onLine) {
+            activateShop(cachedShopId);
+            activeAuthUserId.current = user.id;
+            setCurrentUser({ ...user, shopId: cachedShopId });
+            setAuthError("Offline mode. Changes are saved on this device and will sync when reconnected.");
+            showToast("Offline mode: changes are saved on this device and will sync when reconnected.", "warning");
+            setAuthLoading(false);
+            return;
+          }
+          activeAuthUserId.current = null;
+          setCurrentUser(null);
+          deactivateShop();
+          setAuthError(`Could not load this shop: ${error.message}. Check the Supabase schema setup.`);
+          setAuthLoading(false);
+        })
+        .finally(() => activationTasks.current.delete(user.id));
+
+      activationTasks.current.set(user.id, task);
+      return task;
+    };
+
+    const unsubscribe = subscribeToAuthChanges((user) => {
+      if (isMounted) void acceptUser(user);
+    });
+
+    getActiveSession()
+      .then((user) => {
+        if (isMounted) return acceptUser(user);
+        return undefined;
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.error("Could not restore the Supabase session:", error);
+        setAuthError(`Could not restore your sign-in: ${error.message}`);
+        setAuthLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [activateShop, deactivateShop, showToast]);
 
   if (!config) {
     return (
@@ -59,21 +153,21 @@ function AppContent() {
     );
   }
 
+  if (authLoading) {
+    return (
+      <div className="app-loading-screen">
+        <h2>Checking secure sign-in...</h2>
+      </div>
+    );
+  }
+
   // 1. If not authenticated, require Login or Registration to access POS
   if (!currentUser) {
     return (
       <AuthScreen
         initialShopName={config.shopName}
-        onAuthSuccess={(user) => {
-          setCurrentUser(user);
-          if (user.shopName && user.shopName !== config.shopName) {
-            handleSaveConfig({
-              ...config,
-              shopName: user.shopName,
-              ownerName: user.fullName,
-            });
-          }
-        }}
+        authError={authError}
+        onAuthSuccess={() => setAuthLoading(true)}
       />
     );
   }
@@ -135,10 +229,14 @@ function AppContent() {
             setCurrentUser(updated);
             handleSaveConfig({ ...config, ownerName: updated.fullName });
           }}
-          onLogout={() => {
-            logoutUser();
-            setCurrentUser(null);
-            setShowProfileModal(false);
+          onLogout={async () => {
+            try {
+              await logoutUser();
+              setShowProfileModal(false);
+            } catch (error) {
+              console.error("Could not sign out:", error);
+              showToast(`Could not sign out: ${error.message}`, "warning");
+            }
           }}
           onClose={() => setShowProfileModal(false)}
           onSaveConfig={handleSaveConfig}

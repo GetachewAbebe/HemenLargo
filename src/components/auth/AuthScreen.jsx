@@ -1,23 +1,20 @@
 import React, { useState } from "react";
 import { soundFX } from "../../utils/audio";
 import { loginUser, registerUser } from "../../services/authService";
+import { exportLegacyLocalDataAsJSON } from "../../utils/storage";
 
-export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liquid Soap" }) {
-  const [mode, setMode] = useState("login"); // 'login' | 'register'
+export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liquid Soap", authError = "" }) {
+  const [mode, setMode] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  // Login Form Fields
-  const [loginIdentifier, setLoginIdentifier] = useState("getachew");
-  const [loginPin, setLoginPin] = useState("1234");
-
-  // Registration Form Fields
-  const [regFullName, setRegFullName] = useState("");
-  const [regUsername, setRegUsername] = useState("");
-  const [regShopName, setRegShopName] = useState(initialShopName);
-  const [regPhone, setRegPhone] = useState("");
-  const [regPin, setRegPin] = useState("");
+  const [backupMessage, setBackupMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [shopName, setShopName] = useState(initialShopName);
+  const [phone, setPhone] = useState("");
 
   const handleTabSwitch = (newMode) => {
     soundFX.playPop();
@@ -26,76 +23,69 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
     setMode(newMode);
   };
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage("");
-
-    const res = loginUser(loginIdentifier, loginPin);
-    if (!res.success) {
-      soundFX.playWarning();
-      setErrorMessage(res.error);
-      return;
+  const handleLegacyBackup = () => {
+    try {
+      const exported = exportLegacyLocalDataAsJSON();
+      setBackupMessage(
+        exported
+          ? "Legacy local data backup downloaded. Keep it in a safe place."
+          : "No pre-migration local shop data was found on this device."
+      );
+    } catch (error) {
+      console.error("Could not export legacy local data:", error);
+      setBackupMessage(`Backup failed: ${error.message}`);
     }
-
-    soundFX.playCheckoutChime();
-    setSuccessMessage(`እንኳን ደህና መጡ፣ ${res.user.fullName}!`);
-    setTimeout(() => {
-      onAuthSuccess(res.user);
-    }, 600);
   };
 
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setErrorMessage("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
 
-    const res = registerUser({
-      fullName: regFullName,
-      username: regUsername,
-      shopName: regShopName,
-      phone: regPhone,
-      role: "Owner",
-      pin: regPin,
-    });
+    try {
+      const result =
+        mode === "login"
+          ? await loginUser(email, password)
+          : await registerUser({ email, password, fullName, shopName, phone });
 
-    if (!res.success) {
+      if (!result.success) {
+        soundFX.playWarning();
+        setErrorMessage(result.error);
+        return;
+      }
+
+      if (result.confirmationRequired) {
+        setSuccessMessage("Check your email to confirm your account, then sign in.");
+        return;
+      }
+
+      soundFX.playSuccess();
+      onAuthSuccess(result.user);
+    } catch (error) {
       soundFX.playWarning();
-      setErrorMessage(res.error);
-      return;
+      setErrorMessage(error.message || "Authentication failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    soundFX.playSuccess();
-    setSuccessMessage(`ምዝገባው ተሳክቷል! እንኳን ደህና መጡ፣ ${res.user.fullName}!`);
-    setTimeout(() => {
-      onAuthSuccess(res.user);
-    }, 700);
-  };
-
-  const handleQuickDemoFill = () => {
-    soundFX.playPop();
-    setLoginIdentifier("getachew");
-    setLoginPin("1234");
-    setErrorMessage("");
   };
 
   return (
     <div className="auth-viewport-wrapper">
-      {/* Background Liquid Soap Ambient Glows */}
       <div className="auth-ambient-glow glow-teal"></div>
       <div className="auth-ambient-glow glow-blue"></div>
 
       <div className="auth-card-container animate-fade">
-        {/* Brand Header */}
         <div className="auth-brand-block">
           <div className="auth-icon-avatar">
             <span className="auth-avatar-text">S</span>
           </div>
           <h1 className="auth-brand-title">SUKIE | ሱቄ</h1>
           <p className="auth-brand-subtitle">
-            Smart Liquid Soap Counter & Operations • የፈሳሽ ሳሙና እና በረኪና መሸጫና መቆጣጠሪያ
+            Smart Liquid Soap Counter &amp; Operations • የፈሳሽ ሳሙና እና በረኪና መሸጫና መቆጣጠሪያ
           </p>
         </div>
 
-        {/* Auth Mode Segmented Switcher */}
         <div className="auth-mode-dock">
           <button
             type="button"
@@ -113,171 +103,108 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
           </button>
         </div>
 
-        {/* Feedback Messages */}
-        {errorMessage && (
-          <div className="auth-alert-box alert-error animate-fade">
-            <span>{errorMessage}</span>
+        {(errorMessage || authError) && (
+          <div className="auth-alert-box alert-error animate-fade" role="alert">
+            <span>{errorMessage || authError}</span>
           </div>
         )}
         {successMessage && (
-          <div className="auth-alert-box alert-success animate-fade">
+          <div className="auth-alert-box alert-success animate-fade" role="status">
             <span>{successMessage}</span>
           </div>
         )}
 
-        {/* Sign In Form */}
-        {mode === "login" && (
-          <form onSubmit={handleLoginSubmit} className="auth-form-body animate-fade">
-            <div className="auth-field-group">
-              <label className="auth-field-label">Username or Phone (የመግቢያ ስም / ስልክ)</label>
-              <div className="auth-input-wrapper">
+        <form onSubmit={handleSubmit} className="auth-form-body animate-fade">
+          {mode === "register" && (
+            <>
+              <div className="auth-field-group">
+                <label className="auth-field-label" htmlFor="auth-full-name">Full Name (ሙሉ ስም)</label>
                 <input
+                  id="auth-full-name"
                   type="text"
                   className="auth-text-input"
-                  placeholder="e.g. getachew or 0911000000"
-                  value={loginIdentifier}
-                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
                   required
-                  autoFocus
                 />
               </div>
-            </div>
-
-            <div className="auth-field-group">
-              <label className="auth-field-label">Security PIN or Password (ሚስጥር ቁጥር)</label>
-              <div className="auth-input-wrapper">
+              <div className="auth-field-group">
+                <label className="auth-field-label" htmlFor="auth-shop-name">Shop / Store Name (የሱቁ ስም)</label>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  id="auth-shop-name"
+                  type="text"
                   className="auth-text-input"
-                  placeholder="Enter 4-digit PIN"
-                  value={loginPin}
-                  onChange={(e) => setLoginPin(e.target.value)}
+                  autoComplete="organization"
+                  value={shopName}
+                  onChange={(event) => setShopName(event.target.value)}
                   required
                 />
-                <button
-                  type="button"
-                  className="auth-btn-pwd-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
               </div>
-            </div>
+              <div className="auth-field-group">
+                <label className="auth-field-label" htmlFor="auth-phone">Phone Number (ስልክ ቁጥር)</label>
+                <input
+                  id="auth-phone"
+                  type="tel"
+                  className="auth-text-input"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                />
+              </div>
+            </>
+          )}
 
-            <button type="submit" className="auth-submit-btn">
-              <span>Access POS Counter</span>
-            </button>
+          <div className="auth-field-group">
+            <label className="auth-field-label" htmlFor="auth-email">Email</label>
+            <input
+              id="auth-email"
+              type="email"
+              className="auth-text-input"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
 
-            {/* Quick Demo Cashier Switcher */}
-            <div className="auth-demo-badge-wrap">
+          <div className="auth-field-group">
+            <label className="auth-field-label" htmlFor="auth-password">Password</label>
+            <div className="auth-input-wrapper">
+              <input
+                id="auth-password"
+                type={showPassword ? "text" : "password"}
+                className="auth-text-input"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                minLength={mode === "register" ? 8 : undefined}
+                required
+              />
               <button
                 type="button"
-                className="auth-demo-pill"
-                onClick={handleQuickDemoFill}
-                title="Fill demo credentials"
+                className="auth-btn-pwd-toggle"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                <span>Demo Cashier: <strong>Getachew</strong> (PIN: 1234)</span>
+                {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-          </form>
-        )}
+            {mode === "register" && <small>Use at least 8 characters.</small>}
+          </div>
 
-        {/* Register Account Form */}
-        {mode === "register" && (
-          <form onSubmit={handleRegisterSubmit} className="auth-form-body animate-fade">
-            <div className="auth-field-row">
-              <div className="auth-field-group">
-                <label className="auth-field-label">Full Name (ሙሉ ስም)</label>
-                <div className="auth-input-wrapper">
-                  <input
-                    type="text"
-                    className="auth-text-input"
-                    placeholder="e.g. Getachew Abebe"
-                    value={regFullName}
-                    onChange={(e) => setRegFullName(e.target.value)}
-                    required
-                    autoFocus
-                  />
-                </div>
-              </div>
+          <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
+            <span>{isSubmitting ? "Please wait..." : mode === "login" ? "Access POS Counter" : "Register & Launch Store POS"}</span>
+          </button>
+        </form>
 
-              <div className="auth-field-group">
-                <label className="auth-field-label">Username (የመግቢያ ስም)</label>
-                <div className="auth-input-wrapper">
-                  <span className="auth-input-prefix">@</span>
-                  <input
-                    type="text"
-                    className="auth-text-input prefix-padding"
-                    placeholder="e.g. getachew"
-                    value={regUsername}
-                    onChange={(e) => setRegUsername(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+        {backupMessage && <div className="auth-alert-box alert-success" role="status">{backupMessage}</div>}
+        <button type="button" className="auth-demo-pill" onClick={handleLegacyBackup}>
+          Export old local data before signing in
+        </button>
 
-            <div className="auth-field-group">
-              <label className="auth-field-label">Shop / Store Name (የሱቁ ስም)</label>
-              <div className="auth-input-wrapper">
-                <input
-                  type="text"
-                  className="auth-text-input"
-                  placeholder="e.g. Sukie Liquid Soap"
-                  value={regShopName}
-                  onChange={(e) => setRegShopName(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="auth-field-row">
-              <div className="auth-field-group">
-                <label className="auth-field-label">Phone Number (ስልክ ቁጥር)</label>
-                <div className="auth-input-wrapper">
-                  <input
-                    type="tel"
-                    className="auth-text-input"
-                    placeholder="0911223344"
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="auth-field-group">
-                <label className="auth-field-label">Create Security PIN (4-Digit PIN)</label>
-                <div className="auth-input-wrapper">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    className="auth-text-input"
-                    placeholder="Enter 4-digit PIN (e.g. 2026)"
-                    value={regPin}
-                    onChange={(e) => setRegPin(e.target.value)}
-                    required
-                    minLength={4}
-                    maxLength={12}
-                  />
-                  <button
-                    type="button"
-                    className="auth-btn-pwd-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <button type="submit" className="auth-submit-btn">
-              <span>Register & Launch Store POS</span>
-            </button>
-          </form>
-        )}
-
-        {/* Footer Info */}
         <div className="auth-footer-note">
-          <span>Protected by Sukie Local Encryption • Addis Ababa, Ethiopia</span>
+          <span>Authentication and shop access are managed securely by Supabase.</span>
         </div>
       </div>
     </div>

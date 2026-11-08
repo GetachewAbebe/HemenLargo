@@ -81,6 +81,21 @@ describe("Sale Service Domain Logic", () => {
     expect(prod1.soldLiters).toBe(10);
   });
 
+  it("aggregates repeated product lines when deducting or restoring stock", () => {
+    const lines = [
+      { productId: "prod-1", liters: 3 },
+      { productId: "prod-1", liters: 4 },
+    ];
+
+    const deducted = deductStockForSale(sampleProducts, lines).find((p) => p.id === "prod-1");
+    expect(deducted.stockLiters).toBe(93);
+    expect(deducted.soldLiters).toBe(27);
+
+    const restored = restoreStockForVoidedSale([deducted], lines)[0];
+    expect(restored.stockLiters).toBe(100);
+    expect(restored.soldLiters).toBe(20);
+  });
+
   it("applies partial repayment to a customer debt", () => {
     const debt = {
       id: "debt-1",
@@ -116,5 +131,21 @@ describe("Sale Service Domain Logic", () => {
     expect(updated.paidAmount).toBe(600);
     expect(updated.remainingBalance).toBe(0);
     expect(updated.status).toBe("Settled");
+  });
+
+  it("does not allow a repayment to exceed the remaining balance", () => {
+    const debt = {
+      id: "debt-3",
+      totalAmount: 600,
+      paidAmount: 400,
+      remainingBalance: 200,
+      status: "Partially Paid",
+      payments: [],
+    };
+
+    const updated = applyDebtRepayment(debt, 300, "Cash");
+    expect(updated.paidAmount).toBe(600);
+    expect(updated.remainingBalance).toBe(0);
+    expect(updated.payments[0].amount).toBe(200);
   });
 });
