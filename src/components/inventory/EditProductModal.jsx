@@ -79,7 +79,7 @@ export default function EditProductModal({
 
         <div className="form-group-row">
           <div className="form-group">
-            <label className="form-label">Selling Price / Liter ({currency}) *</label>
+            <label className="form-label">Selling Price / 1 L ({currency}) *</label>
             <input
               type="number"
               step="0.5"
@@ -89,6 +89,23 @@ export default function EditProductModal({
               value={editForm.pricePerLiter}
               onChange={(e) =>
                 setEditForm({ ...editForm, pricePerLiter: Math.max(0, parseFloat(e.target.value) || 0) })
+              }
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Selling Price / 0.5 L ({currency}) *</label>
+            <input
+              type="number"
+              step="0.5"
+              min="0"
+              required
+              className="form-input"
+              value={editForm.pricePerHalfLiter ?? editForm.pricePerLiter / 2}
+              onChange={(e) =>
+                setEditForm({
+                  ...editForm,
+                  pricePerHalfLiter: Math.max(0, parseFloat(e.target.value) || 0),
+                })
               }
             />
           </div>

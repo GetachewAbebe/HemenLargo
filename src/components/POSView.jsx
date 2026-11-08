@@ -7,6 +7,7 @@ import CustomerSection from "./pos/CustomerSection";
 import CashTenderCard from "./pos/CashTenderCard";
 import SaleDateSelector from "./pos/SaleDateSelector";
 import { createRecordId } from "../utils/ids";
+import { getProductSalePrice } from "../services/productPricing";
 
 function generateReceiptId() {
   const d = new Date();
@@ -80,24 +81,27 @@ export default function POSView(props) {
           );
           return prevCart;
         }
+        const totalPrice = getProductSalePrice(product, newTotalLiters);
         updated[existingIndex] = {
           ...updated[existingIndex],
           liters: Number(newTotalLiters.toFixed(2)),
-          totalPrice: Number((newTotalLiters * product.pricePerLiter).toFixed(2)),
+          totalPrice,
+          pricePerLiter: Number((totalPrice / newTotalLiters).toFixed(2)),
           totalCost: Number((newTotalLiters * product.costPerLiter).toFixed(2)),
         };
         return updated;
       } else {
+        const totalPrice = getProductSalePrice(product, qty);
         return [
           ...prevCart,
           {
             productId: product.id,
             name: product.name,
             localName: product.localName,
-            pricePerLiter: product.pricePerLiter,
+            pricePerLiter: Number((totalPrice / qty).toFixed(2)),
             costPerLiter: product.costPerLiter,
             liters: Number(qty.toFixed(2)),
-            totalPrice: Number((qty * product.pricePerLiter).toFixed(2)),
+            totalPrice,
             totalCost: Number((qty * product.costPerLiter).toFixed(2)),
             color: product.color,
             scent: product.scent,
@@ -138,10 +142,12 @@ export default function POSView(props) {
               setErrorMessage(`Cannot exceed current stock of ${product.stockLiters}L.`);
               return item;
             }
+            const totalPrice = getProductSalePrice(product, newLiters);
             return {
               ...item,
               liters: newLiters,
-              totalPrice: Number((newLiters * item.pricePerLiter).toFixed(2)),
+              totalPrice,
+              pricePerLiter: Number((totalPrice / newLiters).toFixed(2)),
               totalCost: Number((newLiters * item.costPerLiter).toFixed(2)),
             };
           }

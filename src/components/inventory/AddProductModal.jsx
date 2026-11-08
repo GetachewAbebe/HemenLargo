@@ -124,10 +124,10 @@ export default function AddProductModal({
               />
             </div>
 
-            {/* Pricing & Production Cost */}
+            {/* Retail prices by container size and production cost */}
             <div className="form-group-row">
               <div className="form-group">
-                <label className="form-label">Retail Price / Liter ({currency}) *</label>
+                <label className="form-label">Selling Price / 1 L ({currency}) *</label>
                 <input
                   type="number"
                   step="0.5"
@@ -141,6 +141,23 @@ export default function AddProductModal({
                   }
                 />
               </div>
+              <div className="form-group">
+                <label className="form-label">Selling Price / 0.5 L ({currency}) *</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  required
+                  placeholder="e.g. 40"
+                  className="form-input"
+                  value={newProduct.pricePerHalfLiter}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, pricePerHalfLiter: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <div className="form-group-row">
               <div className="form-group">
                 <label className="form-label">Production Cost / Liter ({currency}) *</label>
                 <input
@@ -300,9 +317,12 @@ export default function AddProductModal({
 
               {/* Price Banner */}
               <div className="preview-price-box">
-                <span className="preview-price-label">Retail / Liter</span>
+                <span className="preview-price-label">Retail prices</span>
                 <strong className="preview-price-val">
-                  {newProduct.pricePerLiter || 0} {currency}
+                  1 L: {newProduct.pricePerLiter || 0} {currency}
+                </strong>
+                <strong className="preview-price-val">
+                  0.5 L: {newProduct.pricePerHalfLiter || 0} {currency}
                 </strong>
               </div>
 

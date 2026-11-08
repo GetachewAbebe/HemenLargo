@@ -24,6 +24,18 @@
   padding: 12px 16px;
   font-size: 0.74rem;
   font-weight: 700;
+}
+
+.product-size-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.product-size-prices > span {
+  color: #64748b;
+  font-size: 0.72rem;
   text-transform: uppercase;
   color: #64748b;
   border-bottom: 1px solid #e2e8f0;
@@ -296,4 +308,3 @@
 .badge-telebirr { background: #ccfbf1; color: #0f766e; }
 .badge-cbe { background: #dbeafe; color: #1d4ed8; }
 .badge-cash { background: #fef9c3; color: #854d0e; }
-

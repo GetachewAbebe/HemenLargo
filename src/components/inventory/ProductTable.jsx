@@ -25,7 +25,7 @@ export default function ProductTable({
               <th>Category</th>
               <th>Tank Level (Liters)</th>
               <th>Cost Price / L</th>
-              <th>Selling Price / L</th>
+              <th>Selling Price</th>
               <th>Gross Margin</th>
               <th>Total Sold</th>
               <th>Actions</th>
@@ -99,9 +99,10 @@ export default function ProductTable({
                     </span>
                   </td>
                   <td>
-                    <strong className="price-tag-main">
-                      {price.toFixed(2)} {currency}
-                    </strong>
+                    <div className="product-size-prices">
+                      <strong className="price-tag-main">{price.toFixed(2)} {currency} / L</strong>
+                      <span>{Number(p.pricePerHalfLiter ?? price / 2).toFixed(2)} {currency} / 0.5 L</span>
+                    </div>
                   </td>
                   <td>
                     <div className="margin-indicator">

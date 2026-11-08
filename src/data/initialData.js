@@ -26,6 +26,7 @@ export const INITIAL_PRODUCTS = [
     scent: "Fresh Foam Scent",
     color: "#0d9488", // Fresh Emerald Teal
     pricePerLiter: 60,
+    pricePerHalfLiter: 30,
     costPerLiter: 35,
     stockLiters: 480,
     minStockAlert: 60,
@@ -40,6 +41,7 @@ export const INITIAL_PRODUCTS = [
     scent: "Chlorine Clean",
     color: "#0284c7", // Crystal Blue
     pricePerLiter: 50,
+    pricePerHalfLiter: 25,
     costPerLiter: 28,
     stockLiters: 320,
     minStockAlert: 50,

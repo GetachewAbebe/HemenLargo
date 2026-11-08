@@ -1,11 +1,12 @@
 import React from "react";
 import { CONTAINER_PRESETS } from "../../constants/containers";
+import { getProductSalePrice } from "../../services/productPricing";
 
 export default function ContainerPresets({ product, onSelect, currency = "ETB" }) {
   return (
     <div className="container-presets-grid">
       {CONTAINER_PRESETS.map((preset) => {
-        const itemPrice = preset.liters * product.pricePerLiter;
+        const itemPrice = getProductSalePrice(product, preset.liters);
         const isOutOfStock = product.stockLiters < preset.liters;
 
         return (

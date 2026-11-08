@@ -1,6 +1,7 @@
 import React from "react";
 import { soundFX } from "../../utils/audio";
 import { CONTAINER_PRESETS } from "../../constants/containers";
+import { getProductSalePrice } from "../../services/productPricing";
 
 export default function DispenserStation({
   product,
@@ -17,7 +18,6 @@ export default function DispenserStation({
   const productCategory =
     product.category || (isLargo ? "Liquid soap" : "Bleach & sanitizer");
   const stock = Number(product.stockLiters) || 0;
-  const price = Number(product.pricePerLiter) || 0;
   const isLowStock = stock <= (Number(product.minStockAlert) || 50);
   const tankCapacity = 600;
   const tankPercent = Math.min(100, Math.round((stock / tankCapacity) * 100));
@@ -86,7 +86,7 @@ export default function DispenserStation({
         <span className="section-micro-label">CONTAINER SIZES</span>
         <div className="container-presets-grid">
           {CONTAINER_PRESETS.map((preset) => {
-            const calculatedPrice = (preset.liters * price).toFixed(0);
+            const calculatedPrice = getProductSalePrice(product, preset.liters).toFixed(2);
             return (
               <button
                 key={preset.label}
@@ -169,7 +169,7 @@ export default function DispenserStation({
           >
             <span>
               {customLiterVal && parseFloat(customLiterVal) > 0
-                ? `Add ${(parseFloat(customLiterVal) * price).toFixed(0)} ${currency}`
+                ? `Add ${getProductSalePrice(product, parseFloat(customLiterVal)).toFixed(2)} ${currency}`
                 : "Add"}
             </span>
           </button>

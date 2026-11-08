@@ -39,6 +39,10 @@ export const normalizeProductFromSupabase = (p) => {
     color: p.color || (isBerekina ? "#06b6d4" : "#0d9488"),
     iconEmoji: p.icon_emoji || "",
     pricePerLiter: Number(p.price_per_liter ?? p.selling_price) || (isLargo ? 110 : 75),
+    pricePerHalfLiter:
+      p.price_per_half_liter == null
+        ? null
+        : Number(p.price_per_half_liter),
     costPerLiter: Number(p.cost_per_liter ?? p.cost_price) || (isLargo ? 65 : 45),
     stockLiters: Number(p.stock_liters ?? p.current_stock) || 0,
     minStockAlert: Number(p.min_stock_alert) || 20,
@@ -239,6 +243,7 @@ export const upsertProductInSupabase = async (product) => {
     color: product.color,
     icon_emoji: product.iconEmoji || "",
     price_per_liter: product.pricePerLiter,
+    price_per_half_liter: product.pricePerHalfLiter ?? null,
     cost_per_liter: product.costPerLiter,
     stock_liters: product.stockLiters,
     min_stock_alert: product.minStockAlert,
@@ -334,6 +339,7 @@ export const addInitialProductsInSupabase = async (products) => {
       color: product.color,
       icon_emoji: product.iconEmoji || "",
       price_per_liter: product.pricePerLiter,
+      price_per_half_liter: product.pricePerHalfLiter ?? null,
       cost_per_liter: product.costPerLiter,
       stock_liters: product.stockLiters,
       min_stock_alert: product.minStockAlert,

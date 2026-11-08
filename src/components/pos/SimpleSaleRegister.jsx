@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { soundFX } from "../../utils/audio";
 import { formatEthiopianDate, formatEthiopianTime } from "../../utils/ethiopianDate";
 import { createRecordId } from "../../utils/ids";
+import { getProductSalePrice } from "../../services/productPricing";
 
 function generateReceiptId() {
   const d = new Date();
@@ -123,25 +124,28 @@ export default function SimpleSaleRegister({
           );
           return prev;
         }
+        const totalPrice = getProductSalePrice(activeProduct, newTotalLiters);
         updated[existingIdx] = {
           ...updated[existingIdx],
           liters: Number(newTotalLiters.toFixed(2)),
-          totalPrice: Number((newTotalLiters * activeProduct.pricePerLiter).toFixed(2)),
+          totalPrice,
+          pricePerLiter: Number((totalPrice / newTotalLiters).toFixed(2)),
           totalCost: Number((newTotalLiters * (activeProduct.costPerLiter || 0)).toFixed(2)),
         };
         return updated;
       }
 
+      const totalPrice = getProductSalePrice(activeProduct, qty);
       return [
         ...prev,
         {
           productId: activeProduct.id,
           name: activeProduct.name,
           localName: activeProduct.localName || "",
-          pricePerLiter: activeProduct.pricePerLiter,
+          pricePerLiter: Number((totalPrice / qty).toFixed(2)),
           costPerLiter: activeProduct.costPerLiter || 0,
           liters: Number(qty.toFixed(2)),
-          totalPrice: Number((qty * activeProduct.pricePerLiter).toFixed(2)),
+          totalPrice,
           totalCost: Number((qty * (activeProduct.costPerLiter || 0)).toFixed(2)),
           color: activeProduct.color || "#0d9488",
           scent: activeProduct.scent || "",
@@ -161,15 +165,16 @@ export default function SimpleSaleRegister({
     if (cartItems.length > 0) return cartItems;
     if (!activeProduct) return [];
     const qty = parseFloat(customLitersInput) || liters;
+    const totalPrice = getProductSalePrice(activeProduct, qty);
     return [
       {
         productId: activeProduct.id,
         name: activeProduct.name,
         localName: activeProduct.localName || "",
-        pricePerLiter: activeProduct.pricePerLiter,
+        pricePerLiter: Number((totalPrice / qty).toFixed(2)),
         costPerLiter: activeProduct.costPerLiter || 0,
         liters: Number(qty.toFixed(2)),
-        totalPrice: Number((qty * activeProduct.pricePerLiter).toFixed(2)),
+        totalPrice,
         totalCost: Number((qty * (activeProduct.costPerLiter || 0)).toFixed(2)),
         color: activeProduct.color || "#0d9488",
         scent: activeProduct.scent || "",
@@ -351,7 +356,7 @@ export default function SimpleSaleRegister({
         <div className="quick-liters-row">
           {COMMON_QUICK_LITERS.map((q) => {
             const isCurrent = Number(customLitersInput) === q && cartItems.length === 0;
-            const priceForQ = activeProduct ? q * activeProduct.pricePerLiter : 0;
+            const priceForQ = activeProduct ? getProductSalePrice(activeProduct, q) : 0;
             return (
               <button
                 key={q}

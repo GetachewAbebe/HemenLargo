@@ -16,6 +16,15 @@ Sukie is an offline-capable point-of-sale and shop management app for liquid soa
 
 The app requires a configured Supabase project. Local storage is used as a shop-scoped cache and write queue, not as authentication.
 
+Product selling prices are configured per product in **Inventory → Edit** (or **Add Soap Variety**): set independent 1 L and 0.5 L prices. Container sizes in the sales register use these prices for half-liter increments; custom quantities that are not half-liter increments use the 1 L rate proportionally. Every sale records liters dispensed and the ETB amount charged.
+
+For an already-migrated Supabase database, apply this additive product-pricing migration in the SQL Editor before deploying the version that saves 0.5 L prices:
+
+```sql
+ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS price_per_half_liter NUMERIC;
+```
+
 ## Supabase setup and existing data
 
 1. Back up your existing database. Before deploying this version, export each device's local JSON backup from the old app; after deployment, the sign-in screen also offers an export of any remaining legacy local data. Legacy local records are not automatically attached to a new account, to avoid exposing data from another user on a shared device.

@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS products (
   color TEXT DEFAULT '#0d9488',
   icon_emoji TEXT DEFAULT '🧴',
   price_per_liter NUMERIC NOT NULL DEFAULT 60,
+  price_per_half_liter NUMERIC,
   cost_per_liter NUMERIC NOT NULL DEFAULT 35,
   stock_liters NUMERIC NOT NULL DEFAULT 100,
   min_stock_alert NUMERIC DEFAULT 40,
@@ -80,6 +81,9 @@ CREATE TABLE IF NOT EXISTS products (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (shop_id, id)
 );
+
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS price_per_half_liter NUMERIC;
 
 CREATE TABLE IF NOT EXISTS sales (
   id TEXT NOT NULL,

@@ -143,7 +143,7 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
             <div className="receipt-item-header">
               <span className="col-desc">Soap Item</span>
               <span className="col-qty">Liters</span>
-              <span className="col-rate">Price</span>
+              <span className="col-rate">Price / L</span>
               <span className="col-total">Total</span>
             </div>
             <div className="receipt-divider-solid"></div>
