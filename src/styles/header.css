@@ -119,9 +119,32 @@
 .header-nav-stats {
   display: flex;
   align-items: center;
+  gap: 8px;
   position: absolute;
   right: 0;
   flex-shrink: 0;
+}
+
+.header-quick-sale-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+  transition: all var(--transition-fast);
+}
+
+.header-quick-sale-btn:hover {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);
 }
 
 .header-cashier-pill {

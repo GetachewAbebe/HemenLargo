@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from "react";
+import { Zap } from "lucide-react";
 import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 
@@ -14,6 +15,7 @@ export default function Header({
   products = [],
   currentUser = null,
   onOpenProfile = null,
+  onOpenQuickSale = null,
   activeTab: propActiveTab,
   setActiveTab: propSetActiveTab,
 }) {
@@ -21,7 +23,7 @@ export default function Header({
   const activeTab = propActiveTab || context.activeTab;
   const setActiveTab = propSetActiveTab || context.setActiveTab;
 
-  // Global hotkey tab switching (1-4)
+  // Global hotkey tab switching (1-4) & Quick Sale ('s' or 'q')
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (
@@ -30,6 +32,13 @@ export default function Header({
         e.target.tagName === "SELECT" ||
         e.isContentEditable
       ) {
+        return;
+      }
+
+      if ((e.key === "s" || e.key === "S" || e.key === "q" || e.key === "Q") && onOpenQuickSale) {
+        e.preventDefault();
+        soundFX.playPop();
+        onOpenQuickSale();
         return;
       }
 
@@ -42,7 +51,7 @@ export default function Header({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeTab, setActiveTab]);
+  }, [activeTab, setActiveTab, onOpenQuickSale]);
 
   const lowStockCount = useMemo(() => {
     return products.filter((p) => p.stockLiters <= (p.minStockAlert || 40)).length;
@@ -97,8 +106,23 @@ export default function Header({
           })}
         </nav>
 
-        {/* Right: Cashier Identity & Profile Trigger */}
+        {/* Right: Quick Sale Action & Cashier Identity */}
         <div className="header-nav-stats">
+          {onOpenQuickSale && (
+            <button
+              type="button"
+              className="header-quick-sale-btn"
+              onClick={() => {
+                soundFX.playPop();
+                onOpenQuickSale();
+              }}
+              title="Quick Sale Registration (Shortcut: S or Q)"
+            >
+              <Zap size={13} />
+              <span>⚡ Quick Sale</span>
+            </button>
+          )}
+
           <button
             type="button"
             className="header-cashier-pill header-cashier-btn"

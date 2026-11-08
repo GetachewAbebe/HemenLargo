@@ -8,6 +8,7 @@ import AuthScreen from "./components/auth/AuthScreen";
 import ProfileModal from "./components/profile/ProfileModal";
 import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import QuickSaleModal from "./components/common/QuickSaleModal";
 import { AppProvider, useApp } from "./context";
 import { getActiveSession, logoutUser } from "./services/authService";
 import SalesHubView from "./components/SalesHubView";
@@ -47,6 +48,9 @@ function AppContent() {
 
   const [currentUser, setCurrentUser] = useState(() => getActiveSession());
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isGlobalQuickSaleOpen, setIsGlobalQuickSaleOpen] = useState(false);
+
+  const { handleCompleteSale } = useApp();
 
   if (!config) {
     return (
@@ -90,6 +94,7 @@ function AppContent() {
         products={products}
         currentUser={currentUser}
         onOpenProfile={() => setShowProfileModal(true)}
+        onOpenQuickSale={() => setIsGlobalQuickSaleOpen(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -146,6 +151,16 @@ function AppContent() {
           onImportData={handleImportData}
         />
       )}
+
+      {/* Global Quick Sales Modal */}
+      <QuickSaleModal
+        isOpen={isGlobalQuickSaleOpen}
+        onClose={() => setIsGlobalQuickSaleOpen(false)}
+        products={products}
+        sales={sales}
+        currency={config.currency}
+        onCompleteSale={handleCompleteSale}
+      />
 
       {/* Printable Receipt Modal */}
       {activeReceipt && (
