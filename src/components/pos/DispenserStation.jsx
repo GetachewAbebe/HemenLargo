@@ -15,6 +15,8 @@ export default function DispenserStation({
     product.id === "prod-largo" ||
     product.name?.includes("Largo") ||
     product.name?.includes("ላርጎ");
+  const productCategory =
+    product.category || (isLargo ? "Liquid soap" : "Bleach & sanitizer");
   const stock = Number(product.stockLiters) || 0;
   const price = Number(product.pricePerLiter) || 0;
   const isLowStock = stock <= (Number(product.minStockAlert) || 50);
@@ -32,13 +34,11 @@ export default function DispenserStation({
       <div className="station-header">
         <div className="station-title-wrap">
           <div className="station-code-badge" style={{ backgroundColor: product.color || (isLargo ? "#0d9488" : "#0284c7") }}>
-            <span>{isLargo ? "L" : "B"}</span>
+            <span>{product.name?.trim().charAt(0).toUpperCase() || "P"}</span>
           </div>
           <div>
             <div className="station-tag-row">
-              <span className="station-badge">
-                {isLargo ? "Station 1 • Multi-purpose" : "Station 2 • Disinfectant Bleach"}
-              </span>
+              <span className="station-badge">{productCategory}</span>
             </div>
             <h2 className="station-name">{product.name}</h2>
             <span className="station-subname">{product.localName}</span>

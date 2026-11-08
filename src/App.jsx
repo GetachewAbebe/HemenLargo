@@ -8,7 +8,6 @@ import AuthScreen from "./components/auth/AuthScreen";
 import ProfileModal from "./components/profile/ProfileModal";
 import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
-import QuickSaleModal from "./components/common/QuickSaleModal";
 import { AppProvider, useApp } from "./context";
 import {
   cacheShopId,
@@ -60,11 +59,8 @@ function AppContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [isGlobalQuickSaleOpen, setIsGlobalQuickSaleOpen] = useState(false);
   const activationTasks = useRef(new Map());
   const activeAuthUserId = useRef(null);
-
-  const { handleCompleteSale } = useApp();
 
   useEffect(() => {
     let isMounted = true;
@@ -185,7 +181,7 @@ function AppContent() {
         products={products}
         currentUser={currentUser}
         onOpenProfile={() => setShowProfileModal(true)}
-        onOpenQuickSale={() => setIsGlobalQuickSaleOpen(true)}
+        onOpenQuickSale={() => setActiveTab("sales")}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -247,16 +243,6 @@ function AppContent() {
           onImportData={handleImportData}
         />
       )}
-
-      {/* Global Quick Sales Modal */}
-      <QuickSaleModal
-        isOpen={isGlobalQuickSaleOpen}
-        onClose={() => setIsGlobalQuickSaleOpen(false)}
-        products={products}
-        sales={sales}
-        currency={config.currency}
-        onCompleteSale={handleCompleteSale}
-      />
 
       {/* Printable Receipt Modal */}
       {activeReceipt && (

@@ -3,10 +3,9 @@ import { soundFX } from "../utils/audio";
 import { useApp } from "../context";
 import POSView from "./POSView";
 import SalesView from "./SalesView";
-import SimpleSaleRegister from "./pos/SimpleSaleRegister";
 
 export default function SalesHubView({
-  initialSubView = "simple",
+  initialSubView = "register",
   sales: propSales,
   config: propConfig,
   currency: propCurrency,
@@ -22,11 +21,9 @@ export default function SalesHubView({
   const onVoidSale = propOnVoidSale ?? context.handleVoidSale;
   const onCompleteSale = context.handleCompleteSale;
 
-  // Support 'simple' | 'counter' | 'records' (also accept 'register' mapping to 'simple')
   const [subView, setSubView] = useState(() => {
     if (initialSubView === "records") return "records";
-    if (initialSubView === "counter") return "counter";
-    return "simple";
+    return "register";
   });
 
   const handleSwitchTab = (tab) => {
@@ -36,26 +33,17 @@ export default function SalesHubView({
 
   return (
     <div className="view-content-wrapper sales-hub-wrapper animate-fade">
-      {/* Top Segmented Sub-Navbar: 3 Intuitive Sub-Views */}
+      {/* One sales register and a separate history view */}
       <div className="sales-hub-topbar no-print">
         <div className="sales-hub-switcher-card">
           <div className="sales-hub-tabs">
             <button
               type="button"
-              className={`sales-hub-tab-btn ${subView === "simple" ? "active" : ""}`}
-              onClick={() => handleSwitchTab("simple")}
-              title="Quick 3-step sale registration"
+              className={`sales-hub-tab-btn ${subView === "register" ? "active" : ""}`}
+              onClick={() => handleSwitchTab("register")}
+              title="Register a sale for any product"
             >
-              <span>Quick Register (ቀላል ሽያጭ)</span>
-            </button>
-
-            <button
-              type="button"
-              className={`sales-hub-tab-btn ${subView === "counter" ? "active" : ""}`}
-              onClick={() => handleSwitchTab("counter")}
-              title="Full dispenser station with jerrycans & containers"
-            >
-              <span>Counter Dispenser (ሙሉ ካውንተር)</span>
+              <span>New Sale (አዲስ ሽያጭ)</span>
             </button>
 
             <button
@@ -64,7 +52,7 @@ export default function SalesHubView({
               onClick={() => handleSwitchTab("records")}
               title="Past sales history and printed receipts"
             >
-              <span>Sales Records (የሽያጭ መዝገብ)</span>
+              <span>Sales History (የሽያጭ መዝገብ)</span>
               {sales && sales.length > 0 && (
                 <span className="sales-hub-pill-badge">{sales.length}</span>
               )}
@@ -75,24 +63,12 @@ export default function SalesHubView({
 
       {/* Active Sub-View */}
       <div className="sales-hub-view-container">
-        {subView === "simple" && (
-          <div className="animate-fade">
-            <SimpleSaleRegister
-              products={products}
-              currency={currency}
-              sales={sales}
-              onCompleteSale={onCompleteSale}
-            />
-          </div>
-        )}
-
-        {subView === "counter" && (
+        {subView === "register" && (
           <POSView
             products={products}
             sales={sales}
             currency={currency}
             onCompleteSale={onCompleteSale}
-            onNavigateToRecords={() => handleSwitchTab("records")}
           />
         )}
 
@@ -103,7 +79,7 @@ export default function SalesHubView({
             currency={currency}
             onSelectReceipt={onSelectReceipt}
             onVoidSale={onVoidSale}
-            onNavigateToRegister={() => handleSwitchTab("simple")}
+            onNavigateToRegister={() => handleSwitchTab("register")}
           />
         )}
       </div>

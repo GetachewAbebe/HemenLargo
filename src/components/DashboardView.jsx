@@ -11,7 +11,6 @@ import AnalyticsView from "./AnalyticsView";
 import CashDrawerWidget from "./dashboard/CashDrawerWidget";
 import BatchProductionWidget from "./dashboard/BatchProductionWidget";
 import SalesTimelineChart from "./dashboard/SalesTimelineChart";
-import QuickSaleModal from "./common/QuickSaleModal";
 
 const EMPTY_ARR = [];
 
@@ -25,17 +24,12 @@ export default function DashboardView(props) {
   const onSelectReceipt = props.onSelectReceipt ?? context.setActiveReceipt;
   const onRestockLiters = props.onRestockLiters ?? context.handleRestockLiters;
   const onAddExpense = props.onAddExpense ?? context.handleAddExpense;
-  const onCompleteSale = context.handleCompleteSale;
   const currency = config?.currency || "ETB";
 
   const [todayDate] = React.useState(() => new Date());
   const [selectedPeriod, setSelectedPeriod] = useState("today"); // 'today' | 'week' | 'month' | 'all'
   const [dashboardSubView, setDashboardSubView] = useState("overview"); // 'overview' | 'analytics'
   const [showAdvancedTools, setShowAdvancedTools] = useState(false); // Collapsible drawer for cash float & chemical mixer
-
-  // Quick Sale Modal State
-  const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
-  const [quickSaleProductId, setQuickSaleProductId] = useState(null);
 
   // Greeting based on current hour
   const hour = todayDate.getHours();
@@ -137,12 +131,6 @@ export default function DashboardView(props) {
     setActiveTab(tabId);
   };
 
-  const openQuickSale = (productId = null) => {
-    soundFX.playPop();
-    setQuickSaleProductId(productId);
-    setIsQuickSaleOpen(true);
-  };
-
   const dailyTarget = 5000;
   const targetMultiplier = selectedPeriod === "week" ? 7 : selectedPeriod === "month" ? 30 : 1;
   const effectiveTarget = dailyTarget * targetMultiplier;
@@ -188,7 +176,7 @@ export default function DashboardView(props) {
           <button
             type="button"
             className="btn-hero-primary"
-            onClick={() => openQuickSale()}
+            onClick={() => handleNav("sales")}
             title="Instant sales registration"
           >
             <span>Quick Sale (ቀላል ሽያጭ)</span>
@@ -537,7 +525,7 @@ export default function DashboardView(props) {
                       <button
                         type="button"
                         className="btn-tank-dispense"
-                        onClick={() => openQuickSale(prod.id)}
+                        onClick={() => handleNav("sales")}
                         title="Instant quick sale for this product"
                       >
                         <span>Quick Sell</span>
@@ -667,19 +655,6 @@ export default function DashboardView(props) {
         </>
       )}
 
-      {/* Global Quick Sale Modal */}
-      <QuickSaleModal
-        isOpen={isQuickSaleOpen}
-        onClose={() => {
-          setIsQuickSaleOpen(false);
-          setQuickSaleProductId(null);
-        }}
-        products={products}
-        sales={sales}
-        currency={currency}
-        onCompleteSale={onCompleteSale}
-        preselectedProductId={quickSaleProductId}
-      />
     </div>
   );
 }

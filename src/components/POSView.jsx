@@ -282,7 +282,7 @@ export default function POSView(props) {
 
   return (
     <div className="pos-layout-v2 animate-fade">
-      {/* LEFT COLUMN: The Dual Dispenser Stations */}
+      {/* Product selection and quantity entry */}
       <section className="pos-stations-col">
         {/* Quick Action & Combo Banner */}
         <div className="pos-top-action-banner">
@@ -323,28 +323,18 @@ export default function POSView(props) {
         </div>
       </section>
 
-      {/* RIGHT COLUMN: The Sticky Counter Register Cart */}
+      {/* Shared cart, customer details, and checkout */}
       <section className="pos-cart-col">
         <div className="cart-card-v2">
           {/* Cart Header */}
           <div className="cart-header-v2">
             <div>
-              <h3 className="cart-title-v2">Current Refill Bill</h3>
+              <h3 className="cart-title-v2">Current Sale</h3>
               <span className="cart-subtitle-v2">
                 {cart.length} {cart.length === 1 ? "Soap item" : "Soap items"} • {totalLiters.toFixed(1)} Liters
               </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              {props.onNavigateToRecords && (
-                <button
-                  type="button"
-                  className="btn-pos-records-link"
-                  onClick={props.onNavigateToRecords}
-                  title="View sales records & receipt history"
-                >
-                  <span>Sales Records</span>
-                </button>
-              )}
               {cart.length > 0 && (
                 <button type="button" className="btn-clear-cart" onClick={clearCart} title="Clear cart">
                   Reset
