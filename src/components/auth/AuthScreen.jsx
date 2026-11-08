@@ -100,11 +100,11 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
         {/* Brand Header */}
         <div className="auth-brand-block">
           <div className="auth-icon-avatar">
-            <span className="bubble-anim">🧴</span>
+            <span className="bubble-anim">🫧</span>
           </div>
-          <h1 className="auth-brand-title">Sukie Liquid Soap</h1>
+          <h1 className="auth-brand-title">SUKIE | ሱኪ</h1>
           <p className="auth-brand-subtitle">
-            Hemen Soap Operations & Counter POS System • የፈሳሽ ሳሙና መሸጫና መቆጣጠሪያ
+            Smart Liquid Soap Counter & Operations • የፈሳሽ ሳሙና እና በረኪና መሸጫና መቆጣጠሪያ
           </p>
         </div>
 

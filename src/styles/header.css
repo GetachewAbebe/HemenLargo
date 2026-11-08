@@ -21,9 +21,83 @@
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* 1. Left: Brand Logo Emblem */
+.header-brand-box {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-brand-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.header-brand-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+.brand-logo-gem {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  display: flex;
+  align-items: center;
   justify-content: center;
-  position: relative;
-  gap: 20px;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+  font-size: 18px;
+}
+
+.brand-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-name-en {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.brand-name-am {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0d9488;
+  background: #ccfbf1;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.brand-tagline-text {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 2. Text-Only Segmented Navigation Dock (Ultra-Premium Apple/Linear Style) */
@@ -119,9 +193,7 @@
 .header-nav-stats {
   display: flex;
   align-items: center;
-  gap: 8px;
-  position: absolute;
-  right: 0;
+  gap: 10px;
   flex-shrink: 0;
 }
 
@@ -210,9 +282,13 @@
     padding: 8px 16px;
   }
   .header-single-row-container {
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 10px;
   }
-  .header-nav-stats {
-    position: static;
+  .header-segmented-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
   }
 }

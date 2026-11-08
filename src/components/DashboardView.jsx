@@ -437,7 +437,7 @@ export default function DashboardView(props) {
             </div>
 
             {/* Expenses & Net Profit */}
-            <div className="dashboard-kpi-card card-kpi-revenue">
+            <div className="dashboard-kpi-card card-kpi-expenses">
               <div className="kpi-card-header">
                 <span className="kpi-title-text">
                   Expenses & Profit (ወጪ እና ትርፍ)

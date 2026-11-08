@@ -80,7 +80,31 @@ export default function Header({
   return (
     <header className="no-print top-header-v2">
       <div className="header-single-row-container">
-        {/* Center: Text-Only Segmented Navigation Menu (5 Core Operational Tabs) */}
+        {/* Left: Brand Identity Emblem */}
+        <div className="header-brand-box">
+          <button
+            type="button"
+            className="header-brand-btn"
+            onClick={() => {
+              soundFX.playPop();
+              setActiveTab("dashboard");
+            }}
+            title="Sukie - Operations Dashboard"
+          >
+            <div className="brand-logo-gem">
+              <span className="brand-gem-emoji">🫧</span>
+            </div>
+            <div className="brand-text-col">
+              <div className="brand-name-row">
+                <span className="brand-name-en">SUKIE</span>
+                <span className="brand-name-am">ሱኪ</span>
+              </div>
+              <span className="brand-tagline-text">{config.shopName || "Liquid Soap POS"}</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Center: Segmented Navigation Dock */}
         <nav className="header-segmented-nav" aria-label="Main Navigation">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;

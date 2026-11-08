@@ -256,19 +256,34 @@
 }
 
 .card-kpi-revenue {
-  border-top: 3px solid #10b981;
+  border-top: 3.5px solid #10b981;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.92) 100%);
 }
 
 .card-kpi-liters {
-  border-top: 3px solid #0284c7;
+  border-top: 3.5px solid #0284c7;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 249, 255, 0.92) 100%);
 }
 
 .card-kpi-payments {
-  border-top: 3px solid #f59e0b;
+  border-top: 3.5px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 251, 235, 0.92) 100%);
 }
 
-.card-kpi-credits {
-  border-top: 3px solid #8b5cf6;
+.card-kpi-expenses {
+  border-top: 3.5px solid #e11d48;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 241, 242, 0.92) 100%);
+}
+
+.dashboard-kpi-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.8), transparent 70%);
+  pointer-events: none;
 }
 
 .kpi-card-header {
@@ -286,31 +301,33 @@
 }
 
 .stat-icon-wrapper {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
-.stat-emerald { background: #ecfdf5; color: #059669; }
-.stat-cyan { background: #ecfeff; color: #0284c7; }
-.stat-amber { background: #fffbeb; color: #d97706; }
-.stat-rose { background: #fff1f2; color: #e11d48; }
-.stat-purple { background: #f5f3ff; color: #7c3aed; }
-.stat-teal { background: #f0fdfa; color: #0d9488; }
+.stat-emerald { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.stat-cyan { background: #ecfeff; color: #0284c7; border: 1px solid #a5f3fc; }
+.stat-amber { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.stat-rose { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; }
+.stat-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+.stat-teal { background: #f0fdfa; color: #0d9488; border: 1px solid #99f6e4; }
 
 .kpi-value-row {
   display: flex;
   align-items: baseline;
-  gap: 7px;
+  gap: 8px;
 }
 
 .kpi-main-number {
-  font-size: 1.85rem;
-  font-weight: 800;
+  font-family: var(--font-heading);
+  font-size: 2.1rem;
+  font-weight: 900;
   color: #0f172a;
   letter-spacing: -0.03em;
   line-height: 1;
