@@ -11,6 +11,7 @@ import AnalyticsView from "./AnalyticsView";
 import CashDrawerWidget from "./dashboard/CashDrawerWidget";
 import BatchProductionWidget from "./dashboard/BatchProductionWidget";
 import SalesTimelineChart from "./dashboard/SalesTimelineChart";
+import { useNow } from "../hooks/useNow";
 
 const EMPTY_ARR = [];
 
@@ -26,7 +27,7 @@ export default function DashboardView(props) {
   const onAddExpense = props.onAddExpense ?? context.handleAddExpense;
   const currency = config?.currency || "ETB";
 
-  const [todayDate] = React.useState(() => new Date());
+  const todayDate = useNow();
   const [selectedPeriod, setSelectedPeriod] = useState("today"); // 'today' | 'week' | 'month' | 'all'
   const [dashboardSubView, setDashboardSubView] = useState("overview"); // 'overview' | 'analytics'
   const [showAdvancedTools, setShowAdvancedTools] = useState(false); // Collapsible drawer for cash float & chemical mixer

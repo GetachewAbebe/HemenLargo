@@ -27,6 +27,28 @@ AS $$
   WHERE user_id = auth.uid()
 $$;
 
+CREATE OR REPLACE FUNCTION current_shop_role()
+RETURNS TEXT
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT role
+  FROM public.shop_members
+  WHERE user_id = auth.uid()
+$$;
+
+CREATE OR REPLACE FUNCTION is_shop_owner()
+RETURNS BOOLEAN
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  SELECT COALESCE(public.current_shop_role() = 'owner', FALSE)
+$$;
+
 CREATE OR REPLACE FUNCTION ensure_user_shop(p_shop_name TEXT)
 RETURNS UUID
 LANGUAGE plpgsql
@@ -178,6 +200,15 @@ CREATE TABLE IF NOT EXISTS shop_config (
 );
 
 -- Backfill pre-tenant deployments into a fixed legacy shop, preserving every row.
+-- Drop the debt_payments -> debts FK first so the primary keys below can be rebuilt on re-runs.
+DO $$
+BEGIN
+  IF to_regclass('public.debt_payments') IS NOT NULL THEN
+    ALTER TABLE public.debt_payments DROP CONSTRAINT IF EXISTS debt_payments_debt_shop_fkey;
+  END IF;
+END;
+$$;
+
 INSERT INTO shops (id, name)
 VALUES ('11111111-1111-4111-8111-111111111111', 'Legacy Sukie Shop')
 ON CONFLICT (id) DO NOTHING;
@@ -227,10 +258,193 @@ ALTER TABLE debt_payments
   ADD CONSTRAINT debt_payments_debt_shop_fkey
   FOREIGN KEY (shop_id, debt_id) REFERENCES debts(shop_id, id) ON DELETE CASCADE;
 
+-- Append-only audit trail. Rows are written only by SECURITY DEFINER code;
+-- owners can read their shop's history, nobody can edit or delete it via the API.
+CREATE TABLE IF NOT EXISTS audit_log (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  shop_id UUID NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
+  user_id UUID DEFAULT auth.uid(),
+  action TEXT NOT NULL,
+  table_name TEXT,
+  record_id TEXT,
+  details JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS audit_log_shop_created_idx ON audit_log (shop_id, created_at DESC);
+
+CREATE OR REPLACE FUNCTION write_audit_log(p_shop_id UUID, p_action TEXT, p_table TEXT, p_record_id TEXT, p_details JSONB)
+RETURNS VOID
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+  INSERT INTO public.audit_log (shop_id, user_id, action, table_name, record_id, details)
+  VALUES (p_shop_id, auth.uid(), p_action, p_table, p_record_id, p_details)
+$$;
+
+-- Keeps a full copy of every deleted row so mistakes and deletions can be traced and recovered.
+CREATE OR REPLACE FUNCTION audit_row_delete()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  PERFORM public.write_audit_log(OLD.shop_id, 'delete', TG_TABLE_NAME, OLD.id, to_jsonb(OLD));
+  RETURN OLD;
+END;
+$$;
+
+DO $$
+DECLARE
+  v_table TEXT;
+BEGIN
+  FOREACH v_table IN ARRAY ARRAY['products', 'sales', 'debts', 'debt_payments', 'expenses']
+  LOOP
+    EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', v_table || '_audit_delete', v_table);
+    EXECUTE format(
+      'CREATE TRIGGER %I AFTER DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.audit_row_delete()',
+      v_table || '_audit_delete',
+      v_table
+    );
+  END LOOP;
+END;
+$$;
+
+-- Edits product details without touching stock_liters/sold_liters, so a device with
+-- stale stock numbers can never overwrite sales or restocks made elsewhere.
+-- New products are inserted with their opening stock.
+CREATE OR REPLACE FUNCTION upsert_product(p_product JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_shop_id UUID := public.current_shop_id();
+BEGIN
+  IF v_shop_id IS NULL THEN RAISE EXCEPTION 'No shop is assigned to this user'; END IF;
+  IF NOT public.is_shop_owner() THEN RAISE EXCEPTION 'Only the shop owner can change products'; END IF;
+  IF NULLIF(p_product ->> 'id', '') IS NULL THEN RAISE EXCEPTION 'Product ID is required'; END IF;
+  IF NULLIF(BTRIM(p_product ->> 'name'), '') IS NULL THEN RAISE EXCEPTION 'Product name is required'; END IF;
+  IF COALESCE((p_product ->> 'price_per_liter')::NUMERIC, 0) <= 0 THEN
+    RAISE EXCEPTION 'Price per liter must be greater than zero';
+  END IF;
+  IF COALESCE((p_product ->> 'stock_liters')::NUMERIC, 0) < 0 THEN
+    RAISE EXCEPTION 'Stock cannot be negative';
+  END IF;
+
+  INSERT INTO public.products (
+    id, shop_id, name, local_name, category, scent, color, icon_emoji,
+    price_per_liter, price_per_half_liter, cost_per_liter, stock_liters,
+    min_stock_alert, sold_liters, description
+  ) VALUES (
+    p_product ->> 'id', v_shop_id, BTRIM(p_product ->> 'name'),
+    COALESCE(p_product ->> 'local_name', ''),
+    p_product ->> 'category', p_product ->> 'scent',
+    COALESCE(p_product ->> 'color', '#0d9488'),
+    COALESCE(p_product ->> 'icon_emoji', ''),
+    (p_product ->> 'price_per_liter')::NUMERIC,
+    NULLIF(p_product ->> 'price_per_half_liter', '')::NUMERIC,
+    COALESCE((p_product ->> 'cost_per_liter')::NUMERIC, 0),
+    COALESCE((p_product ->> 'stock_liters')::NUMERIC, 0),
+    COALESCE((p_product ->> 'min_stock_alert')::NUMERIC, 20),
+    COALESCE((p_product ->> 'sold_liters')::NUMERIC, 0),
+    COALESCE(p_product ->> 'description', '')
+  )
+  ON CONFLICT (shop_id, id) DO UPDATE SET
+    name = EXCLUDED.name,
+    local_name = EXCLUDED.local_name,
+    category = EXCLUDED.category,
+    scent = EXCLUDED.scent,
+    color = EXCLUDED.color,
+    icon_emoji = EXCLUDED.icon_emoji,
+    price_per_liter = EXCLUDED.price_per_liter,
+    price_per_half_liter = EXCLUDED.price_per_half_liter,
+    cost_per_liter = EXCLUDED.cost_per_liter,
+    min_stock_alert = EXCLUDED.min_stock_alert,
+    description = EXCLUDED.description;
+END;
+$$;
+
+-- Adds liters to a tank as a delta (never an absolute value), optionally updating cost per liter.
+-- p_restock_id makes retries from the offline queue idempotent.
+CREATE OR REPLACE FUNCTION restock_product(p_restock_id TEXT, p_product_id TEXT, p_liters NUMERIC, p_cost_per_liter NUMERIC DEFAULT NULL)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_shop_id UUID := public.current_shop_id();
+BEGIN
+  IF v_shop_id IS NULL THEN RAISE EXCEPTION 'No shop is assigned to this user'; END IF;
+  IF NOT public.is_shop_owner() THEN RAISE EXCEPTION 'Only the shop owner can restock products'; END IF;
+  IF p_liters IS NULL OR p_liters <= 0 THEN RAISE EXCEPTION 'Restock liters must be greater than zero'; END IF;
+  IF p_cost_per_liter IS NOT NULL AND p_cost_per_liter < 0 THEN RAISE EXCEPTION 'Cost cannot be negative'; END IF;
+
+  IF NULLIF(p_restock_id, '') IS NOT NULL AND EXISTS (
+    SELECT 1 FROM public.audit_log
+    WHERE shop_id = v_shop_id AND action = 'restock' AND record_id = p_restock_id
+  ) THEN
+    RETURN;
+  END IF;
+
+  -- Weighted-average cost: existing liters keep their cost, the new batch adds its own.
+  UPDATE public.products
+  SET stock_liters = stock_liters + p_liters,
+      cost_per_liter = CASE
+        WHEN p_cost_per_liter IS NULL THEN cost_per_liter
+        WHEN GREATEST(stock_liters, 0) + p_liters <= 0 THEN p_cost_per_liter
+        ELSE ROUND(
+          (GREATEST(stock_liters, 0) * COALESCE(cost_per_liter, 0) + p_liters * p_cost_per_liter)
+          / (GREATEST(stock_liters, 0) + p_liters), 2)
+      END
+  WHERE id = p_product_id AND shop_id = v_shop_id;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Product % was not found', p_product_id; END IF;
+
+  PERFORM public.write_audit_log(
+    v_shop_id, 'restock', 'products', COALESCE(NULLIF(p_restock_id, ''), p_product_id),
+    jsonb_build_object('product_id', p_product_id, 'liters', p_liters, 'cost_per_liter', p_cost_per_liter)
+  );
+END;
+$$;
+
+-- Creates a debt with zero payments. Balances can only change through record_debt_payment.
+CREATE OR REPLACE FUNCTION create_manual_debt(p_debt JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+  v_shop_id UUID := public.current_shop_id();
+  v_total NUMERIC := (p_debt ->> 'total_amount')::NUMERIC;
+BEGIN
+  IF v_shop_id IS NULL THEN RAISE EXCEPTION 'No shop is assigned to this user'; END IF;
+  IF NULLIF(p_debt ->> 'id', '') IS NULL THEN RAISE EXCEPTION 'Debt ID is required'; END IF;
+  IF NULLIF(BTRIM(p_debt ->> 'customer_name'), '') IS NULL THEN RAISE EXCEPTION 'Customer name is required'; END IF;
+  IF v_total IS NULL OR v_total <= 0 THEN RAISE EXCEPTION 'Debt amount must be greater than zero'; END IF;
+
+  INSERT INTO public.debts (
+    id, shop_id, customer_name, customer_phone, sale_id, date, total_amount,
+    paid_amount, remaining_balance, due_date, status, notes
+  ) VALUES (
+    p_debt ->> 'id', v_shop_id, BTRIM(p_debt ->> 'customer_name'),
+    COALESCE(NULLIF(p_debt ->> 'customer_phone', ''), 'N/A'),
+    NULLIF(p_debt ->> 'sale_id', ''),
+    COALESCE((p_debt ->> 'date')::TIMESTAMPTZ, NOW()),
+    v_total, 0, v_total, NULLIF(p_debt ->> 'due_date', ''),
+    'Unpaid', COALESCE(p_debt ->> 'notes', '')
+  ) ON CONFLICT (shop_id, id) DO NOTHING;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION record_sale(p_sale JSONB)
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
@@ -325,7 +539,7 @@ $$;
 CREATE OR REPLACE FUNCTION void_sale(p_sale_id TEXT)
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
@@ -339,6 +553,7 @@ BEGIN
 
   IF NOT FOUND THEN RAISE EXCEPTION 'Sale not found'; END IF;
   IF v_sale.status = 'Voided' THEN RETURN; END IF;
+  IF NOT public.is_shop_owner() THEN RAISE EXCEPTION 'Only the shop owner can void sales'; END IF;
 
   SELECT * INTO v_debt FROM public.debts WHERE sale_id = p_sale_id AND shop_id = v_sale.shop_id FOR UPDATE;
   IF FOUND AND v_debt.paid_amount > 0 THEN
@@ -356,17 +571,20 @@ BEGIN
 
   UPDATE public.sales SET status = 'Voided', payment_status = 'voided'
   WHERE id = p_sale_id AND shop_id = v_sale.shop_id;
+
+  PERFORM public.write_audit_log(v_sale.shop_id, 'void_sale', 'sales', p_sale_id, to_jsonb(v_sale));
 END;
 $$;
 
 CREATE OR REPLACE FUNCTION clear_shop_sales()
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
   IF public.current_shop_id() IS NULL THEN RAISE EXCEPTION 'No shop is assigned to this user'; END IF;
+  IF NOT public.is_shop_owner() THEN RAISE EXCEPTION 'Only the shop owner can clear sales'; END IF;
   DELETE FROM public.sales WHERE shop_id = public.current_shop_id();
 END;
 $$;
@@ -374,7 +592,7 @@ $$;
 CREATE OR REPLACE FUNCTION record_debt_payment(p_payment JSONB)
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY INVOKER
+SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 DECLARE
@@ -426,6 +644,7 @@ ALTER TABLE debts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE debt_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shop_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE
@@ -434,7 +653,7 @@ BEGIN
   FOR v_policy IN
     SELECT schemaname, tablename, policyname FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename IN ('shops', 'shop_members', 'products', 'sales', 'debts', 'debt_payments', 'expenses', 'shop_config')
+      AND tablename IN ('shops', 'shop_members', 'products', 'sales', 'debts', 'debt_payments', 'expenses', 'shop_config', 'audit_log')
   LOOP
     EXECUTE format('DROP POLICY %I ON %I.%I', v_policy.policyname, v_policy.schemaname, v_policy.tablename);
   END LOOP;
@@ -450,28 +669,57 @@ DO $$
 DECLARE
   v_table TEXT;
 BEGIN
+  -- Every member can read their own shop's rows.
+  -- Direct writes are owner-only; cashiers record sales, payments and debts
+  -- through the SECURITY DEFINER functions above, which enforce their own rules.
   FOREACH v_table IN ARRAY ARRAY['products', 'sales', 'debts', 'debt_payments', 'expenses', 'shop_config']
   LOOP
     EXECUTE format(
-      'CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (shop_id = public.current_shop_id()) WITH CHECK (shop_id = public.current_shop_id())',
-      v_table || '_shop_isolation',
+      'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (shop_id = public.current_shop_id())',
+      v_table || '_member_read',
+      v_table
+    );
+    EXECUTE format(
+      'CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (shop_id = public.current_shop_id() AND public.is_shop_owner()) WITH CHECK (shop_id = public.current_shop_id() AND public.is_shop_owner())',
+      v_table || '_owner_write',
       v_table
     );
   END LOOP;
 END;
 $$;
 
-REVOKE ALL ON FUNCTION ensure_user_shop(TEXT) FROM PUBLIC;
+-- Cashiers may add expenses (e.g. paying for supplies) but not edit or delete them.
+CREATE POLICY expenses_member_insert ON expenses
+  FOR INSERT TO authenticated WITH CHECK (shop_id = public.current_shop_id());
+
+CREATE POLICY audit_log_owner_read ON audit_log
+  FOR SELECT TO authenticated USING (shop_id = public.current_shop_id() AND public.is_shop_owner());
+
+-- Supabase grants EXECUTE on public functions to anon and authenticated by default,
+-- so each function is revoked from those roles explicitly, then granted where intended.
+REVOKE ALL ON FUNCTION ensure_user_shop(TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION ensure_user_shop(TEXT) TO authenticated;
-REVOKE ALL ON FUNCTION current_shop_id() FROM PUBLIC;
+REVOKE ALL ON FUNCTION current_shop_id() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION current_shop_id() TO authenticated;
-REVOKE ALL ON FUNCTION record_sale(JSONB) FROM PUBLIC;
+REVOKE ALL ON FUNCTION current_shop_role() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION current_shop_role() TO authenticated;
+REVOKE ALL ON FUNCTION is_shop_owner() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION is_shop_owner() TO authenticated;
+REVOKE ALL ON FUNCTION write_audit_log(UUID, TEXT, TEXT, TEXT, JSONB) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION audit_row_delete() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION upsert_product(JSONB) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION upsert_product(JSONB) TO authenticated;
+REVOKE ALL ON FUNCTION restock_product(TEXT, TEXT, NUMERIC, NUMERIC) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION restock_product(TEXT, TEXT, NUMERIC, NUMERIC) TO authenticated;
+REVOKE ALL ON FUNCTION create_manual_debt(JSONB) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION create_manual_debt(JSONB) TO authenticated;
+REVOKE ALL ON FUNCTION record_sale(JSONB) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION record_sale(JSONB) TO authenticated;
-REVOKE ALL ON FUNCTION void_sale(TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION void_sale(TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION void_sale(TEXT) TO authenticated;
-REVOKE ALL ON FUNCTION clear_shop_sales() FROM PUBLIC;
+REVOKE ALL ON FUNCTION clear_shop_sales() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION clear_shop_sales() TO authenticated;
-REVOKE ALL ON FUNCTION record_debt_payment(JSONB) FROM PUBLIC;
+REVOKE ALL ON FUNCTION record_debt_payment(JSONB) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION record_debt_payment(JSONB) TO authenticated;
 
 DO $$

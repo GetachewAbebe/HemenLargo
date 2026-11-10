@@ -15,14 +15,21 @@ export const formatCurrency = (amount, currency = "ETB") => {
   return `${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 };
 
-export const getTodayDateStr = () => {
-  return new Date().toISOString().split("T")[0];
+// YYYY-MM-DD in the device's local time zone (Ethiopia is UTC+3, so
+// toISOString() would report yesterday's date between midnight and 3 AM).
+export const localDateKey = (value = new Date()) => {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
+
+export const getTodayDateStr = () => localDateKey();
 
 export const getDateDaysAhead = (days = 7) => {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
+  return localDateKey(d);
 };
 
 // Formats a date for display. Defaults to Ethiopian Calendar.

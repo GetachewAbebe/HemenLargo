@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component {
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={exportAllDataAsJSON}
+                onClick={() => exportAllDataAsJSON()}
               >
                 <span>Export Emergency Data Backup (JSON)</span>
               </button>

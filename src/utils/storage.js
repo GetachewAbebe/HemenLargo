@@ -5,6 +5,7 @@ import {
   INITIAL_EXPENSES,
   INITIAL_DEBTS,
 } from "../data/initialData";
+import { localDateKey } from "../services/formatters";
 
 const STORAGE_KEYS = {
   SHOP_CONFIG: "sukie_shop_config_v2",
@@ -76,10 +77,60 @@ export const loadStoredData = (shopId = null) => {
   }
 };
 
+// Browser storage is limited (about 5 MB), so this device keeps a rolling window
+// of recent sales. The full history stays in the cloud. Offline sales are the
+// newest records, so they are always inside the window.
+export const SALES_CACHE_WINDOWS_DAYS = [180, 90, 30, 7];
+
+export const trimSalesForCache = (sales, windowDays, now = Date.now()) => {
+  if (!Array.isArray(sales)) return sales;
+  const cutoff = now - windowDays * 24 * 60 * 60 * 1000;
+  return sales.filter((sale) => {
+    const time = new Date(sale?.date).getTime();
+    return Number.isNaN(time) || time >= cutoff;
+  });
+};
+
+const isQuotaError = (err) =>
+  err?.name === "QuotaExceededError" || err?.name === "NS_ERROR_DOM_QUOTA_REACHED" || err?.code === 22;
+
+const LAST_ACTIVE_SHOP_KEY = "sukie_last_active_shop_v1";
+
+export const rememberActiveShop = (shopId) => {
+  try {
+    if (shopId) localStorage.setItem(LAST_ACTIVE_SHOP_KEY, shopId);
+  } catch {
+    // Best-effort; only used by the emergency export on the crash screen.
+  }
+};
+
+export const getLastActiveShop = () => {
+  try {
+    return localStorage.getItem(LAST_ACTIVE_SHOP_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const writeSales = (storageKey, sales) => {
+  let lastError = null;
+  for (const windowDays of SALES_CACHE_WINDOWS_DAYS) {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(trimSalesForCache(sales, windowDays)));
+      return;
+    } catch (err) {
+      if (!isQuotaError(err)) throw err;
+      lastError = err;
+    }
+  }
+  throw lastError;
+};
+
 export const saveToStorage = (key, data, shopId = null) => {
   try {
     const storageKey = getStorageKey(key, shopId);
-    localStorage.setItem(storageKey, JSON.stringify(data));
+    if (key === "SALES") writeSales(storageKey, data);
+    else localStorage.setItem(storageKey, JSON.stringify(data));
     return true;
   } catch (err) {
     console.error(`Failed to save ${key} to localStorage:`, err);
@@ -88,7 +139,7 @@ export const saveToStorage = (key, data, shopId = null) => {
         new CustomEvent("sukie_storage_quota_warning", {
           detail: {
             key,
-            isQuotaExceeded: err.name === "QuotaExceededError" || err.code === 22,
+            isQuotaExceeded: isQuotaError(err),
           },
         })
       );
@@ -97,9 +148,10 @@ export const saveToStorage = (key, data, shopId = null) => {
   }
 };
 
-export const exportAllDataAsJSON = (shopId = null) => {
+// Pass the in-memory data when available: the local cache only holds recent sales.
+export const exportAllDataAsJSON = (shopId = null, liveData = null) => {
   try {
-    const currentData = loadStoredData(shopId);
+    const currentData = liveData || loadStoredData(typeof shopId === "string" ? shopId : getLastActiveShop());
 
     const exportPayload = {
       appName: "Sukie Liquid Soap Management",
@@ -110,13 +162,15 @@ export const exportAllDataAsJSON = (shopId = null) => {
       },
     };
 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
     const downloadAnchor = document.createElement("a");
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `sukie_pos_backup_${new Date().toISOString().split("T")[0]}.json`);
+    downloadAnchor.setAttribute("href", url);
+    downloadAnchor.setAttribute("download", `sukie_pos_backup_${localDateKey()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     return true;
   } catch (err) {
     console.error("Failed to generate backup JSON file:", err);
@@ -143,7 +197,7 @@ export const exportLegacyLocalDataAsJSON = () => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
   const downloadAnchor = document.createElement("a");
   downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `sukie_legacy_backup_${new Date().toISOString().split("T")[0]}.json`);
+  downloadAnchor.setAttribute("download", `sukie_legacy_backup_${localDateKey()}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();

@@ -308,3 +308,55 @@
   border-color: #fda4af;
   transform: translateY(-1px);
 }
+
+/* Sync issues */
+.sync-issues-list {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sync-issue-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fff7f7;
+}
+
+.sync-issue-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 220px;
+  font-size: 0.85rem;
+}
+
+.sync-issue-detail {
+  color: #334155;
+  overflow-wrap: anywhere;
+}
+
+.sync-issue-error {
+  color: #b91c1c;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.sync-issue-date {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.sync-issue-actions {
+  display: flex;
+  gap: 8px;
+}

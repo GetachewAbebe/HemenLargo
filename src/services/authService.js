@@ -1,5 +1,50 @@
 import { supabase } from "./supabaseClient";
 
+// A password-reset link signs the user in and fires PASSWORD_RECOVERY once, during
+// client start-up. Listen at module load (before React mounts) so it isn't missed.
+let passwordRecoveryPending =
+  typeof window !== "undefined" && /type=recovery/.test(window.location.hash || "");
+const recoveryListeners = new Set();
+if (supabase) {
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      passwordRecoveryPending = true;
+      recoveryListeners.forEach((listener) => listener(true));
+    }
+  });
+}
+
+export const isPasswordRecoveryPending = () => passwordRecoveryPending;
+
+export const subscribeToPasswordRecovery = (listener) => {
+  recoveryListeners.add(listener);
+  return () => recoveryListeners.delete(listener);
+};
+
+const authRedirectUrl = () => new URL(import.meta.env.BASE_URL, window.location.href).toString();
+
+export const requestPasswordReset = async (email) => {
+  if (!supabase) {
+    return { success: false, error: "Cloud authentication is not configured. Set the Supabase environment variables." };
+  }
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: authRedirectUrl(),
+  });
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+};
+
+export const completePasswordReset = async (newPassword) => {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+  passwordRecoveryPending = false;
+  recoveryListeners.forEach((listener) => listener(false));
+  if (typeof window !== "undefined" && window.location.hash) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+};
+
 const clearLegacyCredentials = () => {
   try {
     localStorage.removeItem("sukie_users_list_v1");
@@ -69,7 +114,7 @@ export const registerUser = async ({ email, password, fullName, shopName, phone 
     email: email.trim().toLowerCase(),
     password,
     options: {
-      emailRedirectTo: new URL(import.meta.env.BASE_URL, window.location.href).toString(),
+      emailRedirectTo: authRedirectUrl(),
       data: {
         full_name: fullName.trim(),
         shop_name: shopName.trim(),

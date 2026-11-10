@@ -2,6 +2,19 @@ import { supabase, isSupabaseConfigured } from "./supabaseClient";
 
 export { isSupabaseConfigured };
 
+// supabase-js puts the HTTP status on the response, not the error. Attach it so the
+// sync queue can tell a temporary outage (0 = network, 5xx, 429) from a rejection.
+export const withStatus = (error, status) => {
+  if (error && typeof error === "object" && error.status == null) {
+    try {
+      error.status = status === 0 ? 503 : status;
+    } catch {
+      // Frozen error object; classification falls back to the message.
+    }
+  }
+  return error;
+};
+
 const requireClient = () => {
   if (!supabase) throw new Error("Supabase is not configured.");
   return supabase;
@@ -14,8 +27,8 @@ const fetchAll = async (table, configureQuery = (query) => query) => {
 
   for (let from = 0; ; from += pageSize) {
     let query = configureQuery(client.from(table).select("*"));
-    const { data, error } = await query.range(from, from + pageSize - 1);
-    if (error) throw error;
+    const { data, error, status } = await query.range(from, from + pageSize - 1);
+    if (error) throw withStatus(error, status);
     rows.push(...(data || []));
     if (!data || data.length < pageSize) return rows;
   }
@@ -177,8 +190,8 @@ export const fetchSupabaseDebts = async () => {
 
 export const fetchSupabaseConfig = async () => {
   const client = requireClient();
-  const { data, error } = await client.from("shop_config").select("*").order("updated_at", { ascending: false }).limit(1);
-  if (error) throw error;
+  const { data, error, status } = await client.from("shop_config").select("*").order("updated_at", { ascending: false }).limit(1);
+  if (error) throw withStatus(error, status);
   const row = data?.[0];
   if (!row) return null;
   return {
@@ -197,7 +210,7 @@ export const fetchSupabaseConfig = async () => {
 
 export const recordSaleInSupabase = async (sale) => {
   const totalAmount = Number(sale.total ?? sale.total_amount) || 0;
-  const { error } = await requireClient().rpc("record_sale", {
+  const { error, status } = await requireClient().rpc("record_sale", {
     p_sale: {
       id: sale.id,
       invoice_number: sale.id?.replace("REC-", "INV-") || sale.id,
@@ -220,54 +233,67 @@ export const recordSaleInSupabase = async (sale) => {
       status: sale.status,
     },
   });
-  if (error) throw error;
+  if (error) throw withStatus(error, status);
 };
 
 export const voidSaleInSupabase = async (saleId) => {
-  const { error } = await requireClient().rpc("void_sale", { p_sale_id: saleId });
-  if (error) throw error;
+  const { error, status } = await requireClient().rpc("void_sale", { p_sale_id: saleId });
+  if (error) throw withStatus(error, status);
 };
 
 export const clearShopSalesInSupabase = async () => {
-  const { error } = await requireClient().rpc("clear_shop_sales");
-  if (error) throw error;
+  const { error, status } = await requireClient().rpc("clear_shop_sales");
+  if (error) throw withStatus(error, status);
 };
 
+const toProductRow = (product) => ({
+  id: product.id,
+  name: product.name,
+  local_name: product.localName || "",
+  category: product.category,
+  scent: product.scent,
+  color: product.color,
+  icon_emoji: product.iconEmoji || "",
+  price_per_liter: product.pricePerLiter,
+  price_per_half_liter: product.pricePerHalfLiter ?? null,
+  cost_per_liter: product.costPerLiter,
+  stock_liters: product.stockLiters,
+  min_stock_alert: product.minStockAlert,
+  sold_liters: product.soldLiters || 0,
+  description: product.description || "",
+});
+
+// Existing products keep their server-side stock; stock_liters is only used when
+// the product is first created. Stock changes go through sales and restock_product.
 export const upsertProductInSupabase = async (product) => {
-  const payload = {
-    id: product.id,
-    name: product.name,
-    local_name: product.localName || "",
-    category: product.category,
-    scent: product.scent,
-    color: product.color,
-    icon_emoji: product.iconEmoji || "",
-    price_per_liter: product.pricePerLiter,
-    price_per_half_liter: product.pricePerHalfLiter ?? null,
-    cost_per_liter: product.costPerLiter,
-    stock_liters: product.stockLiters,
-    min_stock_alert: product.minStockAlert,
-    sold_liters: product.soldLiters || 0,
-    description: product.description || "",
-  };
-  const { error } = await requireClient().from("products").upsert(payload, { onConflict: "shop_id,id" });
-  if (error) throw error;
+  const { error, status } = await requireClient().rpc("upsert_product", { p_product: toProductRow(product) });
+  if (error) throw withStatus(error, status);
+};
+
+export const restockProductInSupabase = async ({ restockId, productId, liters, costPerLiter }) => {
+  const { error, status } = await requireClient().rpc("restock_product", {
+    p_restock_id: restockId,
+    p_product_id: productId,
+    p_liters: Number(liters),
+    p_cost_per_liter: costPerLiter == null ? null : Number(costPerLiter),
+  });
+  if (error) throw withStatus(error, status);
 };
 
 export const updateProductStockInSupabase = async (productId, newStockLiters) => {
-  const { data, error } = await requireClient()
+  const { data, error, status } = await requireClient()
     .from("products")
     .update({ stock_liters: Number(newStockLiters) })
     .eq("id", productId)
     .select("id")
     .maybeSingle();
-  if (error) throw error;
+  if (error) throw withStatus(error, status);
   if (!data) throw new Error(`Product ${productId} was not found in the cloud shop.`);
 };
 
 export const deleteProductFromSupabase = async (productId) => {
-  const { error } = await requireClient().from("products").delete().eq("id", productId);
-  if (error) throw error;
+  const { error, status } = await requireClient().from("products").delete().eq("id", productId);
+  if (error) throw withStatus(error, status);
 };
 
 export const recordExpenseInSupabase = async (expense) => {
@@ -281,40 +307,50 @@ export const recordExpenseInSupabase = async (expense) => {
     note: expense.notes || "",
     notes: expense.notes || "",
   };
-  const { error } = await requireClient().from("expenses").upsert(payload);
-  if (error) throw error;
+  // Insert-only: expenses are never edited, and cashiers may add but not change them.
+  const { error, status } = await requireClient().from("expenses").upsert(payload, { onConflict: "shop_id,id", ignoreDuplicates: true });
+  if (error) throw withStatus(error, status);
 };
 
 export const deleteExpenseFromSupabase = async (expenseId) => {
-  const { error } = await requireClient().from("expenses").delete().eq("id", expenseId);
-  if (error) throw error;
+  const { error, status } = await requireClient().from("expenses").delete().eq("id", expenseId);
+  if (error) throw withStatus(error, status);
 };
 
+// Balances are computed on the server; repayments go through record_debt_payment.
 export const recordDebtInSupabase = async (debt) => {
-  const payload = {
-    id: debt.id,
-    customer_name: debt.customerName,
-    customer_phone: debt.customerPhone || "N/A",
-    sale_id: debt.saleId || null,
-    date: debt.date || new Date().toISOString(),
-    total_amount: Number(debt.totalAmount) || 0,
-    paid_amount: Number(debt.paidAmount) || 0,
-    remaining_balance: Number(debt.remainingBalance) || 0,
-    due_date: debt.dueDate || null,
-    status: debt.status || "Unpaid",
-    notes: debt.notes || "",
-  };
-  const { error } = await requireClient().from("debts").upsert(payload);
-  if (error) throw error;
+  const { error, status } = await requireClient().rpc("create_manual_debt", {
+    p_debt: {
+      id: debt.id,
+      customer_name: debt.customerName,
+      customer_phone: debt.customerPhone || "N/A",
+      sale_id: debt.saleId || null,
+      date: debt.date || new Date().toISOString(),
+      total_amount: Number(debt.totalAmount) || 0,
+      due_date: debt.dueDate || null,
+      notes: debt.notes || "",
+    },
+  });
+  if (error) throw withStatus(error, status);
+};
+
+export const fetchShopRole = async () => {
+  const client = requireClient();
+  const { data: sessionData } = await client.auth.getSession();
+  const userId = sessionData?.session?.user?.id;
+  if (!userId) return null;
+  const { data, error, status } = await client.from("shop_members").select("role").eq("user_id", userId).maybeSingle();
+  if (error) throw withStatus(error, status);
+  return data?.role || null;
 };
 
 export const deleteDebtFromSupabase = async (debtId) => {
-  const { error } = await requireClient().from("debts").delete().eq("id", debtId);
-  if (error) throw error;
+  const { error, status } = await requireClient().from("debts").delete().eq("id", debtId);
+  if (error) throw withStatus(error, status);
 };
 
 export const recordDebtPaymentInSupabase = async (debtId, payment) => {
-  const { error } = await requireClient().rpc("record_debt_payment", {
+  const { error, status } = await requireClient().rpc("record_debt_payment", {
     p_payment: {
       id: payment.id,
       debt_id: debtId,
@@ -324,31 +360,16 @@ export const recordDebtPaymentInSupabase = async (debtId, payment) => {
       date: payment.date,
     },
   });
-  if (error) throw error;
+  if (error) throw withStatus(error, status);
 };
 
 export const addInitialProductsInSupabase = async (products) => {
   if (!products.length) return;
-  const { error } = await requireClient().from("products").upsert(
-    products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      local_name: product.localName || "",
-      category: product.category,
-      scent: product.scent,
-      color: product.color,
-      icon_emoji: product.iconEmoji || "",
-      price_per_liter: product.pricePerLiter,
-      price_per_half_liter: product.pricePerHalfLiter ?? null,
-      cost_per_liter: product.costPerLiter,
-      stock_liters: product.stockLiters,
-      min_stock_alert: product.minStockAlert,
-      sold_liters: product.soldLiters || 0,
-      description: product.description || "",
-    })),
+  const { error, status } = await requireClient().from("products").upsert(
+    products.map(toProductRow),
     { onConflict: "shop_id,id", ignoreDuplicates: true }
   );
-  if (error) throw error;
+  if (error) throw withStatus(error, status);
 };
 
 export const updateShopConfigInSupabase = async (config, shopId) => {
@@ -370,8 +391,8 @@ export const updateShopConfigInSupabase = async (config, shopId) => {
     vat_percent: config.taxRate || 0,
     updated_at: new Date().toISOString(),
   };
-  const { error } = await requireClient().from("shop_config").upsert(payload);
-  if (error) throw error;
+  const { error, status } = await requireClient().from("shop_config").upsert(payload);
+  if (error) throw withStatus(error, status);
 };
 
 export const runCloudOperation = async (operation) => {
@@ -386,6 +407,8 @@ export const runCloudOperation = async (operation) => {
       return updateProductStockInSupabase(operation.payload.productId, operation.payload.stockLiters);
     case "product_upsert":
       return upsertProductInSupabase(operation.payload);
+    case "product_restock":
+      return restockProductInSupabase(operation.payload);
     case "product_delete":
       return deleteProductFromSupabase(operation.payload.productId);
     case "expense_upsert":
@@ -407,8 +430,26 @@ export const runCloudOperation = async (operation) => {
   }
 };
 
-export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onExpensesChange, onDebtsChange, onConfigChange) => {
+// Coalesces bursts of change events (one sale touches sales, products and debts)
+// into a single refetch per table.
+const debounce = (fn, waitMs) => {
+  let timer = null;
+  const debounced = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      fn();
+    }, waitMs);
+  };
+  debounced.cancel = () => clearTimeout(timer);
+  return debounced;
+};
+
+export const subscribeToRealtimeChanges = (...handlers) => {
   if (!supabase) return () => {};
+  const [onProductsChange, onSalesChange, onExpensesChange, onDebtsChange, onConfigChange] = handlers.map((handler) =>
+    debounce(handler, 600)
+  );
   const channel = supabase
     .channel("supabase-realtime-changes")
     .on("postgres_changes", { event: "*", schema: "public", table: "products" }, onProductsChange)
@@ -420,6 +461,7 @@ export const subscribeToRealtimeChanges = (onProductsChange, onSalesChange, onEx
     .subscribe();
 
   return () => {
+    [onProductsChange, onSalesChange, onExpensesChange, onDebtsChange, onConfigChange].forEach((handler) => handler.cancel());
     supabase.removeChannel(channel);
   };
 };

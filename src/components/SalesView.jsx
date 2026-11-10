@@ -7,6 +7,8 @@ import {
   isSameEthiopianMonth,
   getEthiopianToday,
 } from "../utils/ethiopianDate";
+import { localDateKey } from "../services/formatters";
+import { useNow } from "../hooks/useNow";
 
 export default function SalesView({
   sales,
@@ -20,7 +22,7 @@ export default function SalesView({
   const [dateFilter, setDateFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
-  const [referenceNow] = useState(() => new Date());
+  const referenceNow = useNow();
   const currentEth = useMemo(() => getEthiopianToday(), []);
 
   // Filter sales list based on selected date range, payment, and search keywords
@@ -130,7 +132,7 @@ export default function SalesView({
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `sukie_sales_${new Date().toISOString().slice(0, 10)}.csv`
+      `sukie_sales_${localDateKey()}.csv`
     );
     document.body.appendChild(link);
     link.click();

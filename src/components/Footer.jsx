@@ -75,7 +75,7 @@ export default function Footer({
     connected: "Supabase Cloud Synced",
     connecting: "Connecting to Cloud",
     pending: "Cloud Changes Pending",
-    error: "Cloud Sync Error",
+    error: context.syncIssues?.length ? `${context.syncIssues.length} Sync Issue(s) – see Settings` : "Cloud Sync Error",
     local: "Local / Offline",
   }[cloudStatus] || "Local / Offline";
   const cloudColor = cloudStatus === "connected" ? "#3b82f6" : cloudStatus === "pending" ? "#d97706" : cloudStatus === "error" ? "#dc2626" : "#64748b";

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { soundFX } from "../../utils/audio";
 import { updateActiveUserProfile } from "../../services/authService";
 import SettingsView from "../SettingsView";
+import { useApp } from "../../context";
 
 export default function ProfileModal({
   currentUser,
@@ -15,6 +16,7 @@ export default function ProfileModal({
   onImportData,
   onClearTransactionsOnly,
 }) {
+  const { role } = useApp();
   const [activeTab, setActiveTab] = useState("profile"); // 'profile' | 'settings'
   const [fullName, setFullName] = useState(currentUser?.fullName || config?.ownerName || "Getachew");
   const [phone, setPhone] = useState(currentUser?.phone || config?.phone || "+251 91 100 0000");
@@ -92,7 +94,7 @@ export default function ProfileModal({
             <div className="profile-header-titles">
               <h2 className="profile-user-fullname">{fullName || "Cashier"}</h2>
               <span className="profile-user-role-badge">
-                <span>Owner (ባለቤት)</span>
+                <span>{role === "cashier" ? "Cashier (ገንዘብ ተቀባይ)" : "Owner (ባለቤት)"}</span>
               </span>
             </div>
           </div>

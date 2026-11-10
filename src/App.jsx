@@ -5,6 +5,7 @@ import DashboardView from "./components/DashboardView";
 import ReceiptModal from "./components/ReceiptModal";
 import Footer from "./components/Footer";
 import AuthScreen from "./components/auth/AuthScreen";
+import SetNewPasswordScreen from "./components/auth/SetNewPasswordScreen";
 import ProfileModal from "./components/profile/ProfileModal";
 import Toast from "./components/common/Toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
@@ -14,15 +15,42 @@ import {
   ensureUserShop,
   getCachedShopId,
   getActiveSession,
+  isPasswordRecoveryPending,
   logoutUser,
   subscribeToAuthChanges,
+  subscribeToPasswordRecovery,
 } from "./services/authService";
 import SalesHubView from "./components/SalesHubView";
 import "./App.css";
 
+// After a deploy, a tab still running the previous build may request chunk files
+// that no longer exist. Reload once to pick up the new build instead of crashing.
+const CHUNK_RELOAD_KEY = "sukie_chunk_reload_at";
+const lazyWithReload = (importer) =>
+  lazy(() =>
+    importer().catch((error) => {
+      let lastReload = 0;
+      try {
+        lastReload = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY)) || 0;
+      } catch {
+        // sessionStorage unavailable; fall through to the error boundary.
+      }
+      if (Date.now() - lastReload > 30_000) {
+        try {
+          sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
+        } catch {
+          // Ignore; a single reload attempt is still safe.
+        }
+        window.location.reload();
+        return new Promise(() => {});
+      }
+      throw error;
+    })
+  );
+
 // Lazy-loaded secondary views for code-splitting and instant initial load
-const ExpensesView = lazy(() => import("./components/ExpensesView"));
-const DebtsView = lazy(() => import("./components/DebtsView"));
+const ExpensesView = lazyWithReload(() => import("./components/ExpensesView"));
+const DebtsView = lazyWithReload(() => import("./components/DebtsView"));
 
 function ViewLoader() {
   return (
@@ -53,13 +81,17 @@ function AppContent() {
     activateShop,
     deactivateShop,
     showToast,
+    isOwner,
   } = useApp();
 
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(isPasswordRecoveryPending);
   const activationTasks = useRef(new Map());
+
+  useEffect(() => subscribeToPasswordRecovery(setPasswordRecovery), []);
   const activeAuthUserId = useRef(null);
 
   useEffect(() => {
@@ -169,6 +201,15 @@ function AppContent() {
     );
   }
 
+  // Opened from a password-reset email: choose a new password before using the POS.
+  if (passwordRecovery) {
+    return (
+      <SetNewPasswordScreen
+        onDone={() => showToast("Password updated. You're signed in.")}
+      />
+    );
+  }
+
   return (
     <div className="app-root-container">
       {/* Toast Notification */}
@@ -225,7 +266,8 @@ function AppContent() {
           config={config}
           onUpdateUser={(updated) => {
             setCurrentUser(updated);
-            handleSaveConfig({ ...config, ownerName: updated.fullName });
+            // The shop's owner name only follows the owner's profile, not a cashier's.
+            if (isOwner) handleSaveConfig({ ...config, ownerName: updated.fullName });
           }}
           onLogout={async () => {
             try {

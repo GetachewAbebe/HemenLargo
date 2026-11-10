@@ -37,8 +37,8 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
     ? formatEthiopianDate(receipt.creditDueDate, "medium") || receipt.creditDueDate
     : "Within 7 Days (በ7 ቀናት ውስጥ)";
 
-  const handleCopyText = () => {
-    const lines = [
+  const buildReceiptText = () =>
+    [
       `${config.shopName || "SUKIE ሱቄ"} Receipt #${receipt.id}`,
       `Date (ቀን): ${ethDateFormatted} (${new Date(receipt.date).toLocaleDateString()})`,
       `Customer: ${receipt.customerName || "Customer"}`,
@@ -50,11 +50,26 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
       config.receiptFooter || "Thank you!",
     ].filter(Boolean).join("\n");
 
-    navigator.clipboard.writeText(lines).then(() => {
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(buildReceiptText()).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   };
+
+  const canNativeShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
+  const handleNativeShare = async () => {
+    try {
+      await navigator.share({ title: `Receipt ${receipt.id}`, text: buildReceiptText() });
+    } catch (error) {
+      if (error?.name !== "AbortError") handleCopyText();
+    }
+  };
+
+  const customerPhone = (receipt.customerPhone || "").replace(/[^\d+]/g, "");
+  const hasCustomerPhone = customerPhone.replace(/\D/g, "").length >= 9;
+  const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(" ")}&text=${encodeURIComponent(buildReceiptText())}`;
+  const smsShareUrl = `sms:${hasCustomerPhone ? customerPhone : ""}?body=${encodeURIComponent(buildReceiptText())}`;
 
   const modalContent = (
     <div className="receipt-modal-backdrop animate-fade" onClick={onClose}>
@@ -67,6 +82,17 @@ export default function ReceiptModal({ receipt, config = {}, onClose }) {
           <button className="btn-print-receipt" onClick={handlePrint}>
             <span>Print Receipt</span>
           </button>
+          {canNativeShare && (
+            <button className="btn-secondary" onClick={handleNativeShare} title="Share receipt (Telegram, WhatsApp, SMS…)">
+              <span>Share</span>
+            </button>
+          )}
+          <a className="btn-secondary" href={telegramShareUrl} target="_blank" rel="noopener noreferrer" title="Send receipt via Telegram">
+            <span>Telegram</span>
+          </a>
+          <a className="btn-secondary" href={smsShareUrl} title={hasCustomerPhone ? `Send receipt by SMS to ${customerPhone}` : "Send receipt by SMS"}>
+            <span>SMS</span>
+          </a>
           <button className="btn-secondary" onClick={handleCopyText} title="Copy Receipt for SMS/WhatsApp">
             <span>{copied ? "Copied!" : "Copy Text"}</span>
           </button>

@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "../common/Modal";
+import { blendCostPerLiter } from "../../services/inventoryService";
 
 export default function RestockModal({
   isOpen,
@@ -65,6 +66,15 @@ export default function RestockModal({
             {((parseFloat(restockLiters) || 0) * (parseFloat(restockCost) || 0)).toFixed(2)}{" "}
             {currency}
           </span>
+          {restockCost !== "" && parseFloat(restockLiters) > 0 && (
+            <span className="input-hint">
+              New average cost/L (old stock + this batch):{" "}
+              <strong>
+                {blendCostPerLiter(product.stockLiters, product.costPerLiter, parseFloat(restockLiters), parseFloat(restockCost)).toFixed(2)}{" "}
+                {currency}
+              </strong>
+            </span>
+          )}
         </div>
 
         <div className="modal-actions">

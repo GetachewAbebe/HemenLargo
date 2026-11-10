@@ -1,6 +1,14 @@
 const CACHE_PREFIX = "sukie-pos-";
-const CACHE_NAME = `${CACHE_PREFIX}v3`;
-const PRECACHE_URLS = ["./", "./index.html", "./favicon.svg", "./manifest.json"];
+const CACHE_NAME = `${CACHE_PREFIX}v4`;
+const PRECACHE_URLS = [
+  "./",
+  "./index.html",
+  "./favicon.svg",
+  "./manifest.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/apple-touch-icon.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

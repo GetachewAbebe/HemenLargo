@@ -2,6 +2,108 @@ import React, { useState } from "react";
 import { exportAllDataAsJSON } from "../utils/storage";
 import { soundFX } from "../utils/audio";
 import { formatEthiopianDate } from "../utils/ethiopianDate";
+import { useApp } from "../context";
+import { localDateKey } from "../services/formatters";
+
+const OPERATION_LABELS = {
+  sale: "Sale",
+  void_sale: "Void sale",
+  clear_sales: "Clear all sales",
+  stock_update: "Stock update",
+  product_upsert: "Product change",
+  product_restock: "Restock",
+  product_delete: "Delete product",
+  expense_upsert: "Expense",
+  expense_delete: "Delete expense",
+  debt_upsert: "New debt",
+  debt_delete: "Delete debt",
+  debt_payment: "Debt repayment",
+  config_upsert: "Shop settings",
+  initial_products: "Starter products",
+};
+
+const describeOperation = (op, currency) => {
+  const p = op.payload || {};
+  switch (op.type) {
+    case "sale":
+      return `${p.id} · ${Number(p.total || 0).toFixed(2)} ${currency}`;
+    case "void_sale":
+      return p.saleId;
+    case "product_upsert":
+      return p.name;
+    case "product_restock":
+      return `${p.liters} L → ${p.productId}`;
+    case "expense_upsert":
+      return `${p.title} · ${Number(p.amount || 0).toFixed(2)} ${currency}`;
+    case "debt_upsert":
+      return `${p.customerName} · ${Number(p.totalAmount || 0).toFixed(2)} ${currency}`;
+    case "debt_payment":
+      return `${Number(p.payment?.amount || 0).toFixed(2)} ${currency}`;
+    default:
+      return "";
+  }
+};
+
+function SyncIssuesCard({ issues, currency, onRetry, onDiscard }) {
+  if (!issues.length) return null;
+
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(issues, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sukie-sync-issues-${localDateKey()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="settings-card danger-card sync-issues-card">
+      <div className="settings-card-header">
+        <div>
+          <h3 className="section-title text-rose">Sync Issues ({issues.length})</h3>
+          <p className="section-subtitle">
+            These changes were saved on this device but the cloud rejected them, so other devices don't see them.
+            Retry after fixing the cause (for example, restocking a tank), or discard to accept the cloud's data.
+          </p>
+        </div>
+      </div>
+
+      <ul className="sync-issues-list">
+        {issues.map((issue) => (
+          <li key={issue.id} className="sync-issue-row">
+            <div className="sync-issue-info">
+              <strong>{OPERATION_LABELS[issue.type] || issue.type}</strong>
+              <span className="sync-issue-detail">{describeOperation(issue, currency)}</span>
+              <span className="sync-issue-error">{issue.error}</span>
+              <span className="sync-issue-date">{new Date(issue.createdAt).toLocaleString()}</span>
+            </div>
+            <div className="sync-issue-actions">
+              <button type="button" className="btn-primary" onClick={() => onRetry(issue.id)}>
+                Retry
+              </button>
+              <button
+                type="button"
+                className="btn-danger-outline"
+                onClick={() => {
+                  if (window.confirm("Discard this change? This device will reload the cloud's data and the change will be lost.")) {
+                    onDiscard(issue.id);
+                  }
+                }}
+              >
+                Discard
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <button type="button" className="btn-danger-outline" onClick={handleExport}>
+        Export issues as JSON
+      </button>
+    </div>
+  );
+}
 
 export default function SettingsView({
   config,
@@ -11,6 +113,7 @@ export default function SettingsView({
   onClearTransactionsOnly,
   shopId,
 }) {
+  const { syncIssues, retrySyncIssue, discardSyncIssue, isOwner, currency, products, sales, expenses, debts } = useApp();
   const [formData, setFormData] = useState({ ...config });
   const [prevConfig, setPrevConfig] = useState(config);
   const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
@@ -68,6 +171,13 @@ export default function SettingsView({
 
   return (
     <div className="settings-layout animate-fade">
+      <SyncIssuesCard
+        issues={syncIssues}
+        currency={currency}
+        onRetry={retrySyncIssue}
+        onDiscard={discardSyncIssue}
+      />
+
       {/* Store Information Form */}
       <div className="settings-card">
         <div className="settings-card-header">
@@ -291,7 +401,7 @@ export default function SettingsView({
             <p className="backup-tile-desc">
               Save a full copy of your soaps catalog, inventory liters, sales receipts, and expenses to your device.
             </p>
-            <button className="btn-secondary" onClick={() => exportAllDataAsJSON(shopId)}>
+            <button className="btn-secondary" onClick={() => exportAllDataAsJSON(shopId, { config, products, sales, expenses, debts })}>
               <span>Export All Data Now</span>
             </button>
           </div>
@@ -379,7 +489,8 @@ export default function SettingsView({
         </div>
       </div>
 
-      {/* Danger Zone: Reset or Clear */}
+      {/* Danger Zone: Reset or Clear (owner only; also enforced by the database) */}
+      {isOwner && (
       <div className="settings-card danger-card">
         <div className="settings-card-header">
           <div>
@@ -422,6 +533,7 @@ export default function SettingsView({
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }

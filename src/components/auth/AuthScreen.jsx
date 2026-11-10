@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { soundFX } from "../../utils/audio";
-import { loginUser, registerUser } from "../../services/authService";
+import { loginUser, registerUser, requestPasswordReset } from "../../services/authService";
 import { exportLegacyLocalDataAsJSON } from "../../utils/storage";
 
 export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liquid Soap", authError = "" }) {
@@ -44,6 +44,17 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
     setIsSubmitting(true);
 
     try {
+      if (mode === "forgot") {
+        const reset = await requestPasswordReset(email);
+        if (!reset.success) {
+          soundFX.playWarning();
+          setErrorMessage(reset.error);
+          return;
+        }
+        setSuccessMessage("If an account exists for this email, a password reset link is on its way. Open it on this device.");
+        return;
+      }
+
       const result =
         mode === "login"
           ? await loginUser(email, password)
@@ -168,6 +179,7 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
             />
           </div>
 
+          {mode !== "forgot" && (
           <div className="auth-field-group">
             <label className="auth-field-label" htmlFor="auth-password">Password</label>
             <div className="auth-input-wrapper">
@@ -191,11 +203,37 @@ export default function AuthScreen({ onAuthSuccess, initialShopName = "Sukie Liq
               </button>
             </div>
             {mode === "register" && <small>Use at least 8 characters.</small>}
+            {mode === "login" && (
+              <button type="button" className="auth-link-btn" onClick={() => handleTabSwitch("forgot")}>
+                Forgot password? (የይለፍ ቃል ረሱ?)
+              </button>
+            )}
           </div>
+          )}
+
+          {mode === "forgot" && (
+            <small className="auth-help-text">
+              Enter your account email and we'll send a link to choose a new password.
+            </small>
+          )}
 
           <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
-            <span>{isSubmitting ? "Please wait..." : mode === "login" ? "Access POS Counter" : "Register & Launch Store POS"}</span>
+            <span>
+              {isSubmitting
+                ? "Please wait..."
+                : mode === "login"
+                  ? "Access POS Counter"
+                  : mode === "forgot"
+                    ? "Send Reset Link"
+                    : "Register & Launch Store POS"}
+            </span>
           </button>
+
+          {mode === "forgot" && (
+            <button type="button" className="auth-link-btn" onClick={() => handleTabSwitch("login")}>
+              ← Back to sign in
+            </button>
+          )}
         </form>
 
         {backupMessage && <div className="auth-alert-box alert-success" role="status">{backupMessage}</div>}

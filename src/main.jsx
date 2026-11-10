@@ -9,6 +9,8 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator && import.meta
     navigator.serviceWorker
       .register('./sw.js')
       .then((reg) => console.log('Sukie POS Offline Service Worker active:', reg.scope))
+      // Ask the browser not to evict offline sales and the sync outbox under storage pressure.
+      .then(() => navigator.storage?.persist?.())
       .catch((err) => console.warn('Service Worker registration skipped:', err));
   });
 }

@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { formatEthiopianDate } from "../../utils/ethiopianDate";
 import { soundFX } from "../../utils/audio";
-
-const TODAY_ISO = new Date().toISOString().split("T")[0];
+import { localDateKey } from "../../services/formatters";
+import { useNow } from "../../hooks/useNow";
 
 export default function SaleDateSelector({
   saleDateMode, // 'today' | 'yesterday' | 'custom'
@@ -13,7 +13,7 @@ export default function SaleDateSelector({
   onCustomTimeChange,
   onResetToToday,
 }) {
-  const [baseNow] = useState(() => new Date());
+  const baseNow = useNow(30_000);
 
   // Calculate preview Date object based on current state
   const previewDate = useMemo(() => {
@@ -109,7 +109,7 @@ export default function SaleDateSelector({
               <input
                 type="date"
                 className="field-input pos-date-field"
-                max={TODAY_ISO}
+                max={localDateKey(baseNow)}
                 value={customDateStr}
                 onChange={(e) => onCustomDateChange(e.target.value)}
               />

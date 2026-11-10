@@ -3,6 +3,7 @@ import { soundFX } from "../../utils/audio";
 import { formatEthiopianDate, formatEthiopianTime } from "../../utils/ethiopianDate";
 import { createRecordId } from "../../utils/ids";
 import { getProductSalePrice } from "../../services/productPricing";
+import { useNow } from "../../hooks/useNow";
 
 function generateReceiptId() {
   const d = new Date();
@@ -50,7 +51,7 @@ export default function SimpleSaleRegister({
   const [discount, setDiscount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [referenceDate] = useState(() => new Date());
+  const referenceDate = useNow(30_000);
 
   // Active product object
   const activeProduct = useMemo(() => {

@@ -314,3 +314,21 @@
   border-top: 1px solid #f1f5f9;
   padding-top: 14px;
 }
+
+.auth-link-btn {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #0d9488;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-help-text {
+  color: #64748b;
+  font-size: 0.82rem;
+}

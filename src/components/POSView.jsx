@@ -8,6 +8,7 @@ import CashTenderCard from "./pos/CashTenderCard";
 import SaleDateSelector from "./pos/SaleDateSelector";
 import { createRecordId } from "../utils/ids";
 import { getProductSalePrice } from "../services/productPricing";
+import { localDateKey } from "../services/formatters";
 
 function generateReceiptId() {
   const d = new Date();
@@ -36,7 +37,7 @@ export default function POSView(props) {
 
   // Sale Registration Date State
   const [saleDateMode, setSaleDateMode] = useState("today"); // 'today' | 'yesterday' | 'custom'
-  const [customDateStr, setCustomDateStr] = useState(() => new Date().toISOString().split("T")[0]);
+  const [customDateStr, setCustomDateStr] = useState(() => localDateKey());
   const [customTimeStr, setCustomTimeStr] = useState(() => {
     const d = new Date();
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -339,7 +340,7 @@ export default function POSView(props) {
               onCustomTimeChange={setCustomTimeStr}
               onResetToToday={() => {
                 setSaleDateMode("today");
-                setCustomDateStr(new Date().toISOString().split("T")[0]);
+                setCustomDateStr(localDateKey());
               }}
             />
 

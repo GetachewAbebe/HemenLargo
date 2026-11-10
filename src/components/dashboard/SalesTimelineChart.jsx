@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { formatEthiopianDate } from "../../utils/ethiopianDate";
+import { localDateKey } from "../../services/formatters";
+import { useNow } from "../../hooks/useNow";
 
 export default function SalesTimelineChart({
   sales = [],
@@ -7,7 +9,7 @@ export default function SalesTimelineChart({
   period = "today", // 'today' | 'yesterday' | 'week' | 'month' | 'all'
 }) {
   const [hoveredBucket, setHoveredBucket] = useState(null);
-  const [referenceNow] = useState(() => new Date());
+  const referenceNow = useNow();
 
   // Group sales into time buckets depending on the selected period
   const chartData = useMemo(() => {
@@ -55,7 +57,7 @@ export default function SalesTimelineChart({
       // Create last 7 days entries
       for (let i = 6; i >= 0; i--) {
         const d = new Date(nowTime - i * 24 * 60 * 60 * 1000);
-        const key = d.toISOString().split("T")[0];
+        const key = localDateKey(d);
         const dayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
         const ethDate = formatEthiopianDate(d, "short");
         dayMap.set(key, {
@@ -69,7 +71,7 @@ export default function SalesTimelineChart({
       }
 
       sales.forEach((s) => {
-        const key = (s.date || "").split("T")[0];
+        const key = localDateKey(s.date);
         const saleLiters = s.items?.reduce((acc, i) => acc + (i.liters || 0), 0) || 0;
         const total = s.total || 0;
 
